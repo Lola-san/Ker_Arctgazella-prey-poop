@@ -19,7 +19,7 @@ load_xl <- function(pathxl) {
                     sheet = 1)
 }
 
-#  
+# clean file and select only data to publish
 clean_prey_tab <- function(prey_tab) {
   prey_tab |>
     dplyr::group_by(Family, Species, Campaign) |>
