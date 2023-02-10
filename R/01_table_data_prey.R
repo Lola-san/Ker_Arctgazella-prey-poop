@@ -10,17 +10,13 @@
 ################################################################################
 
 
-############################# load data ########################################
-
 # load excel files  
 load_xl <- function(pathxl) {
-  readxl::read_xlsx(pathxl, 
-                    col_names = TRUE, 
-                    sheet = 1)
+  readxl::read_xlsx(pathxl)
 }
 
-# clean file and select only data to publish
-clean_prey_tab <- function(prey_tab) {
+# clean file and summarise data on samples
+summary_prey_samples <- function(prey_tab) {
   prey_tab |>
     dplyr::group_by(Family, Species, Campaign) |>
     dplyr::mutate(SL_cm = as.integer(SL_cm)) |> # generates warnings because
