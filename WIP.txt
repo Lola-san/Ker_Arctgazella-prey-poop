@@ -1,0 +1,56 @@
+res_prey_tib <- targets::tar_read(full_res_prey)
+
+data.act <- res_prey_tib |>
+    # keep only quantitative variables
+    dplyr::select(-c(Mo, V, Ag, Cr, Pb, As, Cd)) |>
+    # remove outlier 2005_PROTAND_PA03
+    dplyr::filter(Code_sample != "2005_PROTAND_PA03") |>
+    tidyr::pivot_longer(cols = c(Ca, Co, Cu, Fe, K, Mg, Mn, Na, Ni, P, Se, Sr, Zn),
+                        names_to = "Element",
+                        values_to = "Concentration")
+
+data.act <- as.data.frame(data.act |>
+                              tidyr::pivot_wider(names_from = Element,
+                                                 values_from = Concentration))
+
+rownames(data.act) <- data.act$Code_sample
+data.act <- data.act[, 6:18] 
+
+
+## robust estimation (default):
+res.rob <- robCompositions::pcaCoDa(data.act)
+res.rob
+summary(res.rob)
+plot(res.rob)
+biplot(res.rob)
+
+
+## classical estimation:
+res.cla <- robCompositions::pcaCoDa(data.act, method="classical", solve = "eigen")
+biplot(res.cla)
+
+
+###### clustering 
+
+x <- data.act
+rr <- robCompositions::clustCoDa(x, k=6, scale = "robust", transformation = "pivotCoord")
+rr2 <- robCompositions::clustCoDa(x, k=6, distMethod = "Aitchison", scale = "none", 
+                 transformation = "identity")
+rr3 <- robCompositions::clustCoDa(x, k=6, distMethod = "Aitchison", method = "single",
+                 transformation = "identity", scale = "none")
+                 
+
+require(reshape2)
+plot(rr)
+plot(rr, normalized = TRUE)
+plot(rr, normalized = TRUE, which.plot = "partMeans")
+
+
+plot(rr2)
+plot(rr2, normalized = TRUE)
+plot(rr2, normalized = TRUE, which.plot = "partMeans")
+
+
+plot(rr3)
+plot(rr3, normalized = TRUE)
+plot(rr3, normalized = TRUE, which.plot = "partMeans")

@@ -1,21 +1,84 @@
 name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iteration|parent|children|seconds|warnings|error
-boxplot_compo_prey_camp|function|808820d9d3932d10|||||||||||||||
-boxplot_compo_prey_fam|function|32d0b47d8952ed87|||||||||||||||
-boxplot_compo_prey_genus|function|f5a2eb494c1026a5|||||||||||||||
-boxplot_compo_prey_sp|function|fcc35c686c6e8846|||||||||||||||
+boxplot_compair_compo|function|72bea5b0b151d65c|||||||||||||||
+boxplot_compo_poop_site|function|148941a27f5a92fd|||||||||||||||
+boxplot_compo_poop_tot|function|83c5da3409d0a59f|||||||||||||||
+boxplot_compo_prey_camp|function|bcfc22cdf877c5ca|||||||||||||||
+boxplot_compo_prey_fam|function|d27bcf59156803fc|||||||||||||||
+boxplot_compo_prey_genus|function|530e062b2d09a560|||||||||||||||
+boxplot_compo_prey_sp|function|52360cd55a95ece6|||||||||||||||
+boxplot_compo_prey_sp2|function|52360cd55a95ece6|||||||||||||||
+boxplot_compo_prey_spe|function|52360cd55a95ece6|||||||||||||||
 boxplot_id_outliers|function|5936bed6a8ec6bdc|||||||||||||||
 boxplot_outliers|stem|f60d8e9fd9aafd1e|87a8f75c4c82c8f5|f4eea1c5afa373eb|1924406371||t19312.5649977505s|7e237f4fd77044db|91|rds|local|vector|||2.11||
-boxplot_outliers_poop_stats|stem|fc1942dfcd8985e4|a8516905b6735d43|df16c0005036453a|1708253551||t19398.5377269634s|7e237f4fd77044db|91|rds|local|vector|||1.47||
+boxplot_outliers_poop_sites|stem|7fcde75d846a898b|a13488a18a1bdd2d|c0d7d30474b92264|1115565330||t19445.4166385908s|e4a07f799c897d8d|92|rds|local|vector|||1.85|1m22mposition_dodge requires nonoverlapping 32mx39m intervals. 1m22mposition_dodge requires nonoverlapping 32mx39m intervals. 1m22mposition_dodge requires nonoverlapping 32mx39m intervals. 1m22mposition_dodge requires nonoverlapping 32mx39m intervals. 1m22mposition_dodge requires nonoverlapping 32mx39m intervals. 1m22mposition_dodge requires nonoverlapping 32mx39m intervals. 1m22mposition_dodge requires nonoverlapping 32mx39m intervals. 1m22mposition_dodge requires nonoverlapping 32mx39m intervals. 1m22mposition_dodge requires nonoverlapping 32mx39m intervals. 1m22mposition_dodge requires nonoverlapping 32mx39m intervals. 1m22mposition_dodge requires nonoverlapping 32mx39m intervals. 1m22mposition_dodge requires nonoverlapping 32mx39m intervals. 1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_outliers_poop_stats|stem|fc1942dfcd8985e4|a8516905b6735d43|df16c0005036453a|1708253551||t19444.3161387777s|7e237f4fd77044db|91|rds|local|vector|||2.14||
+boxplot_outliers_poop_tot|stem|cf4f0e3bc2744826|ba317bee9089ee20|d2967271be3e4b80|-2094873891||t19445.4166171757s|7d689a0df52fd58a|90|rds|local|vector|||1.27||
 boxplot_outliers_prey_stats|stem|f60d8e9fd9aafd1e|5865aa518a5f9b6d|86c61cbdaece1745|767738775||t19398.5377633081s|7e237f4fd77044db|91|rds|local|vector|||1.06||
 boxplot_outliers1|stem|c91f2d2d683e954d|0d3d2862b60cc6f9|3e21fca2e4c81ca4|-454080868||t19398.1793054723s|e4a07f799c897d8d|92|rds|local|vector|||1.59||
 boxplot_outliers2|stem|c34f305a9f86f605|bb91ba3009a75592|fd3211efd6d700e4|-195238537||t19398.1793171989s|e4a07f799c897d8d|92|rds|local|vector|||0.97||
 boxplot_outliers3|stem|50c69b98ba22f748|4c471d7575b96a3c|fd3211efd6d700e4|-57444916||t19398.1793290789s|e4a07f799c897d8d|92|rds|local|vector|||1.02||
 boxplot_outliers4|stem|df5a82ec4d307e00|a61f87fdecdcd253|fd3211efd6d700e4|-687658324||t19398.1793411126s|e4a07f799c897d8d|92|rds|local|vector|||1.01||
-boxplot_prey_camp|stem|4fff48badec47cf9|4c085054272741a2|4d1aa88474aae605|1943183762||t19398.1793453937s|f15431abc87b9a4c|153905|rds|local|vector|||0.03||
+boxplot_prey_and_poop|stem|3768019d0587bad4|3d1c6abaf6944d9e|bf873e11bf0141b0|75127931||t19445.6328158313s|29a2eb2bf42ba7b0|145230|rds|local|vector|||0.28||
+boxplot_prey_camp|stem|4fff48badec47cf9|4c085054272741a2|43220f622edcc3cb|1943183762||t19398.1793453937s||153905|rds|local|vector|||0.44||1m22mProblem while computing ..1  Nutrient  nutrient.1mCaused by error in maskeval_all_filter22m33m39m largument nutrient est manquant, avec aucune valeur par défaut
+boxplot_prey_camp_As|stem|b5152bcd5f27e638|d4203927aba54871|ee67f3c1b944f265|825392863||t19445.4171229179s|52cc7fbe0ecad347|93|rds|local|vector|||0.44|1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_camp_Ca|stem|d86eed054d64c9a5|ecddfb4dfd4151fc|ee67f3c1b944f265|195178815||t19445.4172067784s|52cc7fbe0ecad347|93|rds|local|vector|||0.47|1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_camp_Co|stem|f91509e8e5b4ab71|1ceab31b5e10377b|ee67f3c1b944f265|-517841816||t19445.4172459133s|52cc7fbe0ecad347|93|rds|local|vector|||0.43|1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_camp_Cu|stem|06cdae2318f9e2df|4be03b7fa81a243f|ee67f3c1b944f265|124299532||t19445.4172613072s|52cc7fbe0ecad347|93|rds|local|vector|||0.45|1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_camp_Fe|stem|6028252a784b6852|203f26c080df2187|ee67f3c1b944f265|-2041533394||t19445.4171601811s|52cc7fbe0ecad347|93|rds|local|vector|||0.44|1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_camp_K|stem|5417afb8a2ff1266|2caada1b2c2c6f26|ee67f3c1b944f265|187438464||t19445.4172124502s|e4a07f799c897d8d|92|rds|local|vector|||0.45|1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_camp_Mg|stem|ac8b66266f771bea|c432c684a8f2f5ef|ee67f3c1b944f265|-865032335||t19445.417266711s|52cc7fbe0ecad347|93|rds|local|vector|||0.45|1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_camp_Mn|stem|40fd971e0dc4205b|fbc1d4ed2aa0108b|ee67f3c1b944f265|1790862382||t19445.4170083054s|52cc7fbe0ecad347|93|rds|local|vector|||0.39|1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_camp_Na|stem|1ab4754435349884|9c138e766ecb8a56|ee67f3c1b944f265|87367905||t19445.417062474s|52cc7fbe0ecad347|93|rds|local|vector|||0.42|1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_camp_Ni|stem|62c8f14fb21f6d96|6670038a0828cb5d|ee67f3c1b944f265|2009105906||t19445.4171177394s|52cc7fbe0ecad347|93|rds|local|vector|||0.46|1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_camp_P|stem|3f4e30b20c607e8c|a1aff390042e0be2|ee67f3c1b944f265|522468712||t19445.4171005504s|e4a07f799c897d8d|92|rds|local|vector|||0.58|1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_camp_Se|stem|e9d40f2516a74a84|e7b19522465e6a3f|ee67f3c1b944f265|-1695826640||t19445.4170232112s|52cc7fbe0ecad347|93|rds|local|vector|||0.42|1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_camp_Zn|stem|30a6f33e645a9f44|e5552c04a4532634|ee67f3c1b944f265|-1079506968||t19445.4172288216s|52cc7fbe0ecad347|93|rds|local|vector|||0.44|1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
 boxplot_prey_fam|stem|3843522331805cbd|dfdbb2bcfc3c4426|7c1b853bd528c9d8|9950986||t19398.1793472588s|1a530e3a67661979|153903|rds|local|vector|||0.03||
+boxplot_prey_fam_As|stem|7dde8bf8f73af4ed|b62d64c94ce4cd67|f43aba9b3539637c|1656044102||t19445.4171318383s|e4a07f799c897d8d|92|rds|local|vector|||0.75|1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_fam_Ca|stem|ff23ee6b64714c5e|ce5e20a9369928f8|f43aba9b3539637c|-911726986||t19445.4170393439s|e4a07f799c897d8d|92|rds|local|vector|||0.66|1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_fam_Co|stem|da722861750cfa7d|aaa66bf9dc5e9611|f43aba9b3539637c|17995078||t19445.4170937066s|e4a07f799c897d8d|92|rds|local|vector|||1.08|1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_fam_Cu|stem|ebb1929dea0b4849|f5128e25a84350dd|f43aba9b3539637c|-1483349422||t19445.417003565s|e4a07f799c897d8d|92|rds|local|vector|||0.64|1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_fam_Fe|stem|78f3dd926a214728|1b8192dba6fd9cb0|f43aba9b3539637c|-1423849606||t19445.4171694896s|e4a07f799c897d8d|92|rds|local|vector|||0.78|1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_fam_K|stem|060230a701a6a2bb|54957b47b44e23c9|f43aba9b3539637c|1043547977||t19445.4169861408s|7e237f4fd77044db|91|rds|local|vector|||0.69|1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_fam_Mg|stem|cf55ecea72355c79|2dbc8d94fbedba08|f43aba9b3539637c|1071900404||t19445.4170315438s|e4a07f799c897d8d|92|rds|local|vector|||0.72|1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_fam_Mn|stem|a252b3c2392476b0|8eba3fdbc0e12d69|f43aba9b3539637c|-1664081677||t19445.417047624s|e4a07f799c897d8d|92|rds|local|vector|||0.72|1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_fam_Na|stem|f1f942df59d3dc38|e935c9d1ffddbd67|f43aba9b3539637c|-2033715705||t19445.4172558213s|e4a07f799c897d8d|92|rds|local|vector|||0.82|1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_fam_Ni|stem|c5380417bd2196a4|c6604f96842759e1|f43aba9b3539637c|-1491716441||t19445.4169775328s|e4a07f799c897d8d|92|rds|local|vector|||1.14|1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_fam_P|stem|25d2c834860229e4|c75a0777599cdeb0|f43aba9b3539637c|1712264964||t19445.4171898733s|7e237f4fd77044db|91|rds|local|vector|||0.7|1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_fam_Se|stem|b0749128d0b7e819|aaa62cc76d53e9ef|f43aba9b3539637c|1258067345||t19445.4166478314s|e4a07f799c897d8d|92|rds|local|vector|||0.78|1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_fam_Zn|stem|36c8089f525f97ad|c93081d27d30f7c6|f43aba9b3539637c|-499077498||t19445.4170810943s|e4a07f799c897d8d|92|rds|local|vector|||0.7|1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
 boxplot_prey_genus|stem|e881f40166369db6|5b32153e08972a53|7edff1856fa5b788|-1347942177||t19398.1793463604s|1a530e3a67661979|153903|rds|local|vector|||0.03||
-boxplot_prey_sp|stem|62691c18a627375d|ba668bed78168d83|8182250fab46c589|-367299963||t19398.1793480673s|0c4b0104fe5d2f6a|153215|rds|local|vector|||0.04||
+boxplot_prey_genus_As|stem|bb711aba0b4220a3|d5c54b88ec971972|8773a5da9283e0ac|-2087408430||t19445.4166577332s|31c37739d6db4300|94|rds|local|vector|||0.86|1m22mGroups with fewer than two data points have been dropped.. 1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_genus_Ca|stem|27f63f5262bc63f8|c207ef234179236b|8773a5da9283e0ac|609152004||t19445.4172013365s|31c37739d6db4300|94|rds|local|vector|||0.97|1m22mGroups with fewer than two data points have been dropped.. 1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_genus_Co|stem|cb2520e6371d0aff|72f142bfdb4294a1|8773a5da9283e0ac|1610146667||t19445.4172407362s|31c37739d6db4300|94|rds|local|vector|||1.01|1m22mGroups with fewer than two data points have been dropped.. 1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_genus_Cu|stem|de8e2576936e3fc1|6b4e8c121fe4e74f|8773a5da9283e0ac|-186741444||t19445.4170726669s|31c37739d6db4300|94|rds|local|vector|||0.88|1m22mGroups with fewer than two data points have been dropped.. 1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_genus_Fe|stem|72d08f314e37b54f|91e72b418dafe672|8773a5da9283e0ac|-948848677||t19445.4169960534s|31c37739d6db4300|94|rds|local|vector|||0.83|1m22mGroups with fewer than two data points have been dropped.. 1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_genus_K|stem|5d867d5926e80717|a80d1020a0009b1e|8773a5da9283e0ac|-1706870278||t19445.4172235543s|52cc7fbe0ecad347|93|rds|local|vector|||0.94|1m22mGroups with fewer than two data points have been dropped.. 1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_genus_Mg|stem|8dd7724e3c74f2cd|3dbc9fc70e151152|8773a5da9283e0ac|47954202||t19445.4171549327s|31c37739d6db4300|94|rds|local|vector|||1|1m22mGroups with fewer than two data points have been dropped.. 1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_genus_Mn|stem|eff40d2b42f0c28c|ebdc3b4f1796aeaa|8773a5da9283e0ac|1109014346||t19445.417181516s|31c37739d6db4300|94|rds|local|vector|||1.03|1m22mGroups with fewer than two data points have been dropped.. 1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_genus_Na|stem|657a6390098391de|bc7ac0270023cd3a|8773a5da9283e0ac|1822493515||t19445.4170575745s|31c37739d6db4300|94|rds|local|vector|||0.83|1m22mGroups with fewer than two data points have been dropped.. 1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_genus_Ni|stem|aeabf419d14c119d|a34d1fd28106dec1|8773a5da9283e0ac|-494635204||t19445.4171122567s|31c37739d6db4300|94|rds|local|vector|||1|1m22mGroups with fewer than two data points have been dropped.. 1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_genus_P|stem|ff0db423f98487b4|0f64f250f92d5790|8773a5da9283e0ac|-1456515118||t19445.4170182419s|52cc7fbe0ecad347|93|rds|local|vector|||0.84|1m22mGroups with fewer than two data points have been dropped.. 1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_genus_Se|stem|a60d9f81d85a6c55|08285013d78a5538|8773a5da9283e0ac|595793161||t19445.4166675926s|31c37739d6db4300|94|rds|local|vector|||0.85|1m22mGroups with fewer than two data points have been dropped.. 1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_genus_Zn|stem|dea5b979cce97a2d|cc22ee5a459d15e5|8773a5da9283e0ac|-1188052032||t19445.4171432851s|31c37739d6db4300|94|rds|local|vector|||0.98|1m22mGroups with fewer than two data points have been dropped.. 1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_sp|stem|583c0223d9e68549|ba668bed78168d83|90af91aebbef9486|-367299963||t19444.3557885127s||113624|rds|local|vector|||0.41||1m22mProblem while computing ..1  Nutrient  nutrient.1mCaused by error in maskeval_all_filter22m33m39m largument nutrient est manquant, avec aucune valeur par défaut
+boxplot_prey_sp_As|stem|19bc974f68bd84da|09404fb569a11b3b|b6c7deacc9ce94d6|-1735244013||t19445.6298109166s|7e237f4fd77044db|91|rds|local|vector|||1.1|1m22mGroups with fewer than two data points have been dropped.. 1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_sp_Ca|stem|ac6e86644c0ac178|1e53959eea9b8540|b6c7deacc9ce94d6|-121569133||t19445.6297475834s|7e237f4fd77044db|91|rds|local|vector|||1|1m22mGroups with fewer than two data points have been dropped.. 1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_sp_Co|stem|32c08b2a7895ad12|72af246621996cb0|b6c7deacc9ce94d6|-1148615103||t19445.6297978938s|7e237f4fd77044db|91|rds|local|vector|||1.05|1m22mGroups with fewer than two data points have been dropped.. 1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_sp_Cu|stem|3a070b48706502a1|dfe66e5ffd178101|b6c7deacc9ce94d6|1862364474||t19445.6298883941s|7e237f4fd77044db|91|rds|local|vector|||1.08|1m22mGroups with fewer than two data points have been dropped.. 1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_sp_Fe|stem|0bc87a57b0bc1e63|5fe3de5141751c79|b6c7deacc9ce94d6|-13103103||t19445.6298365544s|7e237f4fd77044db|91|rds|local|vector|||1.11|1m22mGroups with fewer than two data points have been dropped.. 1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_sp_K|stem|6d2d5541314165f9|eece92b8a5a9f295|b6c7deacc9ce94d6|949074733||t19445.6298501588s|7d689a0df52fd58a|90|rds|local|vector|||1.11|1m22mGroups with fewer than two data points have been dropped.. 1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_sp_Mg|stem|5d64d35a4bf561b1|17695e3458c98f6d|b6c7deacc9ce94d6|-1869587884||t19445.6297601456s|7e237f4fd77044db|91|rds|local|vector|||1.06|1m22mGroups with fewer than two data points have been dropped.. 1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_sp_Mn|stem|d583389eae291cc9|97b0ca3c027e6d27|b6c7deacc9ce94d6|-776971113||t19445.6297855601s|7e237f4fd77044db|91|rds|local|vector|||1.08|1m22mGroups with fewer than two data points have been dropped.. 1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_sp_Na|stem|710a30d2e6d46be3|03da8434eb507c50|b6c7deacc9ce94d6|1048032520||t19445.6298757054s|7e237f4fd77044db|91|rds|local|vector|||1.14|1m22mGroups with fewer than two data points have been dropped.. 1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_sp_Ni|stem|8f00718defef2974|407879e56aab3423|b6c7deacc9ce94d6|-718806422||t19445.6297356644s|7e237f4fd77044db|91|rds|local|vector|||1.58|1m22mGroups with fewer than two data points have been dropped.. 1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_sp_P|stem|31a4a24dd66c9aef|ea75c601e31c4d18|b6c7deacc9ce94d6|2049621646||t19445.6298235211s|7d689a0df52fd58a|90|rds|local|vector|||1.03|1m22mGroups with fewer than two data points have been dropped.. 1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_sp_Se|stem|8f88e1a403a5f5ac|bc0cf054301ef1b8|b6c7deacc9ce94d6|-649597482||t19445.629772749s|7e237f4fd77044db|91|rds|local|vector|||1.06|1m22mGroups with fewer than two data points have been dropped.. 1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
+boxplot_prey_sp_Zn|stem|986e40a4a4b57455|ca42adfb2e4cf2b1|b6c7deacc9ce94d6|2110166049||t19445.6298622447s|7e237f4fd77044db|91|rds|local|vector|||1.03|1m22mGroups with fewer than two data points have been dropped.. 1m22mposition_dodge requires nonoverlapping 32mx39m intervals|
 clean_prey_tab|function|33a051230c6fc734|||||||||||||||
+clr_PCA|function|31a2ba47ace91d23|||||||||||||||
+clr_preys|stem|f8bbe2db5d48e6f4|b7cbd5cc16ee9017|f913678c1419767b|-2124153946||t19445.4169781577s|4808734944156db0|46208|rds|local|vector|||0.03||
+clr_transf_prey|function|aeb159b67ca80256|||||||||||||||
 complete_prey_results|function|1dc7d3112654b508|||||||||||||||
 data_compo|stem|70e87a3d235f38d9|212db353706ad2ea|5559ac7d2a2046a1|-735155435||t19300.6723764551s|04067f2804ae39b2|20109|rds|local|vector|||0.05||
 data_compo_file|stem|fd9f3c21141d67f5|ee636f3a8d22c6c3|ef46db3751d8e999|1190147238|data/Compo_lot1.xlsx|t19299.5099625562s|0f2c470f76c9f744|85672|file|local|vector|||0||
@@ -27,16 +90,20 @@ data_prey_summary|stem|0c6d7077377dd00b|9491997bcde47f90|3bc04393ab80063b|818532
 data_prey_tab|stem|0c6d7077377dd00b|1bc42581d805517e|d1d3fbcfc6a2d428|1649304010||t19300.6745909124s|a4dccfe44becfa79|2255|rds|local|vector|||0.19|NAs introduits lors de la conversion automatique. NAs introduits lors de la conversion automatique. NAs introduits lors de la conversion automatique. NAs introduits lors de la conversion automatique. NAs introduits lors de la conversion automatique. NAs introduits lors de la conversion automatique. NAs introduits lors de la conversion automatique. NAs introduits lors de la conversion automatique|
 data_samples|stem|c867c8e608399630|442282743a4f137b|f17913e1308014ab|-625409562||t19312.5649695401s|86bc0ea70102d2b4|25550|rds|local|vector|||0.14||
 format_poop_results|function|9430a91b1a8de517|||||||||||||||
-full_res_prey|stem|a14b4e7572b0cf9b|d48b73444316fb66|767ea5a36b8cb06a|-874299220||t19398.1793443233s|5bd598fd018cef3b|44616|rds|local|vector|||0||
+full_res_compo_poop|stem|97e9a9b312cb1027|6a88d3957ad39e45|42299d084760f84a|-93035197||t19445.4166019909s|7fc57e9be1015e8c|6240|rds|local|vector|||0.11||
+full_res_compo_prey|stem|641a66cf4908270a|0694e1e2d0a47b26|65fdaf5440db782d|1444212209||t19445.4153606213s|e642f40f6cbd6cb3|29083|rds|local|vector|||0.24||
+full_res_prey|stem|641a66cf4908270a|0694e1e2d0a47b26|65fdaf5440db782d|-874299220||t19444.6315088613s|e642f40f6cbd6cb3|29083|rds|local|vector|||0.11||
 HCA_prey|function|776af607b7d9097d|||||||||||||||
-hist_id_outliers|function|89146e3d4a51d464|||||||||||||||
-hist_outliers_poop_tech|stem|7d1b880f503a7e89|4c72cdc208f2345d|35295baea6fd3c0b|843731880||t19398.5377385426s|1ecd4dc99b1fa38d|88|rds|local|vector|||0.99||
-hist_outliers_prey_tech|stem|30df131d45509c27|2eba7ce978fc6652|d6eaa35cdb054057|-1174225119||t19398.5377506955s|1ecd4dc99b1fa38d|88|rds|local|vector|||1.02||
+hist_id_outliers|function|a3699c0e3e09938c|||||||||||||||
+hist_outliers_poop_tech|stem|7d1b880f503a7e89|4c72cdc208f2345d|6d231c6ae9adfbd8|843731880||t19445.3969784081s|1ecd4dc99b1fa38d|88|rds|local|vector|||0.94||
+hist_outliers_prey_tech|stem|30df131d45509c27|2eba7ce978fc6652|fb4e1b0e314c8278|-1174225119||t19445.3969673528s|1ecd4dc99b1fa38d|88|rds|local|vector|||1.39||
 hist_outliers1|stem|d4c17e8e033899ad|7c96cafbdc638856|3628d35788ca2623|-1745335086||t19398.4782228581s|c086995bc57dfc0c|239400|rds|local|vector|||0.32||
 load_xl|function|9a51ae54bd45d9d4|||||||||||||||
 PCA_prey|function|c1e59b478f33a6be|||||||||||||||
+pool_prey_poop|function|7a968b149603cd64|||||||||||||||
 poop_compo_simu|stem|fb79964103693f59|1a6f0ecb74b9f452|b056340c2762c97a|1337559939||t19398.1793445137s|97c3b6ea4a466200|18233|rds|local|vector|||0.02||
 poop_compo_simu_raw|stem|568756cdb8d7fc4b|f6d601c86a430c90|9b02e9d07974a633|1137694072||t19398.1792870014s|f74d61de0305d4b2|19765|rds|local|vector|||0.08||
+prey_and_poop|stem|1e649ec30cfb17a2|a73d1d41c14ece4d|026e0462e761c93c|-1332316342||t19445.4172672645s|9129824765daa53a|35101|rds|local|vector|||0.03||
 prey_compo_simu|stem|5f42173a854abbda|f6d601c86a430c90|9b02e9d07974a633|-1446345680||t19398.1793413923s|83b5d0c30f93e450|20239|rds|local|vector|||0||
 res_compo|stem|70e87a3d235f38d9|8e0ee6144e4f7e05|81d88a3c51812f83|-1147893887||t19303.6075424065s|04067f2804ae39b2|20109|rds|local|vector|||0.02||
 res_compo_file|stem|b1a424eacf412571|0ea5724216cab133|ef46db3751d8e999|890376235|data/Compo_lot1-2.xlsx|t19319.4175188074s|0128880a90f29141|88840|file|local|vector|||0.02||
@@ -46,10 +113,10 @@ res_compo_prey|stem|c74c135590fdb360|4a193811511c098e|4c9805fd597ff23e|-15948156
 res_compo_prey_file|stem|27a56a968c69d726|a2dccbf3a32155cb|ef46db3751d8e999|-125563546|data/Compo_preys.xlsx|t19353.4315731659s|220a2f8ff26bdc1f|114331|file|local|vector|||0||
 sample_tab|function|ddb2d6f46cf52d8d|||||||||||||||
 summary_prey_samples|function|33a051230c6fc734|||||||||||||||
-tib_id_outliers|function|82341507ac12f33e|||||||||||||||
+tib_id_outliers|function|feb4fc4574c55278|||||||||||||||
 tib_outliers|stem|95eb210adc9c8d1f|0a13b4fa8556f3a2|b5d707cbf82a24d4|-1031704804||t19312.5851605788s|d7e7263098ac5d5d|1214|rds|local|vector|||0.23||
-tib_outliers_poop_stats|stem|5f48bf70639b7406|09b830501a926282|d3f6d5dbc5434661|-7071531||t19398.5360100173s|98c7118c3ec8de90|1172|rds|local|vector|||0.04||
-tib_outliers_prey_stats|stem|53c24b55275e65d9|9db8b5ca4a542008|d06c38d8b72cfa67|1455690343||t19398.5360107713s|fc2382f5fede5b06|4689|rds|local|vector|||0.05||
+tib_outliers_poop_stats|stem|3a8608eba4de5cf0|c2973bad82969bd0|77470cc356ddf1d3|-7071531||t19445.3976284109s|abb4a5bfd3296b1a|144674|rds|local|vector|||0.11||
+tib_outliers_prey_stats|stem|19d79a7fef7773bf|9df0f66d2249a48d|c591bbe79839a325|1455690343||t19445.3976264042s|296baa311f59744b|150675|rds|local|vector|||0.57||
 tib_outliers1|stem|515204ad0f87ae33|0a13b4fa8556f3a2|aa5882872825accd|440562600||t19398.4346997413s|0d1375658c1eb8d8|4911|rds|local|vector|||0.21||
 tib_outliers2|stem|3a469c0d40f862a7|f9b0425d1969bc46|b2fc7588273252b5|202889043||t19398.4347006071s|42c6f507807ab8c1|4830|rds|local|vector|||0.07||
 tib_outliers3|stem|061b35b99d115c28|52dc1d3b90f06fd0|b2fc7588273252b5|-36062505||t19398.4347013259s|f637e5ba3c5269f6|4828|rds|local|vector|||0.06||
