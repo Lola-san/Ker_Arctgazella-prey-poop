@@ -414,6 +414,88 @@ boxplot_compo_prey_camp <- function(res_prey_tib,
   
 }
 
+#'
+#'
+#'
+#'
+#'
+# function to display boxplot of elemental composition per campaign
+boxplot_compo_prey_camp_full <- function(res_prey_tib) {
+  
+  res_prey_tib |>
+    tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, Mg, Mn, Na, Ni, P, Se, Zn), 
+                        names_to = "Nutrient", 
+                        values_to = "concentration_mg_g_dw") |>
+    dplyr::mutate(Genus = stringr::str_split_fixed(Species, " ", 2)[,1], 
+                  sp = stringr::str_split_fixed(Species, " ", 2)[,2]) |>
+    # remove NAs if there is still some
+    dplyr::filter(!(is.na(concentration_mg_g_dw))) |>
+    ggplot2::ggplot(ggplot2::aes(x = reorder(campaign,
+                                             concentration_mg_g_dw), 
+                                 y = concentration_mg_g_dw, fill = campaign)) +
+    ggplot2::geom_violin(width=1.4) +
+    ggplot2::geom_boxplot() +
+    ggplot2::geom_jitter(color="darkgrey", size=0.7, alpha=0.5) +
+    ggplot2::coord_flip() +
+    ggplot2::facet_wrap(~ Nutrient, scale = "free") +
+    viridis::scale_fill_viridis(option = "inferno", 
+                                discrete = TRUE) +
+    ggplot2::ylab("Nutrient concentration (in mg/g dry weight)") +
+    ggplot2::xlab("Campaign") +
+    ggplot2::theme_bw() +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(size = 15), 
+                   axis.text.y = ggplot2::element_text(size = 15), 
+                   axis.title.x = ggplot2::element_text(size = 16, face = "bold"), 
+                   axis.title.y = ggplot2::element_text(size = 16, face = "bold"), 
+                   strip.text.x = ggplot2::element_text(size = 16, face = "bold"), 
+                   legend.position = "none")
+  ggplot2::ggsave("output/per-camp/boxplot_order_camp_full.jpg",
+                  scale = 1,
+                  height = 12, width = 21
+  )
+  
+}
+
+
+#'
+#'
+#'
+#'
+#'
+# function to display boxplot of elemental composition per campaign
+boxplot_compo_prey_tot <- function(res_prey_tib) {
+  
+  res_prey_tib |>
+    tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, Mg, Mn, Na, Ni, P, Se, Zn), 
+                        names_to = "Nutrient", 
+                        values_to = "concentration_mg_g_dw") |>
+    # remove NAs if there is still some
+    dplyr::filter(!(is.na(concentration_mg_g_dw))) |>
+    ggplot2::ggplot(ggplot2::aes(x = Nutrient, 
+                                 y = concentration_mg_g_dw, fill = Nutrient)) +
+    #ggplot2::geom_violin(width=1.4) +
+    ggplot2::geom_boxplot() +
+    #ggplot2::geom_jitter(color="darkgrey", size=0.7, alpha=0.5) +
+    #ggplot2::coord_flip() +
+    ggplot2::facet_wrap(~ Nutrient, scale = "free") +
+    viridis::scale_fill_viridis(option = "inferno", 
+                                discrete = TRUE) +
+    ggplot2::ylab("Nutrient concentration (in mg/g dry weight)") +
+    ggplot2::xlab("Nutrient") +
+    ggplot2::theme_bw() +
+    ggplot2::theme(axis.text.x = ggplot2::element_blank(), 
+                   axis.text.y = ggplot2::element_text(size = 15), 
+                   axis.title.x = ggplot2::element_text(size = 16, face = "bold"), 
+                   axis.title.y = ggplot2::element_text(size = 16, face = "bold"), 
+                   strip.text.x = ggplot2::element_text(size = 16, face = "bold"), 
+                   legend.position = "none")
+  ggplot2::ggsave("output/boxplot_compo_fish_tot.jpg",
+                  scale = 1,
+                  height = 12, width = 17
+  )
+  
+}
+
 #######################################################################################################
 ############################################# POOP ####################################################
 #######################################################################################################
