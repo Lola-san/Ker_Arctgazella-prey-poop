@@ -16,10 +16,10 @@ load_xl <- function(pathxl) {
 }
 
 # clean file and summarise data on samples
-summary_prey_samples <- function(prey_tab, 
-                                 compo_results_prey) {
-  prey_tab |>
-    dplyr::filter(Code_new_format %in% compo_results_prey$Code_sample) |>
+summary_fish_samples <- function(fish_tab, 
+                                 compo_results_fish) {
+  fish_tab |>
+    dplyr::filter(Code_new_format %in% compo_results_fish$Code_sample) |>
     dplyr::group_by(Family, Species, Campaign) |>
     dplyr::mutate(SL_cm = as.integer(SL_cm)) |> # generates warnings because
     # of samples with approximate length (*XX) as they were damaged
@@ -49,7 +49,7 @@ summary_scat_samples <- function(scat_tab) {
 
 # clean file and summarise data on samples
 summary_diet_data <- function(diet_tab, 
-                              compo_results_prey) {
+                              compo_results_fish) {
   diet_tab |>
     dplyr::filter(Location  == "Kerguelen Islands", 
                   # select only studies estimating %W
@@ -59,7 +59,7 @@ summary_diet_data <- function(diet_tab,
                                   levels = c("Cherel et al 1997",  
                                              "Lea et al 2002",
                                              "Jeanniard-du-Dot 2015")), 
-                  fish_analyzed = dplyr::case_when(Species %in% compo_results_prey$Species ~ 1, 
+                  fish_analyzed = dplyr::case_when(Species %in% compo_results_fish$Species ~ 1, 
                                                    TRUE ~ 0)) |>
     dplyr::group_by(Source, Year_collection) |>
     dplyr::summarize(n_species_fish = dplyr::n_distinct(Species, na.rm = TRUE), 

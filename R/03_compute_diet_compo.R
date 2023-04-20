@@ -3,7 +3,7 @@
 # Lola Gilbert lola.gilbert@univ-lr.fr
 #
 # March (end) 2022
-# 05_diet_Agazella.R
+# 03_compute_diet_compo.R
 #
 # Script with functions to compute relative composition of A. gazella 
 # in Kerguelen based on the composition of its prey 
@@ -199,9 +199,9 @@ compute_concentrations_in_diet <- function(diet_tib,
     dplyr::distinct() |>
     dplyr::mutate(Id_source = dplyr::case_when(Source == "Cherel et al 1997" ~ "Cherel et al 1997", 
                                                Source == "Jeanniard-du-Dot 2015" ~ "Jeanniard-du-Dot 2015",
-                                               Source == "Lea et al. 2002" & n == 60 ~ "Lea et al. 2002 (data 1998)",
-                                               Source == "Lea et al. 2002" & n == 24 ~ "Lea et al. 2002 (data 1999)",
-                                               Source == "Lea et al. 2002" & n == 47 ~ "Lea et al. 2002 (data 2000)")) |>
+                                               Source == "Lea et al 2002" & n == 60 ~ "Lea et al 2002 (data 1998)",
+                                               Source == "Lea et al 2002" & n == 24 ~ "Lea et al 2002 (data 1999)",
+                                               Source == "Lea et al 2002" & n == 47 ~ "Lea et al 2002 (data 2000)")) |>
     # delete duplicated lines due to the joints
     dplyr::mutate(# get values at the finest level available (species if not genus, if not family, if not order and then taxa)
       As = (W/100)*dplyr::case_when(is.na(meanAs_or) ~ meanAs_fish,
@@ -302,56 +302,3 @@ compute_concentrations_in_diet <- function(diet_tib,
 }
 
 
-#'
-#'
-#'
-#'
-#'
-# plot concentration in diet in the different sources 
-compair_diets_results <- function(conc_diet_tib) {
-  conc_in_diet |>
-    ggplot2::ggplot(ggplot2::aes(x = reorder(Id_source,
-                                             concentration_in_fish_ration_ww),
-                                 y = concentration_in_fish_ration_ww, color = Id_source))+
-    ggplot2::geom_point(size = 3) +
-    #ggplot2::coord_flip() +
-    viridis::scale_color_viridis(option = "magma", 
-                                discrete = TRUE) +
-    ggplot2::facet_wrap(~ Nutrient, scale = "free") +
-    ggplot2::ylab(paste0("concentration in fish ration (in mg/g wet weight)")) +
-    ggplot2::xlab("Source") +
-    ggplot2::theme_bw() +
-    ggplot2::theme(axis.text.x = ggplot2::element_blank(), 
-                   axis.text.y = ggplot2::element_text(size = 15), 
-                   axis.title.x = ggplot2::element_text(size = 16, face = "bold"), 
-                   axis.title.y = ggplot2::element_text(size = 16, face = "bold"), 
-                   #legend.position = "none"
-    )
-  ggplot2::ggsave("output/boxplot_comp_diets_compo_sources.jpg",
-                  scale = 1,
-                  height = 12, width = 17
-  )
-  
-  
-  conc_in_diet |>
-    dplyr::mutate(Nutrient = factor(Nutrient, 
-                                    levels = c("Ca", "P", "Na", "K", "Mg",  
-                                               "Fe", "Zn", "Cu", "Mn",
-                                               "Se","Ni", "As", "Co"))) |>
-    ggplot2::ggplot(ggplot2::aes(x = Nutrient,
-                                 y = log(concentration_in_fish_ration_ww), fill = Nutrient))+
-    ggplot2::geom_boxplot() +
-    ggplot2::coord_flip() +
-    viridis::scale_fill_viridis(option = "magma", 
-                                 discrete = TRUE) +
-    #ggplot2::facet_wrap(~ Nutrient, scale = "free") +
-    ggplot2::ylab(paste0("concentration in fish ration (in mg/g wet weight)")) +
-    ggplot2::xlab("Source") +
-    ggplot2::theme_bw() +
-    ggplot2::theme(axis.text.x = ggplot2::element_text(size = 15), 
-                   axis.text.y = ggplot2::element_text(size = 15), 
-                   axis.title.x = ggplot2::element_text(size = 16, face = "bold"), 
-                   axis.title.y = ggplot2::element_text(size = 16, face = "bold"), 
-                   #legend.position = "none"
-    )
-}
