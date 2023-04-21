@@ -69,7 +69,10 @@ boxplot_compo_fish_sp <- function(res_fish_tib,
     # remove NAs if there is still some
     dplyr::filter(!(is.na(concentration_mg_g_dw))) |>
     dplyr::filter(Nutrient == nutrient) |>
-    ggplot2::ggplot(ggplot2::aes(x = reorder(Species, 
+    dplyr::group_by(Species) |>
+    dplyr::mutate(n = dplyr::n_distinct(Code_sample),
+                  Speciesn = paste0(Species, "\n(n = ", n, ")")) |>
+    ggplot2::ggplot(ggplot2::aes(x = reorder(Speciesn, 
                                              concentration_mg_g_dw), 
                                  y = concentration_mg_g_dw, fill = Species)) +
     ggplot2::geom_violin(width=1.4) +
@@ -92,7 +95,7 @@ boxplot_compo_fish_sp <- function(res_fish_tib,
                          nutrient,
                          ".jpg"),
                   scale = 1,
-                  height = 12, width = 17
+                  height = 14, width = 17
   )
   
   
@@ -113,40 +116,55 @@ boxplot_compo_fish_sp_all_nut <- function(res_fish_tib
                         names_to = "Nutrient", 
                         values_to = "concentration_mg_g_dw") |>
     dplyr::mutate(Species = factor(Species, 
-                                  levels = c("Arctozenus risso", 
+                                  levels = c(# Paralepididae
+                                             "Arctozenus risso", 
+                                             "Notolepsis coatsi",
+                                             # Bathydraconidae
                                              "Bathydraco antarcticus",
+                                             # Bathylagidae
                                              "Bathylagus tenuis",
+                                             # Channichthyidae
                                              "Champsocephalus gunnari",
                                              "Channichthys rhinoceratus",
+                                             # Nototheniidae
                                              "Dissostichus eleginoides",
+                                             "Gobionotothen acuta",
+                                             "Lepidonotothen squamifrons",
+                                             "Lindbergichthys mizops",
+                                             # Carapidae
                                              "Echiodon cryomargarites",
+                                             # Myctophidae
                                              "Electrona antarctica",
                                              "Electrona carlsbergi", 
                                              "Electrona subaspera",
-                                             "Gobionotothen acuta",
                                              "Gymnoscopelus bolini",
                                              "Gymnoscopelus braueri",
                                              "Gymnoscopelus fraseri",
                                              "Gymnoscopelus nicholsi", 
                                              "Gymnoscopelus piabilis", 
-                                             "Idiacanthus atlanticus", 
                                              "Krefftichthys anderssoni",
-                                             "Lepidonotothen squamifrons",
-                                             "Lindbergichthys mizops",
-                                             "Luciosudis normani",
-                                             "Macrourus carinatus",
-                                             "Mancopsetta mancopsetta",
-                                             "Melanostigma gelatinosum",
-                                             "Muraenolepsis sp",
-                                             "Nansenia antarctica",
-                                             "Notolepsis coatsi",
-                                             "Paradiplospinus gracilis",
-                                             "Poromitra crassiceps",
                                              "Protomyctophum andriashevi",
                                              "Protomyctophum bolini",
                                              "Protomyctophum choriodon",
                                              "Protomyctophum tenisoni",
-                                             "Stomias sp")), 
+                                             # Stomiidae
+                                             "Idiacanthus atlanticus", 
+                                             "Stomias sp",
+                                             # Notosudidae
+                                             "Luciosudis normani",
+                                             # Macrouridae
+                                             "Macrourus carinatus",
+                                             # Achiropsettidae
+                                             "Mancopsetta mancopsetta",
+                                             "Melanostigma gelatinosum",
+                                             # Muraenolepididae
+                                             "Muraenolepsis sp",
+                                             # Microstomatidae
+                                             "Nansenia antarctica",
+                                             # Gempylidae
+                                             "Paradiplospinus gracilis",
+                                             # Melamphaidae
+                                             "Poromitra crassiceps")), 
                   Nutrient = factor(Nutrient, 
                                     levels = c("Ca", "P", "Na", "K", "Mg", 
                                                "Fe", "Zn", "Cu", "Mn", "Se",
@@ -200,10 +218,13 @@ boxplot_compo_fish_genus <- function(res_fish_tib,
                         values_to = "concentration_mg_g_dw") |>
     dplyr::mutate(Genus = stringr::str_split_fixed(Species, " ", 2)[,1], 
                   sp = stringr::str_split_fixed(Species, " ", 2)[,2]) |>
+    dplyr::group_by(Genus) |>
+    dplyr::mutate(n = dplyr::n_distinct(Code_sample),
+                  Genusn = paste0(Genus, "\n(n = ", n, ")")) |>
     # remove NAs if there is still some
     dplyr::filter(!(is.na(concentration_mg_g_dw))) |>
     dplyr::filter(Nutrient == nutrient) |>
-    ggplot2::ggplot(ggplot2::aes(x = reorder(Genus,
+    ggplot2::ggplot(ggplot2::aes(x = reorder(Genusn,
                                              concentration_mg_g_dw),
                                  y = concentration_mg_g_dw, fill = Genus)) +
     ggplot2::geom_violin(width=1.4) +
@@ -325,12 +346,13 @@ boxplot_compo_fish_fam <- function(res_fish_tib,
                                  Mg, Mn, Na, Ni, P, Se, Zn), 
                         names_to = "Nutrient", 
                         values_to = "concentration_mg_g_dw") |>
-    dplyr::mutate(Genus = stringr::str_split_fixed(Species, " ", 2)[,1], 
-                  sp = stringr::str_split_fixed(Species, " ", 2)[,2]) |>
+    dplyr::group_by(Family) |>
+    dplyr::mutate(n = dplyr::n_distinct(Code_sample),
+                  Familyn = paste0(Family, "\n(n = ", n, ")")) |>
     # remove NAs if there is still some
     dplyr::filter(!(is.na(concentration_mg_g_dw))) |>
     dplyr::filter(Nutrient == nutrient) |>
-    ggplot2::ggplot(ggplot2::aes(x = reorder(Family, 
+    ggplot2::ggplot(ggplot2::aes(x = reorder(Familyn, 
                                              concentration_mg_g_dw), 
                                  y = concentration_mg_g_dw, fill = Family)) +
     ggplot2::geom_violin(width=1.4) +

@@ -3,7 +3,7 @@
 # Lola Gilbert lola.gilbert@univ-lr.fr
 #
 # November 2022
-# 02_identify_outliers.R
+# 02_id_technical_outliers.R
 #
 # Script with functions to identify analytical outliers and samples that were
 # potentially contaminated when processed
@@ -16,11 +16,12 @@
 #'
 #'
 # function to display boxplots with labeled outliers
-boxplot_id_outliers <- function(res_tib, 
+boxplot_id_outliers_stats <- function(res_tib, 
                                 sample_type # either "scat" or "fish"
 ) {
   
-  # small function to find statistical outliers
+  # small function to find statistical outliers as an indication of 
+  # potential adnormal values 
   find_outlier <- function(x) {
     return(x < quantile(x, .25) - 1.5*IQR(x) | x > quantile(x, .75) + 1.5*IQR(x))
   }
@@ -37,7 +38,11 @@ boxplot_id_outliers <- function(res_tib,
                     sp = stringr::str_split_fixed(Species, " ", 2)[,2]) |>
       dplyr::group_by(Nutrient) |>
       dplyr::mutate(outlier = ifelse(find_outlier(concentration_mg_g_dw), 
-                                     Code_sample, NA)) |>
+                                     Code_sample, NA), 
+                    Nutrient = factor(Nutrient, 
+                                      levels = c("Ca", "P", "Na", "K", "Mg", 
+                                                 "Fe", "Zn", "Cu", "Mn", "Se",
+                                                 "As", "Ni","Co"))) |>
       ggplot2::ggplot(ggplot2::aes(x = Nutrient, y = concentration_mg_g_dw, 
                                    fill = Nutrient)) +
       ggplot2::geom_text(ggplot2::aes(label = outlier), na.rm=TRUE, 
@@ -66,7 +71,11 @@ boxplot_id_outliers <- function(res_tib,
                           values_to = "concentration_mg_g_dw") |>
       dplyr::group_by(Nutrient) |>
       dplyr::mutate(outlier = ifelse(find_outlier(concentration_mg_g_dw),
-                                     Code_sample, NA)) |>
+                                     Code_sample, NA), 
+                    Nutrient = factor(Nutrient, 
+                                      levels = c("Ca", "P", "Na", "K", "Mg", 
+                                                 "Fe", "Zn", "Cu", "Mn", "Se",
+                                                 "As", "Ni","Co"))) |>
       ggplot2::ggplot(ggplot2::aes(x = Nutrient, y = concentration_mg_g_dw, 
                                    fill = Nutrient)) +
       ggplot2::geom_text(ggplot2::aes(label = outlier), na.rm=TRUE, 
@@ -110,7 +119,11 @@ hist_id_outliers <- function(res_tib,
                           names_to = "Nutrient", 
                           values_to = "concentration_mg_g_dw") |>
       dplyr::mutate(Genus = stringr::str_split_fixed(Species, " ", 2)[,1], 
-                    sp = stringr::str_split_fixed(Species, " ", 2)[,2]) |>
+                    sp = stringr::str_split_fixed(Species, " ", 2)[,2], 
+                    Nutrient = factor(Nutrient, 
+                                      levels = c("Ca", "P", "Na", "K", "Mg", 
+                                                 "Fe", "Zn", "Cu", "Mn", "Se",
+                                                 "As", "Ni","Co"))) |>
       dplyr::group_by(Nutrient) |>
       ggplot2::ggplot(ggplot2::aes(x = concentration_mg_g_dw, fill = Nutrient)) +
       ggplot2::geom_histogram() +
@@ -187,7 +200,11 @@ tib_id_outliers <- function(res_tib, # tibble with results of compo of prey
                           values_to = "concentration_mg_g_dw") |>
       dplyr::mutate(Code_sample = 
                       dplyr::case_when(Code_sample == "2005_GYMNBOL_GB6AB" ~ "2005_GYMNBOL_GB6", # name not adapted when gone to analysis
-                                                   TRUE ~ Code_sample)) |>
+                                                   TRUE ~ Code_sample), 
+                    Nutrient = factor(Nutrient, 
+                                      levels = c("Ca", "P", "Na", "K", "Mg", 
+                                                 "Fe", "Zn", "Cu", "Mn", "Se",
+                                                 "As", "Ni","Co"))) |>
       dplyr::group_by(Nutrient) |>
       dplyr::mutate(outlier = ifelse(find_outlier(concentration_mg_g_dw), 
                                      Code_sample, NA), 
@@ -249,3 +266,4 @@ complete_fish_data <- function(res_fish_tib,
                   diet = dplyr::case_when(Species %in% c(prey_sp) ~ 1, 
                                           TRUE ~ 0))
 }
+
