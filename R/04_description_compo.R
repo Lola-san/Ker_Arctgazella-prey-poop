@@ -919,9 +919,11 @@ boxplot_compo_diets_sources <- function(conc_diet_tib) {
                                                "Fe", "Zn", "Cu", "Mn",
                                                "Se","Ni", "As", "Co"))) |>
     ggplot2::ggplot(ggplot2::aes(x = Nutrient,
-                                 y = log(concentration_in_fish_ration_ww), fill = Id_source))+
-    ggplot2::geom_boxplot() +
-    viridis::scale_fill_viridis(option = "magma", 
+                                 y = log(concentration_in_fish_ration_ww), 
+                                 color = Id_source))+
+    ggplot2::geom_point(size = 3, 
+                        position = ggplot2::position_dodge(width = 0.8)) +
+    viridis::scale_color_viridis(option = "magma", 
                                 discrete = TRUE) +
     #ggplot2::facet_wrap(~ Nutrient, scale = "free") +
     ggplot2::ylab(paste0("Nutrient concentration in fish\nration (in mg/g wet weight)")) +
@@ -934,7 +936,7 @@ boxplot_compo_diets_sources <- function(conc_diet_tib) {
                    legend.position = "bottom", 
                    legend.title = ggplot2::element_blank()
     )
-  ggplot2::ggsave("output/boxplot_compo_diets_sources.jpg",
+  ggplot2::ggsave("output/boxplot_compo_diets_sources_log.jpg",
                   scale = 1,
                   height = 5, width = 9
   )
