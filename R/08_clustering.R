@@ -33,6 +33,67 @@ clust_compo_full_tib <- function(compo_tib,
                              method = method)
 }
 
+
+#'
+#'
+#'
+#'
+# function to perform clustering directly on compositional dataset
+# using Principal components estimated by PCA
+clust_compo_PCs <- function(res_pca, 
+                            type, # either fish or scats or both
+                            k,
+                            method, 
+                            file_name # of the table with validity measures
+                            ) {
+  
+  # define the PCs to keep (total of 80% of var. explained)
+  if (type == "fish") {
+    pcomp <- c(1:4)
+  } else if (type == "scats") {
+    pcomp <- c(1)
+  } else if (type == "both") {
+    pcomp <- c(1:4)
+  }
+  
+  # extract the data i.e coordinates of individuals on the PCs
+  data.act <- as.data.frame(res_pca$scores[, pcomp])
+  
+  # define distance matrix
+  d <- dist(data.act)
+  
+  # perform clustering
+  tree <- stats::hclust(d, method = method)
+  
+  # cut the tree in k clusters and save output in a df
+  clust_output <- data.frame(cluster = cutree(tree = tree, k = k))
+  
+  # compute validity measures and save them
+  clust.all.val <- fpc::cluster.stats(as.dist(d), clust_output$cluster)
+  
+  clust.val <- data.frame(k = clust.all.val$cluster.number, 
+                         method = method, 
+                         size = clust.all.val$cluster.size,
+                         separation = round(clust.all.val$separation, 3),
+                         average.distance = round(clust.all.val$average.distance, 3), 
+                         median.distance = round(clust.all.val$median.distance, 3),
+                         avg.silwidth = round(as.data.frame(clust.all.val$clus.avg.silwidths)[,1], 3), 
+                         average.toother = round(clust.all.val$average.toother, 3)) |>
+    dplyr::group_by(k, method) |>
+    dplyr::mutate(min.size = min(size))
+  openxlsx::write.xlsx(clust.val, 
+                       file = paste0("output/Clustering/clust_PCs_validity_measures_", 
+                                     file_name, 
+                                     ".xlsx"))
+  
+  # output is the cluster attribution
+  clust_output
+  
+}
+
+
+
+
 #'
 #'
 #'
@@ -40,12 +101,12 @@ clust_compo_full_tib <- function(compo_tib,
 # function to perform clustering with different cluster nb and plot 
 # different validating values of the outputs
 clust_find_k_table <- function(compo_tib, 
-                                 type, # either fish or scats or both
-                                 k_range = c(2:10),
-                                 scale = "robust", # other option is "classical"
-                                 method, 
-                                 object_type # either "output" or "file" 
-                                 ) {
+                               type, # either fish or scats or both
+                               k_range = c(2:10),
+                               scale = "robust", # other option is "classical"
+                               method, 
+                               object_type # either "output" or "file" 
+) {
   
   if (type == "fish") {
     data.act <- as.data.frame(compo_tib[, 4:16])
@@ -95,8 +156,8 @@ clust_find_k_table <- function(compo_tib,
   if (object_type == "file") {
     openxlsx::write.xlsx(df.to.plot, 
                          file = paste0("output/Clustering/find_k_validity_measures_", 
-                         type, 
-                         ".xlsx"))
+                                       type, 
+                                       ".xlsx"))
   } else {
     df.to.plot
   }
@@ -110,9 +171,9 @@ clust_find_k_table <- function(compo_tib,
 #'
 # function to perform clustering with different cluster nb and plot 
 # different validating values of the outputs
-boxplot_clust_find_k <- function(find_k_output, 
+boxplot_clust_find_k_val <- function(find_k_output, 
                                  type # either fish or scats or both
-                                 ) {
+) {
   
   
   # set color palette 
@@ -161,7 +222,7 @@ boxplot_clust_find_k <- function(find_k_output,
 #'
 # function to perform clustering with different cluster nb and plot 
 # different validating values of the outputs
-means_clust_find_k <- function(find_k_output, 
+means_clust_find_k_val <- function(find_k_output, 
                                type) {
   
   # set color palette 
