@@ -301,6 +301,9 @@ list(
   # bind the data
   tar_target(fish_and_scats, pool_fish_scat(full_res_compo_fish, 
                                             full_res_compo_scats)),
+  # with just means per species for fish
+  tar_target(fish_sp_means_and_scats, pool_fish_sp_means_scat(full_res_compo_fish, 
+                                            full_res_compo_scats)),
   
   # boxplot comparison between composition of fish and scats 
   tar_target(boxplot_fish_and_scats_full, 
@@ -424,7 +427,30 @@ list(
              biplot_pca_nocoda(PCA_fish_clean_nocoda, 
                                full_res_compo_fish, 
                                groups = "Family", 
-                               "fish_clean")), 
+                               "fish_clean")),
+  
+  ### PCA on fish, but with means per species! 
+  # compute mean per species first
+  tar_target(fish_mean_sp, compute_means_sp(full_res_compo_fish)),
+  tar_target(PCA_fish_tot_means_sp_coda_rob, pca_coda(fish_mean_sp, 
+                                                      "means_fish")),
+  tar_target(biplot_PCA_fish_tot_means_sp_coda_rob, 
+             biplot_pca_coda(PCA_fish_tot_means_sp_coda_rob, 
+                             fish_mean_sp, 
+                             "fish_tot_means_sp_coda_rob",
+                             pcomp = c(1:2), 
+                             groups = "Family", 
+                             var.add.scaling = 2.5,
+                             ellipse = FALSE)),
+  tar_target(biplot_PCA_fish_tot_means_sp_coda_rob_ell, 
+             biplot_pca_coda(PCA_fish_tot_means_sp_coda_rob, 
+                             fish_mean_sp, 
+                             "fish_tot_means_sp_coda_rob_ell",
+                             pcomp = c(1:2), 
+                             groups = "Family", 
+                             var.add.scaling = 2.5,
+                             ellipse = TRUE)),
+  
   
   
   ########## scats
@@ -507,6 +533,26 @@ list(
                                fish_and_scats, 
                                groups = "type", 
                                "fish_scats_total")), 
+  
+  # with both but only means per sp for fish 
+  tar_target(PCA_fish_sp_means_scats_coda_rob, pca_coda(fish_sp_means_and_scats, 
+                                                      "both_means")),
+  tar_target(biplot_PCA_fish_sp_means_scats_coda_rob, 
+             biplot_pca_coda(PCA_fish_sp_means_scats_coda_rob, 
+                             fish_sp_means_and_scats, 
+                             "fish_sp_means_scats_code_rob",
+                             pcomp = c(1:2), 
+                             groups = "type", 
+                             var.add.scaling = 2.5,
+                             ellipse = FALSE)),
+  tar_target(biplot_PCA_fish_sp_means_scats_coda_rob_ell, 
+             biplot_pca_coda(PCA_fish_sp_means_scats_coda_rob, 
+                             fish_sp_means_and_scats, 
+                             "fish_sp_means_scats_code_rob_ell",
+                             pcomp = c(1:2), 
+                             groups = "type", 
+                             var.add.scaling = 2.5,
+                             ellipse = TRUE)),
   
   ##################### CLUSTERING #############################################
   
@@ -602,6 +648,32 @@ list(
                                 pcomp = c(1:2), 
                                 var.add.scaling = 2.5)),
   
+  
+  #### fish but using PCs on mean per species
+  tar_target(clust_fish_PCs_tot_means_sp_dendro, clust_compo_PCs_dendro(PCA_fish_tot_means_sp_coda_rob, 
+                                                                        fish_mean_sp,  
+                                                                        type = "fish",  
+                                                                        method = "ward.D2", 
+                                                                        "fish_tot_means_sp_coda_rob_ward")),
+  tar_target(clust_fish_PCs_tot_means_sp_k4_ward, clust_compo_PCs(PCA_fish_tot_means_sp_coda_rob, 
+                                                                  type = "fish", 
+                                                                  k = 4, 
+                                                                  method = "ward.D2", 
+                                                                  "fish_tot_means_sp_coda_rob_k4_ward")),
+  tar_target(boxplot_clust_fish_PCs_tot_means_sp_k4_ward, boxplot_compo_clust(clust_fish_PCs_tot_means_sp_k4_ward, 
+                                                                              fish_mean_sp, 
+                                                                              "fish_PCs_tot_means_sp_k4_ward")), 
+  tar_target(barplot_clust_fish_PCs_tot_means_sp_k4_ward, barplot_fam_clust(clust_fish_PCs_tot_means_sp_k4_ward, 
+                                                                            fish_mean_sp, 
+                                                                            "fish_PCs_tot_means_sp_k4_ward")),
+  tar_target(biplot_clust_PCs_tot_means_sp_k4_fish, 
+             biplot_after_clust(PCA_fish_tot_means_sp_coda_rob, 
+                                clust_fish_PCs_tot_means_sp_k4_ward,
+                                fish_mean_sp, 
+                                "fish_PCs_tot_means_sp_k4_ward",
+                                pcomp = c(1:2), 
+                                var.add.scaling = 2.5)),
+  
   ########## scats
   tar_target(findk_ward_scats_output, clust_find_k_table(full_res_compo_scats, 
                                                          type = "scats", 
@@ -648,13 +720,13 @@ list(
                                 var.add.scaling = 2.5)), 
   #### scats but using PCs instead
   tar_target(clust_scats_PCs_k2_ward, clust_compo_PCs(PCA_scats_total_coda_rob, 
-                                                     type = "scats", 
-                                                     k = 2, 
-                                                     method = "ward.D2", 
-                                                     "scats_tot_coda_rob_k2_ward")),
+                                                      type = "scats", 
+                                                      k = 2, 
+                                                      method = "ward.D2", 
+                                                      "scats_tot_coda_rob_k2_ward")),
   tar_target(boxplot_clust_scats_PCs_k2_ward, boxplot_compo_clust(clust_scats_PCs_k2_ward, 
-                                                                 full_res_compo_scats, 
-                                                                 "scats_PCs_k2_ward")), 
+                                                                  full_res_compo_scats, 
+                                                                  "scats_PCs_k2_ward")), 
   tar_target(biplot_clust_PCs_k2_scats, 
              biplot_after_clust(PCA_scats_total_coda_rob, 
                                 clust_scats_PCs_k2_ward,
@@ -694,13 +766,13 @@ list(
                                 var.add.scaling = 2.5)), 
   #### fish and scats but using PCs instead
   tar_target(clust_fish_and_scats_PCs_k2_ward, clust_compo_PCs(PCA_fish_scats_coda_rob, 
-                                                      type = "scats", 
-                                                      k = 2, 
-                                                      method = "ward.D2", 
-                                                      "both_tot_coda_rob_k2_ward")),
+                                                               type = "scats", 
+                                                               k = 2, 
+                                                               method = "ward.D2", 
+                                                               "both_tot_coda_rob_k2_ward")),
   tar_target(boxplot_clust_fish_and_scats_PCs_k2_ward, boxplot_compo_clust(clust_fish_and_scats_PCs_k2_ward, 
                                                                            fish_and_scats, 
-                                                                  "both_PCs_k2_ward")),
+                                                                           "both_PCs_k2_ward")),
   tar_target(biplot_clust_PCs_k2_fish_and_scats, 
              biplot_after_clust(PCA_fish_scats_coda_rob, 
                                 clust_fish_and_scats_PCs_k2_ward,

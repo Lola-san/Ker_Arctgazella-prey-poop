@@ -92,6 +92,57 @@ clust_compo_PCs <- function(res_pca,
 }
 
 
+#'
+#'
+#'
+#'
+# function to perform clustering directly on compositional dataset
+# using Principal components estimated by PCA
+clust_compo_PCs_dendro <- function(res_pca, 
+                                   compo_tib,
+                            type, # either fish or scats or both
+                            k,
+                            method, 
+                            file_name # of the table with validity measures
+) {
+  
+  # define the PCs to keep (total of 80% of var. explained)
+  if (type == "fish") {
+    pcomp <- c(1:4)
+  } else if (type == "scats") {
+    pcomp <- c(1)
+  } else if (type == "both") {
+    pcomp <- c(1:4)
+  }
+  
+  # extract the data i.e coordinates of individuals on the PCs
+  data.act <- as.data.frame(res_pca$scores[, pcomp])
+  
+  # define distance matrix
+  d <- dist(data.act)
+  
+  # perform clustering
+  tree <- stats::hclust(d, method = method)
+  
+ 
+  
+  # dendrogram
+  dendro.dat <- ggdendro::dendro_data(as.dendrogram(tree))
+  
+  # change labels to species name
+  dendro.labels <- dendro.dat$labels |>
+    dplyr::mutate(label = compo_tib$Species)
+  
+  # plot dendrogram
+  ggplot2::ggplot(dendro.dat$segments) + 
+    ggplot2::geom_segment(ggplot2::aes(x = x, y = y, xend = xend, yend = yend))+
+    ggplot2::geom_text(data = dendro.labels, 
+                       ggplot2::aes(x, y, label = label),
+                       hjust = 1, angle = 90, size = 3) +
+    ggplot2:: ylim(-6, 6) +
+    ggplot2::theme_classic()
+  
+}
 
 
 #'
@@ -282,6 +333,7 @@ boxplot_compo_clust <- function(clust_output,
   
   
   compo_tib |> 
+    dplyr::ungroup() |>
     dplyr::mutate(cluster = as.factor(clust_vec)) |>
     tidyr::pivot_longer(cols = c("As":"Zn"), 
                         names_to = "Nutrient", 
@@ -326,20 +378,26 @@ barplot_fam_clust <- function(clust_output,
   clust_vec <- clust_output$cluster
   
   compo_tib |> 
+    dplyr::ungroup() |>
     dplyr::mutate(cluster = as.factor(clust_vec)) |>
-    ggplot2::ggplot(ggplot2::aes(x = Family, 
-                                 fill = cluster)) +
+    ggplot2::ggplot(ggplot2::aes(x = cluster, 
+                                 fill = Family)) +
     ggplot2::geom_bar() +
-    ghibli::scale_fill_ghibli_d("YesterdayMedium", direction = -1) +
+    ggplot2::scale_fill_manual(values = c("#4C413FFF", "#5A6F80FF", "#278B9AFF",
+                                          "#E75B64FF", "#DE7862FF", "#D8AF39FF", 
+                                          "#E8C4A2FF", "#14191FFF", "#1D2645FF", 
+                                          "#403369FF", "#AE93BEFF", "#B4DAE5FF", 
+                                          "#F0D77BFF", "#2A3C50FF", "#3E6248FF", 
+                                          "#590514FF")) +
+    ggplot2::xlab("Cluster") +
     ggplot2::theme_bw() +
-    ggplot2::theme(axis.title.x = ggplot2::element_blank(), 
-                   axis.text.x = ggplot2::element_text(size = 15, angle = 20, 
-                                                       hjust = 1),
+    ggplot2::theme(axis.title.x = ggplot2::element_text(size = 16, 
+                                                        face = "bold"), 
+                   axis.text.x = ggplot2::element_text(size = 15),
                    axis.text.y = ggplot2::element_text(size = 15),
                    axis.title.y = ggplot2::element_text(size = 16, 
                                                         face = "bold"), 
-                   strip.text.x = ggplot2::element_text(size = 16, 
-                                                        face = "bold"), 
+                   legend.text = ggplot2::element_text(size = 12), 
                    legend.position = "bottom")
   # save plot 
   ggplot2::ggsave(paste0("output/Clustering/clust_barplot_",

@@ -16,6 +16,25 @@
 ### classical PCA (without transformation adapted to compositional data), 
 ######## on a scaled and centered dataset
 
+# On fish, we did PCA on all samples and PCA just on mean per species
+
+#'
+#'
+#'
+# simple function to create table with mean per species 
+compute_means_sp <- function(compo_tib) {
+  
+  compo_tib |>
+    tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, Mg, Mn, Na, Ni, P, Se, Zn), 
+                        names_to = "Nutrient", 
+                        values_to = "concentration_mg_g_dw") |>
+    dplyr::group_by(Family, Species, Nutrient) |>
+    dplyr::summarise(mean_sp = mean(concentration_mg_g_dw)) |>
+    tidyr::pivot_wider(names_from = Nutrient, 
+                       values_from = mean_sp)
+  
+}
+
 
 #'
 #'
@@ -25,14 +44,18 @@
 # function to perform Principal Component Analysis using robust method 
 # for composition data with package robCompositions
 pca_coda <- function(res_tib, 
-                     type # either fish or scats or both
+                     type # either fish or means_fish scats or both or both_means
 ) {
   
   if (type == "fish") {
     data.act <- as.data.frame(res_tib[, 4:16])
+  } else if (type == "means_fish") {
+    data.act <- as.data.frame(res_tib[, 3:15])
   } else if (type %in% c("scats", "both")) {
     data.act <- as.data.frame(res_tib[, 2:14])
-  } 
+  } else if (type == "both_means") {
+    data.act <- as.data.frame(res_tib[, 1:13])
+  }
   
   ## robust estimation (default):
   res.rob. <- robCompositions::pcaCoDa(data.act)
@@ -49,12 +72,12 @@ pca_coda <- function(res_tib,
 # for composition data CoDa but without robust method
 # with package robCompositions
 pca_coda_norob <- function(res_tib, 
-                           type # either fish or scats or both
+                           type # either fish or means_fish or scats or both
 ) {
   
   if (type == "fish") {
     data.act <- as.data.frame(res_tib[, 4:16])
-  } else if (type %in% c("scats", "both")) {
+  } else if (type %in% c("means_fish", "scats", "both")) {
     data.act <- as.data.frame(res_tib[, 2:14])
   } 
   
@@ -173,11 +196,15 @@ biplot_pca_coda <- function(res_pca,
                        sprintf('(%0.1f%% explained var.)', 
                                100 * res_pca$eigenvalues[pcomp]/sum(res_pca$eigenvalues)))
   
+  
   # Score Labels (labels of the observations)
-  df.u$labels <- compo_tib$Code_sample
+  if ("Code_sample" %in% colnames(compo_tib)) {
+    df.u$labels <- compo_tib$Code_sample
+  } else { df.u$labels <- compo_tib$Species }
+  
   
   # define groups
-  if (groups == "species") {
+  if (groups == "Species") {
     # grouping per species (fish composition)
     df.u$groups <- compo_tib$Species
   } else if (groups == "Family") {
@@ -306,14 +333,14 @@ biplot_pca_coda <- function(res_pca,
 # function to perform classical PCA analysis not accounting 
 # for the compositional nature of data
 pca_nocoda <- function(res_tib, 
-                     type # either fish or scats or both
+                     type # either fish or means_fish or scats or both
 ) {
   
   # scale and center data
   # on all samples when on fish and scats datasets no together
   if (type == "fish") {
     data.act <- scale(as.data.frame(res_tib[,4:16]), center = TRUE) 
-  } else if (type == "scats") {
+  } else if (type %in% c("means_fish", "scats")) {
     data.act <- scale(as.data.frame(res_tib[,2:14]), center = TRUE) 
   } else if (type == "both") {
     # scale by type as we are interested in compairing relative compo
@@ -412,4 +439,6 @@ biplot_pca_nocoda <- function(res_pca_classical, #output of prcomp
   )
   
 }
+
+
 

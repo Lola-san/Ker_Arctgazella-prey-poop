@@ -183,7 +183,7 @@ boxplot_compo_fish_sp_all_nut <- function(res_fish_tib
                                           "#E75B64FF", "#DE7862FF", "#D8AF39FF", 
                                           "#E8C4A2FF", "#14191FFF", "#1D2645FF", 
                                           "#403369FF", "#AE93BEFF", "#B4DAE5FF", 
-                                          "#F0D77BFF"))+
+                                          "#F0D77BFF")) +
     ggplot2::ylab("Nutrient concentration (in mg/g dry weight)") +
     ggplot2::xlab("Species") +
     ggplot2::theme_bw() +

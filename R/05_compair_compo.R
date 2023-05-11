@@ -48,6 +48,49 @@ pool_fish_scat <- function(res_fish_tib,
   
 }
 
+#'
+#'
+#'
+# function to pull together fish and scat data but with fish 
+# data pooled per species 
+pool_fish_sp_means_scat <- function(res_fish_tib, 
+                           res_scat_tib) {
+  
+  # add column with NAs in each table for each variable valuable for only one type of data
+  # ie site for poop or species for preys
+  
+  res_fish_tib <- res_fish_tib |>
+    tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, Mg, Mn, Na, Ni, P, Se, Zn), 
+                        names_to = "Nutrient", 
+                        values_to = "concentration_mg_g_dw") |>
+    dplyr::group_by(diet, Family, Species, Nutrient) |>
+    dplyr::summarise(mean_sp = mean(concentration_mg_g_dw)) |>
+    tidyr::pivot_wider(names_from = Nutrient, 
+                       values_from = mean_sp) |>
+    dplyr::mutate(site = NA) |>
+    dplyr::select("As", "Ca", "Co",
+                  "Cu", "Fe", "K", "Mg", "Mn",
+                  "Na", "Ni", "P", "Se", "Zn",
+                  "Family", "Species", "diet", "site") |>
+    dplyr::mutate(type = "fish")
+  
+  
+  res_scat_tib <- res_scat_tib |>
+    dplyr::mutate(Family = NA, 
+                  Species = NA, 
+                  diet = NA) |>
+    dplyr::select("As", "Ca", "Co",
+                  "Cu", "Fe", "K", "Mg", "Mn",
+                  "Na", "Ni", "P", "Se", "Zn",
+                  "Family", "Species", "diet", "site")|>
+    dplyr::mutate(type = "fur seal scat")
+  
+  # join the two tibbles by row
+  
+  rbind(res_fish_tib, res_scat_tib)
+  
+}
+
 
 
 #'
