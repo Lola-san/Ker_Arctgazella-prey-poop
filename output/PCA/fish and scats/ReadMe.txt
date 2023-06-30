@@ -1,0 +1,3 @@
+Written on 2023/06/28
+We standardised per type (i.e. fish or scat) only for classical PCA, so classical PCA are on relative compositions and not the other ones. 
+We can't do it the same way for the other ones (coda methods) because the standardisation results in negative values that can't be ilr transformed afterwards. So I don't know how to do it... 

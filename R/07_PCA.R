@@ -16,24 +16,7 @@
 ### classical PCA (without transformation adapted to compositional data), 
 ######## on a scaled and centered dataset
 
-# On fish, we did PCA on all samples and PCA just on mean per species
-
-#'
-#'
-#'
-# simple function to create table with mean per species 
-compute_means_sp <- function(compo_tib) {
-  
-  compo_tib |>
-    tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, Mg, Mn, Na, Ni, P, Se, Zn), 
-                        names_to = "Nutrient", 
-                        values_to = "concentration_mg_g_dw") |>
-    dplyr::group_by(Family, Species, Nutrient) |>
-    dplyr::summarise(mean_sp = mean(concentration_mg_g_dw)) |>
-    tidyr::pivot_wider(names_from = Nutrient, 
-                       values_from = mean_sp)
-  
-}
+# On fish, we did PCA using mean per species
 
 
 #'
@@ -44,18 +27,16 @@ compute_means_sp <- function(compo_tib) {
 # function to perform Principal Component Analysis using robust method 
 # for composition data with package robCompositions
 pca_coda <- function(res_tib, 
-                     type # either fish or means_fish scats or both or both_means
+                     type # either fish or scats or both or both_means
 ) {
   
   if (type == "fish") {
-    data.act <- as.data.frame(res_tib[, 4:16])
-  } else if (type == "means_fish") {
     data.act <- as.data.frame(res_tib[, 3:15])
-  } else if (type %in% c("scats", "both")) {
+  } else if (type == "scats") {
     data.act <- as.data.frame(res_tib[, 2:14])
-  } else if (type == "both_means") {
+  } else if (type == "both") {
     data.act <- as.data.frame(res_tib[, 1:13])
-  }
+  } 
   
   ## robust estimation (default):
   res.rob. <- robCompositions::pcaCoDa(data.act)
@@ -72,13 +53,15 @@ pca_coda <- function(res_tib,
 # for composition data CoDa but without robust method
 # with package robCompositions
 pca_coda_norob <- function(res_tib, 
-                           type # either fish or means_fish or scats or both
+                           type # either fish or scats or both
 ) {
   
   if (type == "fish") {
-    data.act <- as.data.frame(res_tib[, 4:16])
-  } else if (type %in% c("means_fish", "scats", "both")) {
+    data.act <- as.data.frame(res_tib[, 3:15])
+  } else if (type == "scats") {
     data.act <- as.data.frame(res_tib[, 2:14])
+  } else if (type == "both") {
+    data.act <- as.data.frame(res_tib[, 1:13])
   } 
   
   ## robust estimation (default):
@@ -92,8 +75,7 @@ pca_coda_norob <- function(res_tib,
 #'
 #'
 #'
-# function to perform Principal Component Analysis using classical method 
-# with package robCompositions
+# function to create biplot for PCA coda (robust or non-robust) output 
 biplot_pca_coda <- function(res_pca, 
                             compo_tib,
                             file_name, # should be explicit regarding dataset (fish
@@ -104,7 +86,7 @@ biplot_pca_coda <- function(res_pca,
                             # 1 and 2 by default
                             groups, # either "species", "family"
                             # if on fish data 
-                            # or "site" if on scat data 
+                            # or "site" "HPI" if on scat data 
                             circle = FALSE, # weither to draw correlation circle or not 
                             circle.prob = 0.69, # not sure yet why this value by default
                             var.add.scaling = 2, # constant to multiply coordinates
@@ -203,19 +185,54 @@ biplot_pca_coda <- function(res_pca,
   } else { df.u$labels <- compo_tib$Species }
   
   
-  # define groups
+  # define groups (and output folder)
   if (groups == "Species") {
     # grouping per species (fish composition)
     df.u$groups <- compo_tib$Species
+    color_scale <- c("#4C413FFF", "#5A6F80FF", "#278B9AFF",
+                     "#E75B64FF", "#DE7862FF", "#D8AF39FF", 
+                     "#E8C4A2FF", "#14191FFF", "#1D2645FF", 
+                     "#403369FF", "#AE93BEFF", "#B4DAE5FF", 
+                     "#F0D77BFF")
+    folder <- "fish"
   } else if (groups == "Family") {
     # grouping per Family (fish composition)
     df.u$groups <- compo_tib$Family
+    color_scale <- c("Zoarcidae" = "#274637FF", 
+                     "Stomiidae" = "#D8AF39FF", 
+                     "Paralepididae" = "#5A6F80FF", 
+                     "Nototheniidae" = "#4C413FFF", 
+                     "Notosudidae" = "#44A57CFF", 
+                     "Myctophidae" = "#278B9AFF",
+                     "Muraenolepididae" = "#14191FFF", 
+                     "Microstomatidae" = "#E75B64FF", 
+                     "Melamphaidae" = "#B4DAE5FF", 
+                     "Macrouridae" = "#DE7862FF", 
+                     "Gempylidae" = "#1D2645FF",
+                     "Channichthyidae" = "#58A449FF",
+                     "Carapidae" = "#403369FF", 
+                     "Bathylagidae" = "#E8C4A2FF",
+                     "Bathydraconidae" = "#AE93BEFF", 
+                     "Achiropsettidae" = "#F0D77BFF")
+    folder <- "fish"
   } else if (groups == "site") {
     # grouping per site (scat composition)
     df.u$groups <- compo_tib$site
+    color_scale <- c("#E8C4A2FF", "#14191FFF")
+    folder <- "scats"
+  } else if (groups == "HPI") {
+    # grouping per HPI (scat composition)
+    compo_tib <- compo_tib |> 
+      dplyr::mutate(HPI01 = dplyr::case_when(HPI01 == "0" ~ "no hard parts", 
+                                             HPI01 == "1" ~ "hard parts present"))
+    df.u$groups <- compo_tib$HPI01
+    color_scale <- c("#E75B64FF", "#B4DAE5FF")
+    folder <- "scats"
   } else if (groups == "type") {
     # grouping per site (fish and scat composition together)
     df.u$groups <- compo_tib$type
+    color_scale <- c("#278B9AFF", "#58A449FF")
+    folder <- "fish and scats"
   } 
   
   # Variable Names
@@ -259,9 +276,7 @@ biplot_pca_coda <- function(res_pca,
                        ggplot2::aes(label = varname, x = xvar, y = yvar, 
                                     angle = angle, hjust = hjust), 
                        color = 'darkred', size = 5) +
-    viridis::scale_color_viridis(option = "cividis", 
-                                 discrete = TRUE, 
-                                 name = groups) +
+    ggplot2::scale_color_manual(values = color_scale) +
     ggplot2::theme(axis.text.x = ggplot2::element_text(size = 15), 
                    axis.text.y = ggplot2::element_text(size = 15), 
                    axis.title.x = ggplot2::element_text(size = 16, 
@@ -298,7 +313,9 @@ biplot_pca_coda <- function(res_pca,
   }
   
   # save plot 
-  ggplot2::ggsave(paste0("output/PCA/PCA_biplot_",
+  ggplot2::ggsave(paste0("output/PCA/", 
+                         folder, 
+                         "/PCA_biplot_",
                          file_name,
                          ".jpg"),
                   scale = 1,
@@ -333,17 +350,17 @@ biplot_pca_coda <- function(res_pca,
 # function to perform classical PCA analysis not accounting 
 # for the compositional nature of data
 pca_nocoda <- function(res_tib, 
-                     type # either fish or means_fish or scats or both
+                       type # either fish or means_fish or scats or both
 ) {
   
   # scale and center data
   # on all samples when on fish and scats datasets no together
   if (type == "fish") {
-    data.act <- scale(as.data.frame(res_tib[,4:16]), center = TRUE) 
-  } else if (type %in% c("means_fish", "scats")) {
-    data.act <- scale(as.data.frame(res_tib[,2:14]), center = TRUE) 
+    data.act <- scale(as.data.frame(res_tib[,3:15]), center = TRUE) 
+  } else if (type == "scats") {
+    data.act <- as.data.frame(res_tib[, 2:14])
   } else if (type == "both") {
-    # scale by type as we are interested in compairing relative compo
+    # scale by type as we are interested in comparing relative compo
     # and not total compo ie direct quantities
     scale_center_this <- function(x){
       (x - mean(x, na.rm=TRUE)) / sd(x, na.rm=TRUE)
@@ -363,7 +380,7 @@ pca_nocoda <- function(res_tib,
     
     data.act <- as.data.frame(scaled_tib[3:15])
   }
-
+  
   # compute PCA
   prcomp(data.act, 
          scale = FALSE, 
@@ -384,38 +401,68 @@ biplot_pca_nocoda <- function(res_pca_classical, #output of prcomp
                               compo_tib,
                               groups, # either "species", "family"
                               # if on fish data 
-                              # or "site" if on scat data 
+                              # or "site", "HPI" if on scat data 
                               # or "type" if fish and scats together
+                              pcomp = c(1, 2), # principal components 
                               file_name
 ) {
-  # define groups 
+  
+
+  # define groups (and output folder)
   if (groups == "species") {
     # grouping per species (fish composition)
     groups_vec <- compo_tib$Species
+    label_vec <- "var"
+    geom_vec <- "point"
+    folder <- "fish"
   } else if (groups == "Family") {
     # grouping per Family (fish composition)
     groups_vec <- compo_tib$Family
+    label_vec <- "var"
+    geom_vec <- "point"
+    folder <- "fish"
   } else if (groups == "site") {
     # grouping per site (scat composition)
     groups_vec <- compo_tib$site
+    label_vec <- c("var", "ind")
+    geom_vec <- c("point", "text")
+    folder <- "scats"
+  } else if (groups == "HPI") {
+    # grouping per HPI (scat composition)
+    compo_tib <- compo_tib |> 
+      dplyr::mutate(HPI01 = dplyr::case_when(HPI01 == "0" ~ "no hard parts", 
+                                             HPI01 == "1" ~ "hard parts present"))
+    groups_vec <- compo_tib$HPI01
+    label_vec <- c("var", "ind")
+    geom_vec <- c("point", "text")
+    folder <- "scats"
   } else if (groups == "type") {
     # grouping per site (fish and scat composition together)
     groups_vec <- compo_tib$type
+    label_vec <- "var"
+    geom_vec <- "point"
+    folder <- "fish and scats"
   }
+  
+  
   
   # set color palette
   if (groups %in% c("site", "type")) {
     pal <- c("#278B9AFF", "#D8AF39FF")
+  } else if (groups == "HPI") {
+    pal <- c("#E75B64FF", "#B4DAE5FF")
   } else {
     pal <- viridis::cividis(length(groups_vec))
   }
   
   # biplot
   factoextra::fviz_pca_biplot(res_pca_classical,
+                              axes = pcomp,
                               habillage = groups_vec, 
-                              label = "var", 
-                              #geom.ind = "point", # not doing anything
+                              label = label_vec, 
+                              geom.ind = geom_vec, 
                               palette = pal, 
+                              repel = TRUE,
                               title = "PCA biplot - classical non-CoDa analysis") + 
     ggplot2::theme(axis.text.x = ggplot2::element_text(size = 15), 
                    axis.text.y = ggplot2::element_text(size = 15), 
@@ -431,7 +478,9 @@ biplot_pca_nocoda <- function(res_pca_classical, #output of prcomp
                                                  face = "bold"))
   
   # save plot 
-  ggplot2::ggsave(paste0("output/PCA/PCA_classical_biplot_",
+  ggplot2::ggsave(paste0("output/PCA/", 
+  folder, 
+  "/PCA_classical_biplot_",
                          file_name,
                          ".jpg"),
                   scale = 1,

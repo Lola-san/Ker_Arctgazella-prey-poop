@@ -16,7 +16,7 @@
 # examined to detect any adnormal value - as compared to other samples
 # of the same species but also to samples of other species
 
-# files used for this identifications: "boxplot_sp_all_nut.jpg" and verification
+# files used for these identifications: "boxplot_sp_all_nut.jpg" and verification
 # of those also identified as statistical outliers using function of 
 # "02_id_technical_outliers.R"
 

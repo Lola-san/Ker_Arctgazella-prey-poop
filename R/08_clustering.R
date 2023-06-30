@@ -17,6 +17,7 @@
 # components estimated by PCA)
 clust_compo_full_tib <- function(compo_tib, 
                                  type, # either fish or scats or both
+                                 nutrients, # vector specifying the nutrients to use
                                  k,
                                  scale = "robust", # other option is "classical"
                                  method) {
@@ -38,20 +39,22 @@ clust_compo_full_tib <- function(compo_tib,
 #'
 #'
 #'
-# function to perform clustering directly on compositional dataset
+# function to perform clustering
 # using Principal components estimated by PCA
+# with hclust algorithm
 clust_compo_PCs <- function(res_pca, 
-                            type, # either fish or scats or both
+                            type, # either "fish" or "scats" or "both"
                             k,
                             method, 
+                            file_type, # either "file" or "output"
                             file_name # of the table with validity measures
-                            ) {
+) {
   
   # define the PCs to keep (total of 80% of var. explained)
   if (type == "fish") {
-    pcomp <- c(1:4)
+    pcomp <- c(1:5)
   } else if (type == "scats") {
-    pcomp <- c(1)
+    pcomp <- c(1:2)
   } else if (type == "both") {
     pcomp <- c(1:4)
   }
@@ -69,25 +72,28 @@ clust_compo_PCs <- function(res_pca,
   clust_output <- data.frame(cluster = cutree(tree = tree, k = k))
   
   # compute validity measures and save them
-  clust.all.val <- fpc::cluster.stats(as.dist(d), clust_output$cluster)
+  clust_stats <- fpc::cluster.stats(as.dist(d), clust_output$cluster)
   
-  clust.val <- data.frame(k = clust.all.val$cluster.number, 
-                         method = method, 
-                         size = clust.all.val$cluster.size,
-                         separation = round(clust.all.val$separation, 3),
-                         average.distance = round(clust.all.val$average.distance, 3), 
-                         median.distance = round(clust.all.val$median.distance, 3),
-                         avg.silwidth = round(as.data.frame(clust.all.val$clus.avg.silwidths)[,1], 3), 
-                         average.toother = round(clust.all.val$average.toother, 3)) |>
-    dplyr::group_by(k, method) |>
-    dplyr::mutate(min.size = min(size))
-  openxlsx::write.xlsx(clust.val, 
-                       file = paste0("output/Clustering/clust_PCs_validity_measures_", 
+  clust.val <- data.frame(k = clust_stats$cluster.number, 
+                          method = method, 
+                          size = clust_stats$cluster.size,
+                          separation = round(clust_stats$separation, 3),
+                          average.distance = round(clust_stats$average.distance, 3), 
+                          median.distance = round(clust_stats$median.distance, 3),
+                          avg.silwidth = round(as.data.frame(clust_stats$clus.avg.silwidths)[,1], 3), 
+                          average.toother = round(clust_stats$average.toother, 3), 
+                          min.clust.size = clust_stats$min.cluster.size) 
+  
+  if (file_type == "file") {
+    openxlsx::write.xlsx(clust.val, 
+                       file = paste0("output/Clustering/", 
+                                     type, "/clust_PCs_validity_measures_", 
                                      file_name, 
                                      ".xlsx"))
-  
-  # output is the cluster attribution
+  } else {
+    # output is the cluster attribution
   clust_output
+  }
   
 }
 
@@ -96,21 +102,153 @@ clust_compo_PCs <- function(res_pca,
 #'
 #'
 #'
-# function to perform clustering directly on compositional dataset
-# using Principal components estimated by PCA
+# function to plot dendrogram for fish based on PC results of robust PCA
 clust_compo_PCs_dendro <- function(res_pca, 
                                    compo_tib,
-                            type, # either fish or scats or both
-                            k,
-                            method, 
-                            file_name # of the table with validity measures
+                                   method, 
+                                   k,
+                                   colour, # "Family" or "Cluster"
+                                   file_name
+) {
+  # select the 5 first PCs
+  pcomp <- c(1:5)
+  
+  # extract the data i.e coordinates of individuals on the PCs
+  data.act <- as.data.frame(res_pca$scores[, pcomp])
+  
+  # define distance matrix
+  d <- dist(data.act)
+  
+  # perform clustering
+  tree <- stats::hclust(d, method = method)
+  
+  # dendrogram
+  dendro.dat <- ggdendro::dendro_data(tree, 
+                                      type = "rectangle")
+  
+  # cut the tree in k clusters and save output in a df
+  clust_output <- data.frame(cluster = stats::cutree(tree = tree, k = k))
+  
+  # change labels to species name and add colour grouping
+  dendro.labels <- dendro.dat$labels |>
+    dplyr::mutate(label = compo_tib$Species[tree$order], 
+                  Family = compo_tib$Family[tree$order], 
+                  Cluster = factor(clust_output$cluster[tree$order])) |>
+    dplyr::mutate(label = stringr::str_replace(label, "\n", " "), 
+                  Family = factor(Family, 
+                                  levels = c("Zoarcidae",
+                                             "Stomiidae",
+                                             "Paralepididae",
+                                             "Nototheniidae",
+                                             "Notosudidae",
+                                             "Myctophidae",
+                                             "Muraenolepididae",
+                                             "Microstomatidae",
+                                             "Melamphaidae",
+                                             "Macrouridae",
+                                             "Gempylidae",
+                                             "Channichthyidae",
+                                             "Carapidae",
+                                             "Bathylagidae",
+                                             "Bathydraconidae", 
+                                             "Achiropsettidae"
+                                  )))
+  
+  # define colour palette
+  if (colour == "Family") {
+    colour_palette <- c("Zoarcidae" = "#274637FF", 
+                        "Stomiidae" = "#D8AF39FF", 
+                        "Paralepididae" = "#5A6F80FF", 
+                        "Nototheniidae" = "#4C413FFF", 
+                        "Notosudidae" = "#44A57CFF", 
+                        "Myctophidae" = "#278B9AFF",
+                        "Muraenolepididae" = "#14191FFF", 
+                        "Microstomatidae" = "#E75B64FF", 
+                        "Melamphaidae" = "#B4DAE5FF", 
+                        "Macrouridae" = "#DE7862FF", 
+                        "Gempylidae" = "#1D2645FF",
+                        "Channichthyidae" = "#58A449FF",
+                        "Carapidae" = "#403369FF", 
+                        "Bathylagidae" = "#E8C4A2FF",
+                        "Bathydraconidae" = "#AE93BEFF", 
+                        "Achiropsettidae" = "#F0D77BFF")
+    
+    # plot dendrogram
+    ggplot2::ggplot(dendro.dat$segments) + 
+      ggplot2::geom_segment(ggplot2::aes(x = x, y = y, xend = xend, yend = yend))+
+      ggplot2::geom_text(data = dendro.labels, 
+                         ggplot2::aes(x, y, 
+                                      label = label, 
+                                      colour = Family
+                                      ),
+                         hjust = 1, size = 4) +
+      ggplot2::scale_color_manual(values = colour_palette) +
+      ggplot2::coord_flip() +
+      ggplot2::ylim(-6, 6) +
+      ggplot2::guides(colour = ggplot2::guide_legend(title = "Family",
+                                                     override.aes = list(shape = 12)))  +
+      ggplot2::theme_classic() 
+    # save plot 
+    ggplot2::ggsave(paste0("output/Clustering/fish/dendrogram_", 
+                           file_name, "_",
+                           colour, ".jpg"),
+                    scale = 1,
+                    height = 6, width = 8)
+    
+  } else if (colour == "Cluster") {
+    colour_palette <- c("#D8AF39FF",
+                        "#58A449FF",
+                        "#AE93BEFF",
+                        "#B4DAE5FF",
+                        "#E75B64FF",
+                        "#1D2645FF")[1:max(clust_output$cluster)]
+    
+    # plot dendrogram
+    ggplot2::ggplot(dendro.dat$segments) + 
+      ggplot2::geom_segment(ggplot2::aes(x = x, y = y, xend = xend, yend = yend))+
+      ggplot2::geom_text(data = dendro.labels, 
+                         ggplot2::aes(x, y, 
+                                      label = label, 
+                                      colour = Cluster),
+                         hjust = 1, size = 4) +
+      ggplot2::scale_color_manual(values = colour_palette) +
+      ggplot2::coord_flip() +
+      ggplot2::ylim(-6, 6) +
+      ggplot2::guides(colour = ggplot2::guide_legend(title = "Cluster",
+                                                     override.aes = list(shape = 12)))  +
+      ggplot2::theme_classic()
+    
+    # save plot 
+    ggplot2::ggsave(paste0("output/Clustering/fish/dendrogram_", 
+                           file_name, "_",
+                           colour, "_k", k, ".jpg"),
+                    scale = 1,
+                    height = 6, width = 8)
+    
+  }
+  
+  
+}
+
+#'
+#'
+#'
+#'
+# function to perform clustering with different cluster nb and plot 
+# different validating values of the outputs
+clust_find_k_table_PCs <- function(res_pca, 
+                                   type, # either fish, fish_sp_means or scats 
+                                   # or both or both_sp_means
+                                   k_range = c(2:10),
+                                   method, 
+                                   object_type, # either "output" or "file"
+                                   file_name
 ) {
   
-  # define the PCs to keep (total of 80% of var. explained)
   if (type == "fish") {
-    pcomp <- c(1:4)
+    pcomp <- c(1:5)
   } else if (type == "scats") {
-    pcomp <- c(1)
+    pcomp <- c(1:2)
   } else if (type == "both") {
     pcomp <- c(1:4)
   }
@@ -124,23 +262,58 @@ clust_compo_PCs_dendro <- function(res_pca,
   # perform clustering
   tree <- stats::hclust(d, method = method)
   
- 
+  list_outputs <- list()
   
-  # dendrogram
-  dendro.dat <- ggdendro::dendro_data(as.dendrogram(tree))
+  for (i in k_range) {
+    # cut the tree in k clusters 
+    clust_output <- data.frame(cluster = cutree(tree = tree, k = i))
+    
+    # compute validity measures
+    clust_stats <- fpc::cluster.stats(as.dist(d), clust_output$cluster)
+    
+    # and save them
+    ki_df <- data.frame(k = clust_stats$cluster.number, 
+                        method = method, 
+                        size = clust_stats$cluster.size,
+                        separation = round(clust_stats$separation, 3),
+                        average.distance = round(clust_stats$average.distance, 3), 
+                        median.distance = round(clust_stats$median.distance, 3),
+                        avg.silwidth = round(as.data.frame(clust_stats$clus.avg.silwidths)[,1], 
+                                             3), 
+                        average.toother = round(clust_stats$average.toother, 3), 
+                        min.clust.size = clust_stats$min.cluster.size)
+    
+    list_outputs <- append(list_outputs, list(ki_df))
+    
+  }
   
-  # change labels to species name
-  dendro.labels <- dendro.dat$labels |>
-    dplyr::mutate(label = compo_tib$Species)
+  df0 <- data.frame(k = NA, 
+                    method = NA,
+                    size = NA,
+                    separation = NA,
+                    average.distance = NA, 
+                    median.distance = NA,
+                    avg.silwidth = NA, 
+                    average.toother = NA, 
+                    min.clust.size = NA)
   
-  # plot dendrogram
-  ggplot2::ggplot(dendro.dat$segments) + 
-    ggplot2::geom_segment(ggplot2::aes(x = x, y = y, xend = xend, yend = yend))+
-    ggplot2::geom_text(data = dendro.labels, 
-                       ggplot2::aes(x, y, label = label),
-                       hjust = 1, angle = 90, size = 3) +
-    ggplot2:: ylim(-6, 6) +
-    ggplot2::theme_classic()
+  for (i in 1:length(k_range)) {
+    df0 <- rbind(df0, list_outputs[[i]])
+  }
+  
+  # delete first line of NAs
+  df.to.plot <- df0[-1,]
+  
+  if (object_type == "file") {
+    openxlsx::write.xlsx(df.to.plot, 
+                         file = paste0("output/Clustering/", type, 
+                                       "/find_k_validity_measures_", 
+                                       type, "_",
+                                       file_name,
+                                       ".xlsx"))
+  } else {
+    df.to.plot
+  }
   
 }
 
@@ -151,8 +324,10 @@ clust_compo_PCs_dendro <- function(res_pca,
 #'
 # function to perform clustering with different cluster nb and plot 
 # different validating values of the outputs
-clust_find_k_table <- function(compo_tib, 
-                               type, # either fish or scats or both
+clust_find_k_table <- function(res_tib, 
+                               type, # either fish, fish_sp_means or scats 
+                               nutrients, # vectors of nutrients to use
+                               # or both or both_sp_means
                                k_range = c(2:10),
                                scale = "robust", # other option is "classical"
                                method, 
@@ -160,14 +335,20 @@ clust_find_k_table <- function(compo_tib,
 ) {
   
   if (type == "fish") {
-    data.act <- as.data.frame(compo_tib[, 4:16])
-  } else if (type %in% c("scats", "both")) {
-    data.act <- as.data.frame(compo_tib[, 2:14])
-  }
+    data.act <- as.data.frame(res_tib[, 3:15])
+  } else if (type == "scats") {
+    data.act <- as.data.frame(res_tib[, 2:14])
+  } else if (type == "both") {
+    data.act <- as.data.frame(res_tib[, 1:13])
+  } 
+  
+  data.act <- data.act |>
+    dplyr::select(nutrients)
   
   list_outputs <- list()
   
   for (i in k_range) {
+    
     ki <- robCompositions::clustCoDa(data.act,
                                      k = i, 
                                      scale = scale, 
@@ -206,7 +387,8 @@ clust_find_k_table <- function(compo_tib,
   
   if (object_type == "file") {
     openxlsx::write.xlsx(df.to.plot, 
-                         file = paste0("output/Clustering/find_k_validity_measures_", 
+                         file = paste0("output/Clustering/", type, 
+                                       "/find_k_validity_measures_real_var", 
                                        type, 
                                        ".xlsx"))
   } else {
@@ -220,10 +402,11 @@ clust_find_k_table <- function(compo_tib,
 #'
 #'
 #'
-# function to perform clustering with different cluster nb and plot 
-# different validating values of the outputs
+# function to show validating values of the outputs
+# for different numbers of clusters on a boxplot
 boxplot_clust_find_k_val <- function(find_k_output, 
-                                 type # either fish or scats or both
+                                     type, # either fish or scats or both
+                                     file_name
 ) {
   
   
@@ -241,7 +424,7 @@ boxplot_clust_find_k_val <- function(find_k_output,
   
   find_k_output |>
     dplyr::mutate(k = as.factor(k)) |>
-    tidyr::pivot_longer(cols = c("separation":"min.size"), 
+    tidyr::pivot_longer(cols = c("separation":"min.clust.size"), 
                         names_to = "validity.variable", 
                         values_to = "value") |>
     ggplot2::ggplot(ggplot2::aes(x = k, y = value, group = k, fill = k)) +
@@ -258,8 +441,9 @@ boxplot_clust_find_k_val <- function(find_k_output,
                    strip.text.x = ggplot2::element_text(size = 15), 
                    legend.position = "none")
   # save plot 
-  ggplot2::ggsave(paste0("output/Clustering/validity_measures_boxplot_",
-                         type,
+  ggplot2::ggsave(paste0("output/Clustering/", type, 
+                         "/validity_measures_boxplot_",
+                         type, "_", file_name,
                          ".jpg"),
                   scale = 1,
                   height = 6, width = 8)
@@ -267,14 +451,17 @@ boxplot_clust_find_k_val <- function(find_k_output,
   
 }
 
+
+
 #'
 #'
 #'
 #'
-# function to perform clustering with different cluster nb and plot 
-# different validating values of the outputs
+# function to show means of validating values of the outputs
+# for different numbers of clusters
 means_clust_find_k_val <- function(find_k_output, 
-                               type) {
+                                   type, 
+                                   file_name) {
   
   # set color palette 
   if (length(unique(find_k_output$k)) >= 7) {
@@ -290,7 +477,7 @@ means_clust_find_k_val <- function(find_k_output,
   
   find_k_output |>
     dplyr::mutate(k = as.factor(k)) |>
-    tidyr::pivot_longer(cols = c("separation":"min.size"), 
+    tidyr::pivot_longer(cols = c("separation":"min.clust.size"), 
                         names_to = "validity.variable", 
                         values_to = "value") |>
     dplyr::group_by(k, validity.variable) |>
@@ -309,8 +496,9 @@ means_clust_find_k_val <- function(find_k_output,
                    strip.text.x = ggplot2::element_text(size = 15), 
                    legend.position = "none")
   # save plot 
-  ggplot2::ggsave(paste0("output/Clustering/validity_measures_means_",
-                         type,
+  ggplot2::ggsave(paste0("output/Clustering/", type, 
+                         "/validity_measures_means_",
+                         type, "_", file_name,
                          ".jpg"),
                   scale = 1,
                   height = 6, width = 8)
@@ -330,6 +518,13 @@ boxplot_compo_clust <- function(clust_output,
   
   # assign each sample to its cluster
   clust_vec <- clust_output$cluster
+  
+  # assign folder for the output 
+  if (stringr::str_detect(file_name, "fish")) {
+    folder <- "fish"
+  } else if (stringr::str_detect(file_name, "scats")) {
+    folder <- "scats"
+  }
   
   
   compo_tib |> 
@@ -356,7 +551,7 @@ boxplot_compo_clust <- function(clust_output,
                                                         face = "bold"), 
                    legend.position = "none")
   # save plot 
-  ggplot2::ggsave(paste0("output/Clustering/clust_boxplot_",
+  ggplot2::ggsave(paste0("output/Clustering/", folder, "/clust_boxplot_",
                          file_name,
                          ".jpg"),
                   scale = 1,
@@ -377,40 +572,108 @@ barplot_fam_clust <- function(clust_output,
   # assign each sample to its cluster
   clust_vec <- clust_output$cluster
   
-  compo_tib |> 
-    dplyr::ungroup() |>
-    dplyr::mutate(cluster = as.factor(clust_vec)) |>
-    ggplot2::ggplot(ggplot2::aes(x = cluster, 
-                                 fill = Family)) +
-    ggplot2::geom_bar() +
-    ggplot2::scale_fill_manual(values = c("#4C413FFF", "#5A6F80FF", "#278B9AFF",
-                                          "#E75B64FF", "#DE7862FF", "#D8AF39FF", 
-                                          "#E8C4A2FF", "#14191FFF", "#1D2645FF", 
-                                          "#403369FF", "#AE93BEFF", "#B4DAE5FF", 
-                                          "#F0D77BFF", "#2A3C50FF", "#3E6248FF", 
-                                          "#590514FF")) +
-    ggplot2::xlab("Cluster") +
-    ggplot2::theme_bw() +
-    ggplot2::theme(axis.title.x = ggplot2::element_text(size = 16, 
-                                                        face = "bold"), 
-                   axis.text.x = ggplot2::element_text(size = 15),
-                   axis.text.y = ggplot2::element_text(size = 15),
-                   axis.title.y = ggplot2::element_text(size = 16, 
-                                                        face = "bold"), 
-                   legend.text = ggplot2::element_text(size = 12), 
-                   legend.position = "bottom")
-  # save plot 
-  ggplot2::ggsave(paste0("output/Clustering/clust_barplot_",
-                         file_name,
-                         ".jpg"),
-                  scale = 1,
-                  height = 8, width = 10)
+  # assign folder for the output 
+  if (stringr::str_detect(file_name, "fish")) {
+    folder <- "fish"
+    fill_palette <- c("#4C413FFF", "#5A6F80FF", "#278B9AFF",
+                               "#E75B64FF", "#DE7862FF", "#D8AF39FF", 
+                               "#E8C4A2FF", "#14191FFF", "#1D2645FF", 
+                               "#403369FF", "#AE93BEFF", "#B4DAE5FF", 
+                               "#F0D77BFF", "#2A3C50FF", "#3E6248FF", 
+                               "#590514FF")
+    
+    compo_tib |> 
+      dplyr::ungroup() |>
+      dplyr::mutate(cluster = as.factor(clust_vec)) |>
+      ggplot2::ggplot(ggplot2::aes(x = cluster, 
+                                   fill = Family)) +
+      ggplot2::geom_bar() +
+      ggplot2::scale_fill_manual(values = fill_palette) +
+      ggplot2::xlab("Cluster") +
+      ggplot2::theme_bw() +
+      ggplot2::theme(axis.title.x = ggplot2::element_text(size = 16, 
+                                                          face = "bold"), 
+                     axis.text.x = ggplot2::element_text(size = 15),
+                     axis.text.y = ggplot2::element_text(size = 15),
+                     axis.title.y = ggplot2::element_text(size = 16, 
+                                                          face = "bold"), 
+                     legend.text = ggplot2::element_text(size = 12), 
+                     legend.position = "bottom")
+    # save plot 
+    ggplot2::ggsave(paste0("output/Clustering/", folder, "/clust_barplot_",
+                           file_name,
+                           ".jpg"),
+                    scale = 1,
+                    height = 8, width = 10)
+    
+  } else if (stringr::str_detect(file_name, "scats")) {
+    folder <- "scats"
+    fill_palette <- c("#278B9AFF", "#E75B64FF")
+    
+    compo_tib |> 
+      dplyr::ungroup() |>
+      dplyr::mutate(cluster = as.factor(clust_vec)) |>
+      ggplot2::ggplot(ggplot2::aes(x = cluster, 
+                                   fill = site)) +
+      ggplot2::geom_bar() +
+      ggplot2::scale_fill_manual(values = fill_palette) +
+      ggplot2::xlab("Cluster") +
+      ggplot2::theme_bw() +
+      ggplot2::theme(axis.title.x = ggplot2::element_text(size = 16, 
+                                                          face = "bold"), 
+                     axis.text.x = ggplot2::element_text(size = 15),
+                     axis.text.y = ggplot2::element_text(size = 15),
+                     axis.title.y = ggplot2::element_text(size = 16, 
+                                                          face = "bold"), 
+                     legend.text = ggplot2::element_text(size = 12), 
+                     legend.position = "bottom")
+    
+    # save plot 
+    ggplot2::ggsave(paste0("output/Clustering/", folder, "/clust_barplot_",
+                           file_name, "_site",
+                           ".jpg"),
+                    scale = 1,
+                    height = 8, width = 10)
+    
+    compo_tib |> 
+      dplyr::ungroup() |>
+      dplyr::mutate(cluster = as.factor(clust_vec)) |>
+      ggplot2::ggplot(ggplot2::aes(x = cluster, 
+                                   fill = HPI01)) +
+      ggplot2::geom_bar() +
+      ggplot2::scale_fill_manual(values = fill_palette) +
+      ggplot2::xlab("Cluster") +
+      ggplot2::theme_bw() +
+      ggplot2::theme(axis.title.x = ggplot2::element_text(size = 16, 
+                                                          face = "bold"), 
+                     axis.text.x = ggplot2::element_text(size = 15),
+                     axis.text.y = ggplot2::element_text(size = 15),
+                     axis.title.y = ggplot2::element_text(size = 16, 
+                                                          face = "bold"), 
+                     legend.text = ggplot2::element_text(size = 12), 
+                     legend.position = "bottom")
+    # save plot 
+    ggplot2::ggsave(paste0("output/Clustering/", folder, "/clust_barplot_",
+                           file_name, "_HPI",
+                           ".jpg"),
+                    scale = 1,
+                    height = 8, width = 10)
+  }
+  
+  
+  
 }
 
-
+#'
+#'
+#'
+#'
+#'
+# function to make biplot with cluster grouping
 biplot_after_clust <- function(res_pca, 
                                res_clust,
                                compo_tib,
+                               type, # either "fish" or "scats" or "both"
                                file_name, # should be explicit regarding dataset (fish
                                # or scats), method (coda or nocoda), "cleanness" of 
                                # dataset (with ou without stat outliers), ellipse
@@ -589,7 +852,8 @@ biplot_after_clust <- function(res_pca,
   g
   
   # save plot 
-  ggplot2::ggsave(paste0("output/Clustering/clust_biplot_",
+  ggplot2::ggsave(paste0("output/Clustering/", type, "/clust_biplot_",
+                         type, "_",
                          file_name,
                          ".jpg"),
                   scale = 1,

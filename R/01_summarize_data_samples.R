@@ -37,17 +37,29 @@ summary_fish_samples <- function(fish_tab,
 summary_scat_samples <- function(scat_tab) {
   scat_tab |>
     dplyr::group_by(site, date_collecte) |>
+    dplyr::mutate(HPI_0 = dplyr::case_when(index_hard_parts == 0 ~ 1,
+                                                  TRUE ~ 0),
+                  HPI_1 = dplyr::case_when(index_hard_parts == 1 ~ 1,
+                                                  TRUE ~ 0),
+                  HPI_2 = dplyr::case_when(index_hard_parts == 2 ~ 1,
+                                                  TRUE ~ 0), 
+                  HPI_3 = dplyr::case_when(index_hard_parts == 3 ~ 1,
+                                                  TRUE ~ 0)) |>
     dplyr::summarize(n = dplyr::n_distinct(Code_sample), 
                      wweight_mean = mean(ww), 
                      wweight_min = min(ww), 
                      wweight_max = max(ww), 
                      H20_mean = mean(water_percent), 
                      H20_min = min(water_percent), 
-                     H20_max= max(water_percent))
+                     H20_max= max(water_percent), 
+                     percent_HPI0 = 100*(sum(HPI_0)/n), 
+                     percent_HPI1 = 100*(sum(HPI_1)/n), 
+                     percent_HPI2 = 100*(sum(HPI_2)/n), 
+                     percent_HPI3 = 100*(sum(HPI_3)/n))
 }
 
 
-# clean file and summarise data on samples
+# clean file and summarise data on diets
 summary_diet_data <- function(diet_tab, 
                               compo_results_fish) {
   diet_tab |>
