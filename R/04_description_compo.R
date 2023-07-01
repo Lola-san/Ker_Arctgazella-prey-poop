@@ -52,6 +52,51 @@ table_compo_fish_sp <- function(res_fish_tib,
 }
 
 
+#'
+#'
+#'
+# simple function to add ecological group to each species
+# ecological habitat given on Fishbase
+add_eco_habitat_sp <- function(compo_tib) {
+  
+  compo_tib |>
+    dplyr::mutate(habitat = dplyr::case_when(Species %in% c("Gobionotothen acuta", 
+                                                            "Channichthys rhinoceratus",
+                                                            "Dissostichus eleginoides",
+                                                            "Mancopsetta mancopsetta",
+                                                            "Electrona antarctica") ~ "Demersal", 
+                                             Species %in% c("Lepidonotothen squamifrons", 
+                                                            "Champsocephalus gunnari",
+                                                            "Lindbergichthys mizops",
+                                                            "Muraenolepsis sp",
+                                                            "Gymnoscopelus piabilis",
+                                                            "Gymnoscopelus bolini") ~ "Benthopelagic", 
+                                             Species %in% c("Bathydraco antarcticus",
+                                                            "Macrourus carinatus",
+                                                            "Paradiplospinus gracilis",
+                                                            "Echiodon cryomargarites") ~ "Bathydemersal", 
+                                             Species %in% c("Krefftichthys anderssoni",
+                                                            "Melanostigma gelatinosum",
+                                                            "Bathylagus tenuis",
+                                                            "Luciosudis normani", 
+                                                            "Gymnoscopelus braueri", 
+                                                            "Gymnoscopelus fraseri", 
+                                                            "Gymnoscopelus nicholsi", 
+                                                            "Electrona subaspera",
+                                                            "Poromitra crassiceps", 
+                                                            "Nansenia antarctica",
+                                                            "Electrona carlsbergi", 
+                                                            "Protomyctophum andriashevi",
+                                                            "Protomyctophum bolini", 
+                                                            "Protomyctophum choriodon",
+                                                            "Stomias sp",
+                                                            "Idiacanthus atlanticus",
+                                                            "Arctozenus risso",
+                                                            "Notolepis coatsi", 
+                                                            "Protomyctophum tenisoni") ~ "Bathypelagic")) 
+  
+}
+
 
 #'
 #'
@@ -129,7 +174,7 @@ boxplot_compo_fish_sp <- function(res_fish_tib,
 #'
 #'
 #'
-# function to display boxplot of elemental composition per family
+# function to display boxplot of elemental composition per species
 boxplot_compo_fish_sp_all_nut <- function(res_fish_tib 
 ) {
   
@@ -275,12 +320,14 @@ boxplot_compo_fish_genus <- function(res_fish_tib,
   
 }
 
+
+
 #'
 #'
 #'
 #'
 #'
-# function to display boxplot of elemental composition per family
+# function to display boxplot of elemental composition per genus
 boxplot_compo_fish_genus_all_nut <- function(res_fish_tib 
 ) {
   
@@ -577,6 +624,193 @@ boxplot_compo_fish_camp_full <- function(res_fish_tib) {
 #'
 #'
 #'
+# function to display boxplot of elemental composition per habitat
+boxplot_compo_fish_hab_all_nut <- function(res_fish_tib 
+) {
+  
+  res_fish_tib |>
+    tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K,
+                                 Mg, Mn, Na, Ni, P, Se, Zn), 
+                        names_to = "Nutrient", 
+                        values_to = "concentration_mg_g_dw") |>
+    dplyr::mutate(Species = factor(Species, 
+                                   levels = c(# Paralepididae
+                                     "Arctozenus risso", 
+                                     "Notolepsis coatsi",
+                                     # Bathydraconidae
+                                     "Bathydraco antarcticus",
+                                     # Bathylagidae
+                                     "Bathylagus tenuis",
+                                     # Channichthyidae
+                                     "Champsocephalus gunnari",
+                                     "Channichthys rhinoceratus",
+                                     # Nototheniidae
+                                     "Dissostichus eleginoides",
+                                     "Gobionotothen acuta",
+                                     "Lepidonotothen squamifrons",
+                                     "Lindbergichthys mizops",
+                                     # Carapidae
+                                     "Echiodon cryomargarites",
+                                     # Myctophidae
+                                     "Electrona antarctica",
+                                     "Electrona carlsbergi", 
+                                     "Electrona subaspera",
+                                     "Gymnoscopelus bolini",
+                                     "Gymnoscopelus braueri",
+                                     "Gymnoscopelus fraseri",
+                                     "Gymnoscopelus nicholsi", 
+                                     "Gymnoscopelus piabilis", 
+                                     "Krefftichthys anderssoni",
+                                     "Protomyctophum andriashevi",
+                                     "Protomyctophum bolini",
+                                     "Protomyctophum choriodon",
+                                     "Protomyctophum tenisoni",
+                                     # Stomiidae
+                                     "Idiacanthus atlanticus", 
+                                     "Stomias sp",
+                                     # Notosudidae
+                                     "Luciosudis normani",
+                                     # Macrouridae
+                                     "Macrourus carinatus",
+                                     # Achiropsettidae
+                                     "Mancopsetta mancopsetta",
+                                     "Melanostigma gelatinosum",
+                                     # Muraenolepididae
+                                     "Muraenolepsis sp",
+                                     # Microstomatidae
+                                     "Nansenia antarctica",
+                                     # Gempylidae
+                                     "Paradiplospinus gracilis",
+                                     # Melamphaidae
+                                     "Poromitra crassiceps")), 
+                  Nutrient = factor(Nutrient, 
+                                    levels = c("Ca", "P", "Na", "K", "Mg", 
+                                               "Fe", "Zn", "Cu", "Mn", "Se",
+                                               "As", "Ni","Co"))) |>
+    dplyr::group_by(habitat) |>
+    dplyr::mutate(nsample = dplyr::n_distinct(Code_sample),
+                  nsp = dplyr::n_distinct(Species)) |>
+    dplyr::group_by(Species, habitat, Nutrient) |>
+    dplyr::summarise(habitatnsp = paste0(habitat, " (n(sp) = ", nsp, ")"), 
+                     mean_conc_mg_g_dw = mean(concentration_mg_g_dw)) |>
+    ggplot2::ggplot(ggplot2::aes(x = habitatnsp, 
+                                 y = mean_conc_mg_g_dw, fill = Nutrient)) +
+    ggplot2::geom_violin(width=1.4) +
+    ggplot2::facet_wrap(~ Nutrient, scale = "free_x", nrow = 3) +
+    ggplot2::geom_boxplot(alpha=0.9) +
+    ggplot2::geom_jitter(color="darkgrey", size=0.7, alpha=0.2) +
+    ggplot2::coord_flip() +
+    ggplot2::scale_fill_manual(values = c("#4C413FFF", "#5A6F80FF", "#278B9AFF",
+                                          "#E75B64FF", "#DE7862FF", "#D8AF39FF", 
+                                          "#E8C4A2FF", "#14191FFF", "#1D2645FF", 
+                                          "#403369FF", "#AE93BEFF", "#B4DAE5FF", 
+                                          "#F0D77BFF")) +
+    ggplot2::ylab("Nutrient concentration (in mg/g dry weight)") +
+    ggplot2::xlab("Habitat") +
+    ggplot2::theme_bw() +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(size = 16), 
+                   axis.text.y = ggplot2::element_text(size = 16), 
+                   axis.title.x = ggplot2::element_text(size = 17, 
+                                                        face = "bold"), 
+                   axis.title.y = ggplot2::element_text(size = 17, 
+                                                        face = "bold"),
+                   strip.text.x = ggplot2::element_text(size = 16),
+                   legend.position = "none")
+  ggplot2::ggsave(paste0("output/compo fish/per-habitat/boxplot_hab_all_nut.jpg"),
+                  scale = 1,
+                  height = 10, width = 14
+  )
+  
+}
+
+
+#'
+#'
+#'
+#'
+#'
+# function to compute Mann-Whitney U Test to assess difference between 
+# concentration of fish in different habitats 
+MWtest_fish_hab <- function(res_fish_tib) {
+  
+  compo_tib <- res_fish_tib |>
+    tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K,
+                                 Mg, Mn, Na, Ni, P, Se, Zn), 
+                        names_to = "Nutrient", 
+                        values_to = "concentration_mg_g_dw") |>
+    dplyr::mutate(Nutrient = factor(Nutrient, 
+                                    levels = c("Ca", "P", "Na", "K", "Mg", 
+                                               "Fe", "Zn", "Cu", "Mn", "Se",
+                                               "As", "Ni","Co")))
+  
+  nut_vec <- unique(compo_tib$Nutrient)
+  
+  list_outputs <- list()
+  
+  for (nut in nut_vec) {
+    
+    table <- compo_tib |>
+      dplyr::group_by(habitat, Species, Nutrient) |>
+      dplyr::summarise(mean_sp_conc_mg_g_dw = mean(concentration_mg_g_dw)) |>
+      dplyr::filter(Nutrient == nut) |>
+      tidyr::pivot_wider(names_from = habitat, 
+                         values_from = mean_sp_conc_mg_g_dw)
+    
+    demersal <- na.omit(table$Demersal)
+    bathypel <- na.omit(table$Bathypelagic)
+    bathydem <- na.omit(table$Bathydemersal)
+    benthopel <- na.omit(table$Benthopelagic)
+    
+    nut_test <- data.frame(Nutrient = rep(nut, 6), 
+                           Habitat1 = c("Demersal", "Demersal", "Demersal",
+                                        "Bathypelagic", "Bathypelagic", 
+                                        "Bathydemersal"), 
+                           Habitat2 = c("Bathypelagic", "Bathydemersal", "Benthopelagic",
+                                        "Bathydemersal", "Benthopelagic", 
+                                        "Benthopelagic"), 
+                           alpha_MW = c(wilcox.test(demersal, bathypel)[[3]],
+                                        wilcox.test(demersal, bathydem)[[3]],
+                                        wilcox.test(demersal, benthopel)[[3]],
+                                        
+                                        wilcox.test(bathypel, bathydem)[[3]],
+                                        wilcox.test(bathypel, benthopel)[[3]],
+                                        
+                                        wilcox.test(bathydem, benthopel)[[3]]))
+    
+    list_outputs <- append(list_outputs, list(nut_test))
+  }
+  
+  
+  df_test <- data.frame(Nutrient = NA, 
+                    Habitat1 = NA,
+                    Habitat2 = NA,
+                    alpha_MW = NA)
+  
+  for (i in 1:length(nut_vec)) {
+    df_test <- rbind(df_test, list_outputs[[i]])
+  }
+  
+  # delete first line of NAs
+  df_test <- df_test[-1,]
+  
+  df_test <- df_test |>
+    dplyr::mutate(significant = dplyr::case_when(alpha_MW <= 0.05 ~ "yes", 
+                                                 TRUE ~ "no"))
+  
+  openxlsx::write.xlsx(df_test, 
+                         file = paste0("output/compo fish/Mann_Whitney_test_fish_habitat.xlsx"))
+  
+  
+  
+}
+
+
+
+#'
+#'
+#'
+#'
+#'
 # function to display boxplot of elemental composition of all fish
 boxplot_compo_fish_tot <- function(res_fish_tib) {
   
@@ -770,10 +1004,9 @@ complete_compo_scats <- function(res_scat_tib,
                        dplyr::select(Code_sample, index_hard_parts, pup_suspicion), 
                      by = "Code_sample") |>
     dplyr::rename(HPI = index_hard_parts) |>
-    dplyr::mutate(HPI = factor(HPI),
-                  pup_suspicion = factor(pup_suspicion),
+    dplyr::mutate(pup_suspicion = factor(pup_suspicion),
                   HPI01 = dplyr::case_when(HPI != 0 ~ "1",  # positive
-                                            TRUE ~ "0")) # negative
+                                          TRUE ~ "0")) # negative
   
 }
 
@@ -964,7 +1197,7 @@ boxplot_compo_scats_HPI <- function(res_scat_tib,
     tidyr::pivot_longer(cols = c("As":"Zn"), 
                         names_to = "Nutrient", 
                         values_to = "concentration_mg_g_dw") |>
-    ggplot2::ggplot(ggplot2::aes(x = HPI, 
+    ggplot2::ggplot(ggplot2::aes(x = factor(HPI), 
                                  y = concentration_mg_g_dw, 
                                  fill = Nutrient)) +
     ggplot2::geom_violin(width=1.4) +
@@ -1040,6 +1273,200 @@ boxplot_compo_scats_HPI01 <- function(res_scat_tib,
   )
   
 }
+
+
+#'
+#'
+#'
+#'
+#'
+# function to compute Mann-Whitney U Test to assess difference between 
+# concentrations in scats between sites 
+MWtest_scats_sites <- function(res_scat_tib,
+                              pup_no_pup # either "pup" or "no_pup" 
+                              ) {
+  
+  compo_tib <- res_scat_tib |>
+    tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K,
+                                 Mg, Mn, Na, Ni, P, Se, Zn), 
+                        names_to = "Nutrient", 
+                        values_to = "concentration_mg_g_dw") |>
+    dplyr::mutate(Nutrient = factor(Nutrient, 
+                                    levels = c("Ca", "P", "Na", "K", "Mg", 
+                                               "Fe", "Zn", "Cu", "Mn", "Se",
+                                               "As", "Ni","Co")))
+  
+  nut_vec <- unique(compo_tib$Nutrient)
+  
+  list_outputs <- list()
+  
+  for (nut in nut_vec) {
+    
+    table <- compo_tib |>
+      dplyr::filter(Nutrient == nut) |>
+      tidyr::pivot_wider(names_from = site, 
+                         values_from = concentration_mg_g_dw)
+    
+    CapNo <- na.omit(table$`Cap Noir`)
+    PSuz <- na.omit(table$`Pointe Suzanne`)
+    
+    nut_test <- data.frame(Nutrient = nut,  
+                           alpha_MW = wilcox.test(CapNo, PSuz)[[3]])
+    
+    list_outputs <- append(list_outputs, list(nut_test))
+  }
+  
+  
+  df_test <- data.frame(Nutrient = NA, 
+                        alpha_MW = NA)
+  
+  for (i in 1:length(nut_vec)) {
+    df_test <- rbind(df_test, list_outputs[[i]])
+  }
+  
+  # delete first line of NAs
+  df_test <- df_test[-1,]
+  
+  df_test <- df_test |>
+    dplyr::mutate(significant = dplyr::case_when(alpha_MW <= 0.05 ~ "yes", 
+                                                 TRUE ~ "no"))
+  
+  openxlsx::write.xlsx(df_test, 
+                       file = paste0("output/compo scats/Mann_Whitney_test_scats_sites_",
+                                     pup_no_pup,
+                                     ".xlsx"))
+  
+}
+
+
+
+#'
+#'
+#'
+#'
+#'
+# function to compute Mann-Whitney U Test to assess difference between 
+# concentrations in scats between that suspected to be of pups and 
+# the other ones
+MWtest_scats_pup_nopup <- function(res_scat_tib) {
+  
+  compo_tib <- res_scat_tib |>
+    tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K,
+                                 Mg, Mn, Na, Ni, P, Se, Zn), 
+                        names_to = "Nutrient", 
+                        values_to = "concentration_mg_g_dw") |>
+    dplyr::mutate(Nutrient = factor(Nutrient, 
+                                    levels = c("Ca", "P", "Na", "K", "Mg", 
+                                               "Fe", "Zn", "Cu", "Mn", "Se",
+                                               "As", "Ni","Co")))
+  
+  nut_vec <- unique(compo_tib$Nutrient)
+  
+  list_outputs <- list()
+  
+  for (nut in nut_vec) {
+    
+    table <- compo_tib |>
+      dplyr::filter(Nutrient == nut) |>
+      tidyr::pivot_wider(names_from = pup_suspicion, 
+                         values_from = concentration_mg_g_dw)
+    
+    Nopupsus <- na.omit(table$`0`)
+    pupsus <- na.omit(table$`1`)
+    
+    nut_test <- data.frame(Nutrient = nut,  
+                           alpha_MW = wilcox.test(Nopupsus, pupsus)[[3]])
+    
+    list_outputs <- append(list_outputs, list(nut_test))
+  }
+  
+  
+  df_test <- data.frame(Nutrient = NA, 
+                        alpha_MW = NA)
+  
+  for (i in 1:length(nut_vec)) {
+    df_test <- rbind(df_test, list_outputs[[i]])
+  }
+  
+  # delete first line of NAs
+  df_test <- df_test[-1,]
+  
+  df_test <- df_test |>
+    dplyr::mutate(significant = dplyr::case_when(alpha_MW <= 0.05 ~ "yes", 
+                                                 TRUE ~ "no"))
+  
+  openxlsx::write.xlsx(df_test, 
+                       file = "output/compo scats/Mann_Whitney_test_scats_pup_nopup.xlsx")
+  
+}
+
+
+
+#'
+#'
+#'
+#'
+#'
+# function to compute Mann-Whitney U Test to assess difference between 
+# concentrations in scats between presence and absence of hard parts
+MWtest_scats_HPI <- function(res_scat_tib, 
+                             pup_no_pup # either "pup" or "no_pup" 
+                             ) {
+  
+  compo_tib <- res_scat_tib |>
+    tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K,
+                                 Mg, Mn, Na, Ni, P, Se, Zn), 
+                        names_to = "Nutrient", 
+                        values_to = "concentration_mg_g_dw") |>
+    dplyr::mutate(Nutrient = factor(Nutrient, 
+                                    levels = c("Ca", "P", "Na", "K", "Mg", 
+                                               "Fe", "Zn", "Cu", "Mn", "Se",
+                                               "As", "Ni","Co")))
+  
+  nut_vec <- unique(compo_tib$Nutrient)
+  
+  list_outputs <- list()
+  
+  for (nut in nut_vec) {
+    
+    table <- compo_tib |>
+      dplyr::filter(Nutrient == nut) |>
+      tidyr::pivot_wider(names_from = HPI01, 
+                         values_from = concentration_mg_g_dw)
+    
+    HPI0 <- na.omit(table$`0`)
+    HPI1 <- na.omit(table$`1`)
+    
+    nut_test <- data.frame(Nutrient = nut,  
+                           alpha_MW = wilcox.test(HPI0, HPI1)[[3]])
+    
+    list_outputs <- append(list_outputs, list(nut_test))
+  }
+  
+  
+  df_test <- data.frame(Nutrient = NA, 
+                        alpha_MW = NA)
+  
+  for (i in 1:length(nut_vec)) {
+    df_test <- rbind(df_test, list_outputs[[i]])
+  }
+  
+  # delete first line of NAs
+  df_test <- df_test[-1,]
+  
+  df_test <- df_test |>
+    dplyr::mutate(significant = dplyr::case_when(alpha_MW <= 0.05 ~ "yes", 
+                                                 TRUE ~ "no"))
+  
+  openxlsx::write.xlsx(df_test, 
+                       file = paste0("output/compo scats/Mann_Whitney_test_scats_HPI_",
+                                     pup_no_pup,
+                                     ".xlsx"))
+  
+}
+
+
+
 
 
 #'
