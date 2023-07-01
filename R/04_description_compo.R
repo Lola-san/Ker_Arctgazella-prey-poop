@@ -111,7 +111,7 @@ compute_means_sp <- function(compo_tib) {
     dplyr::group_by(Species) |>
     dplyr::mutate(n = dplyr::n_distinct(Code_sample),
                   Speciesn = paste0(Species, "\n(n = ", n, ")")) |>
-    dplyr::group_by(Family, Speciesn, Nutrient) |>
+    dplyr::group_by(Family, habitat, Speciesn, Nutrient) |>
     dplyr::summarise(mean_sp = mean(concentration_mg_g_dw)) |>
     tidyr::pivot_wider(names_from = Nutrient, 
                        values_from = mean_sp) |>

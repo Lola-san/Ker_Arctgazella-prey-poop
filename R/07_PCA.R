@@ -31,7 +31,7 @@ pca_coda <- function(res_tib,
 ) {
   
   if (type == "fish") {
-    data.act <- as.data.frame(res_tib[, 3:15])
+    data.act <- as.data.frame(res_tib[, 4:16])
   } else if (type == "scats") {
     data.act <- as.data.frame(res_tib[, 2:14])
   } else if (type == "both") {
@@ -57,7 +57,7 @@ pca_coda_norob <- function(res_tib,
 ) {
   
   if (type == "fish") {
-    data.act <- as.data.frame(res_tib[, 3:15])
+    data.act <- as.data.frame(res_tib[, 4:16])
   } else if (type == "scats") {
     data.act <- as.data.frame(res_tib[, 2:14])
   } else if (type == "both") {
@@ -215,6 +215,12 @@ biplot_pca_coda <- function(res_pca,
                      "Bathydraconidae" = "#AE93BEFF", 
                      "Achiropsettidae" = "#F0D77BFF")
     folder <- "fish"
+  } else if (groups == "habitat") {
+    # grouping per habitat (fish composition)
+    df.u$groups <- compo_tib$habitat
+    color_scale <- c("#3E6248FF", "#278B9AFF",
+                     "#DE7862FF", "#D8AF39FF")
+    folder <- "fish"
   } else if (groups == "site") {
     # grouping per site (scat composition)
     df.u$groups <- compo_tib$site
@@ -356,7 +362,7 @@ pca_nocoda <- function(res_tib,
   # scale and center data
   # on all samples when on fish and scats datasets no together
   if (type == "fish") {
-    data.act <- scale(as.data.frame(res_tib[,3:15]), center = TRUE) 
+    data.act <- scale(as.data.frame(res_tib[, 4:16]), center = TRUE) 
   } else if (type == "scats") {
     data.act <- as.data.frame(res_tib[, 2:14])
   } else if (type == "both") {
@@ -407,7 +413,7 @@ biplot_pca_nocoda <- function(res_pca_classical, #output of prcomp
                               file_name
 ) {
   
-
+  
   # define groups (and output folder)
   if (groups == "species") {
     # grouping per species (fish composition)
@@ -418,6 +424,12 @@ biplot_pca_nocoda <- function(res_pca_classical, #output of prcomp
   } else if (groups == "Family") {
     # grouping per Family (fish composition)
     groups_vec <- compo_tib$Family
+    label_vec <- "var"
+    geom_vec <- "point"
+    folder <- "fish"
+  } else if (groups == "habitat") {
+    # grouping per habitat (fish composition)
+    groups_vec <- compo_tib$habitat
     label_vec <- "var"
     geom_vec <- "point"
     folder <- "fish"
@@ -451,6 +463,9 @@ biplot_pca_nocoda <- function(res_pca_classical, #output of prcomp
     pal <- c("#278B9AFF", "#D8AF39FF")
   } else if (groups == "HPI") {
     pal <- c("#E75B64FF", "#B4DAE5FF")
+  } else if (groups == "habitat") {
+    pal <- c("#3E6248FF", "#278B9AFF",
+             "#DE7862FF", "#D8AF39FF")
   } else {
     pal <- viridis::cividis(length(groups_vec))
   }
@@ -479,8 +494,8 @@ biplot_pca_nocoda <- function(res_pca_classical, #output of prcomp
   
   # save plot 
   ggplot2::ggsave(paste0("output/PCA/", 
-  folder, 
-  "/PCA_classical_biplot_",
+                         folder, 
+                         "/PCA_classical_biplot_",
                          file_name,
                          ".jpg"),
                   scale = 1,

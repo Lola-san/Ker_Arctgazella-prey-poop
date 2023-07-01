@@ -86,13 +86,13 @@ clust_compo_PCs <- function(res_pca,
   
   if (file_type == "file") {
     openxlsx::write.xlsx(clust.val, 
-                       file = paste0("output/Clustering/", 
-                                     type, "/clust_PCs_validity_measures_", 
-                                     file_name, 
-                                     ".xlsx"))
+                         file = paste0("output/Clustering/", 
+                                       type, "/clust_PCs_validity_measures_", 
+                                       file_name, 
+                                       ".xlsx"))
   } else {
     # output is the cluster attribution
-  clust_output
+    clust_output
   }
   
 }
@@ -107,7 +107,7 @@ clust_compo_PCs_dendro <- function(res_pca,
                                    compo_tib,
                                    method, 
                                    k,
-                                   colour, # "Family" or "Cluster"
+                                   colour, # "Family", "habitat" or "Cluster"
                                    file_name
 ) {
   # select the 5 first PCs
@@ -133,6 +133,7 @@ clust_compo_PCs_dendro <- function(res_pca,
   dendro.labels <- dendro.dat$labels |>
     dplyr::mutate(label = compo_tib$Species[tree$order], 
                   Family = compo_tib$Family[tree$order], 
+                  Habitat = compo_tib$habitat[tree$order], 
                   Cluster = factor(clust_output$cluster[tree$order])) |>
     dplyr::mutate(label = stringr::str_replace(label, "\n", " "), 
                   Family = factor(Family, 
@@ -180,7 +181,7 @@ clust_compo_PCs_dendro <- function(res_pca,
                          ggplot2::aes(x, y, 
                                       label = label, 
                                       colour = Family
-                                      ),
+                         ),
                          hjust = 1, size = 4) +
       ggplot2::scale_color_manual(values = colour_palette) +
       ggplot2::coord_flip() +
@@ -188,6 +189,32 @@ clust_compo_PCs_dendro <- function(res_pca,
       ggplot2::guides(colour = ggplot2::guide_legend(title = "Family",
                                                      override.aes = list(shape = 12)))  +
       ggplot2::theme_classic() 
+    # save plot 
+    ggplot2::ggsave(paste0("output/Clustering/fish/dendrogram_", 
+                           file_name, "_",
+                           colour, ".jpg"),
+                    scale = 1,
+                    height = 6, width = 8)
+    
+  } else if (colour == "habitat") {
+    colour_palette <- c("#3E6248FF", "#278B9AFF",
+                        "#DE7862FF", "#D8AF39FF")
+    
+    # plot dendrogram
+    ggplot2::ggplot(dendro.dat$segments) + 
+      ggplot2::geom_segment(ggplot2::aes(x = x, y = y, xend = xend, yend = yend))+
+      ggplot2::geom_text(data = dendro.labels, 
+                         ggplot2::aes(x, y, 
+                                      label = label, 
+                                      colour = Habitat),
+                         hjust = 1, size = 4) +
+      ggplot2::scale_color_manual(values = colour_palette) +
+      ggplot2::coord_flip() +
+      ggplot2::ylim(-6, 6) +
+      ggplot2::guides(colour = ggplot2::guide_legend(title = "Cluster",
+                                                     override.aes = list(shape = 12)))  +
+      ggplot2::theme_classic()
+    
     # save plot 
     ggplot2::ggsave(paste0("output/Clustering/fish/dendrogram_", 
                            file_name, "_",
@@ -563,10 +590,10 @@ boxplot_compo_clust <- function(clust_output,
 #'
 #'
 #'
-# function to show families of samples from the different clusters
-barplot_fam_clust <- function(clust_output,
-                              compo_tib,
-                              file_name
+# function to show families/habitats/site of samples from the different clusters
+barplot_clust <- function(clust_output,
+                          compo_tib,
+                          file_name
 ) {
   
   # assign each sample to its cluster
@@ -575,12 +602,15 @@ barplot_fam_clust <- function(clust_output,
   # assign folder for the output 
   if (stringr::str_detect(file_name, "fish")) {
     folder <- "fish"
-    fill_palette <- c("#4C413FFF", "#5A6F80FF", "#278B9AFF",
-                               "#E75B64FF", "#DE7862FF", "#D8AF39FF", 
-                               "#E8C4A2FF", "#14191FFF", "#1D2645FF", 
-                               "#403369FF", "#AE93BEFF", "#B4DAE5FF", 
-                               "#F0D77BFF", "#2A3C50FF", "#3E6248FF", 
-                               "#590514FF")
+    fill_palette_family <- c("#4C413FFF", "#5A6F80FF", "#278B9AFF",
+                             "#E75B64FF", "#DE7862FF", "#D8AF39FF", 
+                             "#E8C4A2FF", "#14191FFF", "#1D2645FF", 
+                             "#403369FF", "#AE93BEFF", "#B4DAE5FF", 
+                             "#F0D77BFF", "#2A3C50FF", "#3E6248FF", 
+                             "#590514FF")
+    
+    fill_palette_habitat <- c("#3E6248FF", "#278B9AFF",
+                              "#DE7862FF", "#D8AF39FF")
     
     compo_tib |> 
       dplyr::ungroup() |>
@@ -588,7 +618,7 @@ barplot_fam_clust <- function(clust_output,
       ggplot2::ggplot(ggplot2::aes(x = cluster, 
                                    fill = Family)) +
       ggplot2::geom_bar() +
-      ggplot2::scale_fill_manual(values = fill_palette) +
+      ggplot2::scale_fill_manual(values = fill_palette_family) +
       ggplot2::xlab("Cluster") +
       ggplot2::theme_bw() +
       ggplot2::theme(axis.title.x = ggplot2::element_text(size = 16, 
@@ -600,7 +630,32 @@ barplot_fam_clust <- function(clust_output,
                      legend.text = ggplot2::element_text(size = 12), 
                      legend.position = "bottom")
     # save plot 
-    ggplot2::ggsave(paste0("output/Clustering/", folder, "/clust_barplot_",
+    ggplot2::ggsave(paste0("output/Clustering/", folder, "/clust_barplot_families_",
+                           file_name,
+                           ".jpg"),
+                    scale = 1,
+                    height = 8, width = 10)
+    
+    
+    compo_tib |> 
+      dplyr::ungroup() |>
+      dplyr::mutate(cluster = as.factor(clust_vec)) |>
+      ggplot2::ggplot(ggplot2::aes(x = cluster, 
+                                   fill = habitat)) +
+      ggplot2::geom_bar() +
+      ggplot2::scale_fill_manual(values = fill_palette_habitat) +
+      ggplot2::xlab("Cluster") +
+      ggplot2::theme_bw() +
+      ggplot2::theme(axis.title.x = ggplot2::element_text(size = 16, 
+                                                          face = "bold"), 
+                     axis.text.x = ggplot2::element_text(size = 15),
+                     axis.text.y = ggplot2::element_text(size = 15),
+                     axis.title.y = ggplot2::element_text(size = 16, 
+                                                          face = "bold"), 
+                     legend.text = ggplot2::element_text(size = 12), 
+                     legend.position = "bottom")
+    # save plot 
+    ggplot2::ggsave(paste0("output/Clustering/", folder, "/clust_barplot_habitats_",
                            file_name,
                            ".jpg"),
                     scale = 1,
@@ -663,6 +718,9 @@ barplot_fam_clust <- function(clust_output,
   
   
 }
+
+
+
 
 #'
 #'
