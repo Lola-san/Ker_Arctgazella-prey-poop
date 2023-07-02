@@ -798,7 +798,7 @@ MWtest_fish_hab <- function(res_fish_tib) {
                                                  TRUE ~ "no"))
   
   openxlsx::write.xlsx(df_test, 
-                         file = paste0("output/compo fish/Mann_Whitney_test_fish_habitat.xlsx"))
+                         file = paste0("output/compo fish/per-habitat/Mann_Whitney_test_fish_habitat.xlsx"))
   
   
   

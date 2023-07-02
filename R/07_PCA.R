@@ -35,7 +35,18 @@ pca_coda <- function(res_tib,
   } else if (type == "scats") {
     data.act <- as.data.frame(res_tib[, 2:14])
   } else if (type == "both") {
-    data.act <- as.data.frame(res_tib[, 1:13])
+    data.relative.compo <- res_tib |>
+      dplyr::mutate(sum = As + Ca + Co + Cu + Fe + K +
+                      Mg + Mn + Na + Ni + P + Se + Zn) |>
+      tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, Mg, Mn, Na, Ni, P, Se, Zn), 
+                          names_to = "Nutrient", 
+                          values_to = "concentration_mg_g_dw") |>
+      dplyr::mutate(relative_concentration = concentration_mg_g_dw/sum) |>
+      dplyr::select(-c(sum, concentration_mg_g_dw)) |>
+      tidyr::pivot_wider(names_from = Nutrient, 
+                         values_from = relative_concentration)
+    
+    data.act <- as.data.frame(data.relative.compo[, 7:19])
   } 
   
   ## robust estimation (default):
@@ -61,7 +72,18 @@ pca_coda_norob <- function(res_tib,
   } else if (type == "scats") {
     data.act <- as.data.frame(res_tib[, 2:14])
   } else if (type == "both") {
-    data.act <- as.data.frame(res_tib[, 1:13])
+    data.relative.compo <- res_tib |>
+      dplyr::mutate(sum = As + Ca + Co + Cu + Fe + K +
+                      Mg + Mn + Na + Ni + P + Se + Zn) |>
+      tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, Mg, Mn, Na, Ni, P, Se, Zn), 
+                          names_to = "Nutrient", 
+                          values_to = "concentration_mg_g_dw") |>
+      dplyr::mutate(relative_concentration = concentration_mg_g_dw/sum) |>
+      dplyr::select(-c(sum, concentration_mg_g_dw)) |>
+      tidyr::pivot_wider(names_from = Nutrient, 
+                         values_from = relative_concentration)
+    
+    data.act <- as.data.frame(data.relative.compo[, 7:19])
   } 
   
   ## robust estimation (default):
@@ -364,27 +386,40 @@ pca_nocoda <- function(res_tib,
   if (type == "fish") {
     data.act <- scale(as.data.frame(res_tib[, 4:16]), center = TRUE) 
   } else if (type == "scats") {
-    data.act <- as.data.frame(res_tib[, 2:14])
+    data.act <- scale(as.data.frame(res_tib[, 2:14]), center = TRUE)
   } else if (type == "both") {
-    # scale by type as we are interested in comparing relative compo
-    # and not total compo ie direct quantities
-    scale_center_this <- function(x){
-      (x - mean(x, na.rm=TRUE)) / sd(x, na.rm=TRUE)
-    }
-    scaled_tib <- res_tib |>
-      tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K,
-                                   Mg, Mn, Na, Ni, P, Se, Zn), 
+    # # scale by type as we are interested in comparing relative compo
+    # # and not total compo ie direct quantities
+    # scale_center_this <- function(x){
+    #   (x - mean(x, na.rm=TRUE)) / sd(x, na.rm=TRUE)
+    # }
+    # scaled_tib <- res_tib |>
+    #   tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K,
+    #                                Mg, Mn, Na, Ni, P, Se, Zn), 
+    #                       names_to = "Nutrient", 
+    #                       values_to = "concentration_mg_g_dw") |>
+    #   dplyr::ungroup() |>
+    #   dplyr::group_by(type, Nutrient) |>
+    #   dplyr::summarise(scaled_value = scale_center_this(concentration_mg_g_dw)) |>
+    #   # add a unique identifier of lines
+    #   dplyr::mutate(ID = dplyr::row_number()) |>
+    #   tidyr::pivot_wider(names_from = Nutrient, 
+    #                      values_from = scaled_value)
+    # 
+    # data.act <- as.data.frame(scaled_tib[3:15])
+    
+    data.relative.compo <- res_tib |>
+      dplyr::mutate(sum = As + Ca + Co + Cu + Fe + K +
+                      Mg + Mn + Na + Ni + P + Se + Zn) |>
+      tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, Mg, Mn, Na, Ni, P, Se, Zn), 
                           names_to = "Nutrient", 
                           values_to = "concentration_mg_g_dw") |>
-      dplyr::ungroup() |>
-      dplyr::group_by(type, Nutrient) |>
-      dplyr::summarise(scaled_value = scale_center_this(concentration_mg_g_dw)) |>
-      # add a unique identifier of lines
-      dplyr::mutate(ID = dplyr::row_number()) |>
+      dplyr::mutate(relative_concentration = concentration_mg_g_dw/sum) |>
+      dplyr::select(-c(sum, concentration_mg_g_dw)) |>
       tidyr::pivot_wider(names_from = Nutrient, 
-                         values_from = scaled_value)
+                         values_from = relative_concentration)
     
-    data.act <- as.data.frame(scaled_tib[3:15])
+    data.act <- scale(as.data.frame(data.relative.compo[, 7:19]), center = TRUE)
   }
   
   # compute PCA

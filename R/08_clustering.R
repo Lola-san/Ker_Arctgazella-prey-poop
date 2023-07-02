@@ -22,11 +22,28 @@ clust_compo_full_tib <- function(compo_tib,
                                  scale = "robust", # other option is "classical"
                                  method) {
   
-  if (type == "fish") {
-    data.act <- as.data.frame(compo_tib[, 4:16])
-  } else if (type %in% c("scats", "both")) {
-    data.act <- as.data.frame(compo_tib[, 2:14])
-  }
+   if (type == "both") {
+     compo_tib.relative <- compo_tib |>
+       dplyr::mutate(sum = As + Ca + Co + Cu + Fe + K +
+                       Mg + Mn + Na + Ni + P + Se + Zn) |>
+       tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, Mg, Mn, Na, Ni, P, Se, Zn), 
+                           names_to = "Nutrient", 
+                           values_to = "concentration_mg_g_dw") |>
+       dplyr::mutate(relative_concentration = concentration_mg_g_dw/sum) |>
+       dplyr::select(-c(sum, concentration_mg_g_dw)) |>
+       tidyr::pivot_wider(names_from = Nutrient, 
+                          values_from = relative_concentration)
+     data.act <- as.data.frame(compo_tib.relative |>
+                                 dplyr::ungroup() |>
+                                 dplyr::select(tidyselect::all_of(nutrients)))
+   } else {
+     data.act <- as.data.frame(compo_tib |>
+                                 dplyr::ungroup() |>
+                                 dplyr::select(tidyselect::all_of(nutrients)))
+   }
+  
+  
+  
   
   robCompositions::clustCoDa(data.act,
                              k = k, 
@@ -50,7 +67,7 @@ clust_compo_PCs <- function(res_pca,
                             file_name # of the table with validity measures
 ) {
   
-  # define the PCs to keep (total of 80% of var. explained)
+  # define the PCs to keep (total > 90% of var. explained)
   if (type == "fish") {
     pcomp <- c(1:5)
   } else if (type == "scats") {
@@ -85,9 +102,16 @@ clust_compo_PCs <- function(res_pca,
                           min.clust.size = clust_stats$min.cluster.size) 
   
   if (file_type == "file") {
+    # define folder to save plot 
+    if (type %in% c("fish", "scats")) {
+      folder <- type
+    } else if (type == "both") {
+      folder <- "fish and scats"
+    }
+    
     openxlsx::write.xlsx(clust.val, 
                          file = paste0("output/Clustering/", 
-                                       type, "/clust_PCs_validity_measures_", 
+                                       folder, "/clust_PCs_validity_measures_", 
                                        file_name, 
                                        ".xlsx"))
   } else {
@@ -332,8 +356,15 @@ clust_find_k_table_PCs <- function(res_pca,
   df.to.plot <- df0[-1,]
   
   if (object_type == "file") {
+    # define folder to save plot 
+    if (type %in% c("fish", "scats")) {
+      folder <- type
+    } else if (type == "both") {
+      folder <- "fish and scats"
+    }
+    
     openxlsx::write.xlsx(df.to.plot, 
-                         file = paste0("output/Clustering/", type, 
+                         file = paste0("output/Clustering/", folder, 
                                        "/find_k_validity_measures_", 
                                        type, "_",
                                        file_name,
@@ -361,16 +392,26 @@ clust_find_k_table <- function(res_tib,
                                object_type # either "output" or "file" 
 ) {
   
-  if (type == "fish") {
-    data.act <- as.data.frame(res_tib[, 3:15])
-  } else if (type == "scats") {
-    data.act <- as.data.frame(res_tib[, 2:14])
-  } else if (type == "both") {
-    data.act <- as.data.frame(res_tib[, 1:13])
-  } 
   
-  data.act <- data.act |>
-    dplyr::select(nutrients)
+  if (type == "both") {
+    res_tib.relative <- res_tib |>
+      dplyr::mutate(sum = As + Ca + Co + Cu + Fe + K +
+                      Mg + Mn + Na + Ni + P + Se + Zn) |>
+      tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, Mg, Mn, Na, Ni, P, Se, Zn), 
+                          names_to = "Nutrient", 
+                          values_to = "concentration_mg_g_dw") |>
+      dplyr::mutate(relative_concentration = concentration_mg_g_dw/sum) |>
+      dplyr::select(-c(sum, concentration_mg_g_dw)) |>
+      tidyr::pivot_wider(names_from = Nutrient, 
+                         values_from = relative_concentration)
+    data.act <- as.data.frame(res_tib.relative |>
+                                dplyr::ungroup() |>
+                                dplyr::select(tidyselect::all_of(nutrients)))
+  } else if (type %in% c("fish", "scats")) {
+    data.act <- as.data.frame(res_tib |>
+                                dplyr::ungroup() |>
+                                dplyr::select(tidyselect::all_of(nutrients)))
+  }
   
   list_outputs <- list()
   
@@ -413,9 +454,16 @@ clust_find_k_table <- function(res_tib,
   df.to.plot <- df0[-1,]
   
   if (object_type == "file") {
+    # define folder to save plot 
+    if (type %in% c("fish", "scats")) {
+      folder <- type
+    } else if (type == "both") {
+      folder <- "fish and scats"
+    }
+    
     openxlsx::write.xlsx(df.to.plot, 
-                         file = paste0("output/Clustering/", type, 
-                                       "/find_k_validity_measures_real_var", 
+                         file = paste0("output/Clustering/", folder, 
+                                       "/find_k_nutrients_validity_measures_real_var_", 
                                        type, 
                                        ".xlsx"))
   } else {
@@ -467,8 +515,16 @@ boxplot_clust_find_k_val <- function(find_k_output,
                                                         face = "bold"), 
                    strip.text.x = ggplot2::element_text(size = 15), 
                    legend.position = "none")
+  
+  # define folder to save plot 
+  if (type %in% c("fish", "scats")) {
+    folder <- type
+  } else if (type == "both") {
+    folder <- "fish and scats"
+  }
+  
   # save plot 
-  ggplot2::ggsave(paste0("output/Clustering/", type, 
+  ggplot2::ggsave(paste0("output/Clustering/", folder, 
                          "/validity_measures_boxplot_",
                          type, "_", file_name,
                          ".jpg"),
@@ -522,8 +578,16 @@ means_clust_find_k_val <- function(find_k_output,
                                                         face = "bold"), 
                    strip.text.x = ggplot2::element_text(size = 15), 
                    legend.position = "none")
+  
+  # define folder to save plot 
+  if (type %in% c("fish", "scats")) {
+    folder <- type
+  } else if (type == "both") {
+    folder <- "fish and scats"
+  }
+  
   # save plot 
-  ggplot2::ggsave(paste0("output/Clustering/", type, 
+  ggplot2::ggsave(paste0("output/Clustering/", folder, 
                          "/validity_measures_means_",
                          type, "_", file_name,
                          ".jpg"),
@@ -551,6 +615,8 @@ boxplot_compo_clust <- function(clust_output,
     folder <- "fish"
   } else if (stringr::str_detect(file_name, "scats")) {
     folder <- "scats"
+  } else if (stringr::str_detect(file_name, "both")) {
+    folder <- "fish and scats"
   }
   
   
@@ -713,6 +779,35 @@ barplot_clust <- function(clust_output,
                            ".jpg"),
                     scale = 1,
                     height = 8, width = 10)
+  } else if (stringr::str_detect(file_name, "both")) {
+    folder <- "fish and scats"
+    fill_palette <- c("#590514FF", "#AE93BEFF")
+    
+    compo_tib |> 
+      dplyr::ungroup() |>
+      dplyr::mutate(cluster = as.factor(clust_vec)) |>
+      ggplot2::ggplot(ggplot2::aes(x = cluster, 
+                                   fill = type)) +
+      ggplot2::geom_bar() +
+      ggplot2::scale_fill_manual(values = fill_palette) +
+      ggplot2::xlab("Cluster") +
+      ggplot2::theme_bw() +
+      ggplot2::theme(axis.title.x = ggplot2::element_text(size = 16, 
+                                                          face = "bold"), 
+                     axis.text.x = ggplot2::element_text(size = 15),
+                     axis.text.y = ggplot2::element_text(size = 15),
+                     axis.title.y = ggplot2::element_text(size = 16, 
+                                                          face = "bold"), 
+                     legend.text = ggplot2::element_text(size = 12), 
+                     legend.position = "bottom")
+    
+    # save plot 
+    ggplot2::ggsave(paste0("output/Clustering/", folder, "/clust_barplot_",
+                           file_name, "_type",
+                           ".jpg"),
+                    scale = 1,
+                    height = 8, width = 10)
+  
   }
   
   
@@ -909,8 +1004,16 @@ biplot_after_clust <- function(res_pca,
   
   g
   
+  
+  # define folder to save plot 
+  if (type %in% c("fish", "scats")) {
+    folder <- type
+  } else if (type == "both") {
+    folder <- "fish and scats"
+  }
+  
   # save plot 
-  ggplot2::ggsave(paste0("output/Clustering/", type, "/clust_biplot_",
+  ggplot2::ggsave(paste0("output/Clustering/", folder, "/clust_biplot_",
                          type, "_",
                          file_name,
                          ".jpg"),
