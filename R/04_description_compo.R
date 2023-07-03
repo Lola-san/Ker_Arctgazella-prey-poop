@@ -23,29 +23,44 @@ table_compo_fish_sp <- function(res_fish_tib,
                                 object_type # either "output" or "file" 
 ) {
   
-  table <- res_fish_tib |>
-    tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, 
-                                 Mg, Mn, Na, Ni, P, Se, Zn), 
-                        names_to = "Nutrient", 
-                        values_to = "concentration_mg_g_dw") |>
-    # remove NAs if there is still some
-    dplyr::filter(!(is.na(concentration_mg_g_dw))) |>
-    dplyr::group_by(Species, Nutrient) |>
-    dplyr::summarise(n = dplyr::n_distinct(Code_sample), 
-                     conc_mg_g_dw_min = min(concentration_mg_g_dw), 
-                     conc_mg_g_dw_low_quant = quantile(concentration_mg_g_dw, 
-                                                       probs = c(0.025)),
-                     conc_mg_g_dw_mean = mean(concentration_mg_g_dw),
-                     conc_mg_g_dw_high_quant = quantile(concentration_mg_g_dw, 
-                                                        probs = c(0.975)),
-                     conc_mg_g_dw_max = max(concentration_mg_g_dw))
-  
   
   if (object_type == "file") {
+    table <- res_fish_tib |>
+      tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, 
+                                   Mg, Mn, Na, Ni, P, Se, Zn), 
+                          names_to = "Nutrient", 
+                          values_to = "concentration_mg_g_dw") |>
+      # remove NAs if there is still some
+      dplyr::filter(!(is.na(concentration_mg_g_dw))) |>
+      dplyr::group_by(Family, Species, Nutrient) |>
+      dplyr::summarise(n = dplyr::n_distinct(Code_sample), 
+                       mean = round(mean(concentration_mg_g_dw), 3),
+                       sd = round(sd(concentration_mg_g_dw), 3)) |> 
+      tidyr::pivot_wider(names_from = Nutrient, 
+                         values_from = c(mean, sd), 
+                         names_sep = "_")
+    
     openxlsx::write.xlsx(table, 
                          file = paste0("output/compo fish/summary_fish_compo_sp.xlsx"))
   } else {
-    table
+    res_fish_tib |>
+      tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, 
+                                   Mg, Mn, Na, Ni, P, Se, Zn), 
+                          names_to = "Nutrient", 
+                          values_to = "concentration_mg_g_dw") |>
+      # remove NAs if there is still some
+      dplyr::filter(!(is.na(concentration_mg_g_dw))) |>
+      dplyr::group_by(Family, Species, Nutrient) |>
+      dplyr::summarise(n = dplyr::n_distinct(Code_sample), 
+                       conc_mg_g_dw_min = round(min(concentration_mg_g_dw), 3), 
+                       conc_mg_g_dw_low_quant = round(quantile(concentration_mg_g_dw, 
+                                                               probs = c(0.025)), 3),
+                       conc_mg_g_dw_mean = round(mean(concentration_mg_g_dw), 3),
+                       conc_mg_g_dw_high_quant = round(quantile(concentration_mg_g_dw, 
+                                                                probs = c(0.975)), 3),
+                       conc_mg_g_dw_max = round(max(concentration_mg_g_dw), 3), 
+                       conc_mg_g_sd = round(sd(concentration_mg_g_dw), 3), 
+                       conc_mg_g_cv = round(sd(concentration_mg_g_dw)/conc_mg_g_dw_mean, 3))
   }
   
   
@@ -633,56 +648,11 @@ boxplot_compo_fish_hab_all_nut <- function(res_fish_tib
                                  Mg, Mn, Na, Ni, P, Se, Zn), 
                         names_to = "Nutrient", 
                         values_to = "concentration_mg_g_dw") |>
-    dplyr::mutate(Species = factor(Species, 
-                                   levels = c(# Paralepididae
-                                     "Arctozenus risso", 
-                                     "Notolepsis coatsi",
-                                     # Bathydraconidae
-                                     "Bathydraco antarcticus",
-                                     # Bathylagidae
-                                     "Bathylagus tenuis",
-                                     # Channichthyidae
-                                     "Champsocephalus gunnari",
-                                     "Channichthys rhinoceratus",
-                                     # Nototheniidae
-                                     "Dissostichus eleginoides",
-                                     "Gobionotothen acuta",
-                                     "Lepidonotothen squamifrons",
-                                     "Lindbergichthys mizops",
-                                     # Carapidae
-                                     "Echiodon cryomargarites",
-                                     # Myctophidae
-                                     "Electrona antarctica",
-                                     "Electrona carlsbergi", 
-                                     "Electrona subaspera",
-                                     "Gymnoscopelus bolini",
-                                     "Gymnoscopelus braueri",
-                                     "Gymnoscopelus fraseri",
-                                     "Gymnoscopelus nicholsi", 
-                                     "Gymnoscopelus piabilis", 
-                                     "Krefftichthys anderssoni",
-                                     "Protomyctophum andriashevi",
-                                     "Protomyctophum bolini",
-                                     "Protomyctophum choriodon",
-                                     "Protomyctophum tenisoni",
-                                     # Stomiidae
-                                     "Idiacanthus atlanticus", 
-                                     "Stomias sp",
-                                     # Notosudidae
-                                     "Luciosudis normani",
-                                     # Macrouridae
-                                     "Macrourus carinatus",
-                                     # Achiropsettidae
-                                     "Mancopsetta mancopsetta",
-                                     "Melanostigma gelatinosum",
-                                     # Muraenolepididae
-                                     "Muraenolepsis sp",
-                                     # Microstomatidae
-                                     "Nansenia antarctica",
-                                     # Gempylidae
-                                     "Paradiplospinus gracilis",
-                                     # Melamphaidae
-                                     "Poromitra crassiceps")), 
+    dplyr::mutate(habitat = factor(habitat, 
+                                   levels = c("Demersal", 
+                                              "Bathydemersal", 
+                                              "Benthopelagic",
+                                              "Bathypelagic")), 
                   Nutrient = factor(Nutrient, 
                                     levels = c("Ca", "P", "Na", "K", "Mg", 
                                                "Fe", "Zn", "Cu", "Mn", "Se",
@@ -693,6 +663,11 @@ boxplot_compo_fish_hab_all_nut <- function(res_fish_tib
     dplyr::group_by(Species, habitat, Nutrient) |>
     dplyr::summarise(habitatnsp = paste0(habitat, " (n(sp) = ", nsp, ")"), 
                      mean_conc_mg_g_dw = mean(concentration_mg_g_dw)) |>
+    dplyr::mutate(habitatnsp = factor(habitatnsp, 
+                                   levels = c("Demersal (n(sp) = 5)", 
+                                              "Bathydemersal (n(sp) = 4)", 
+                                              "Benthopelagic (n(sp) = 6)",
+                                              "Bathypelagic (n(sp) = 19)")))|>
     ggplot2::ggplot(ggplot2::aes(x = habitatnsp, 
                                  y = mean_conc_mg_g_dw, fill = Nutrient)) +
     ggplot2::geom_violin(width=1.4) +
@@ -968,13 +943,15 @@ table_compo_scats <- function(res_scat_tib,
                         values_to = "concentration_mg_g_dw") |>
     dplyr::group_by(site, Nutrient) |>
     dplyr::summarise(n = dplyr::n_distinct(Code_sample), 
-                     conc_mg_g_dw_min = min(concentration_mg_g_dw), 
-                     conc_mg_g_dw_low_quant = quantile(concentration_mg_g_dw, 
-                                                       probs = c(0.025)),
-                     conc_mg_g_dw_mean = mean(concentration_mg_g_dw),
-                     conc_mg_g_dw_high_quant = quantile(concentration_mg_g_dw, 
-                                                        probs = c(0.975)),
-                     conc_mg_g_dw_max = max(concentration_mg_g_dw))
+                     conc_mg_g_dw_min = round(min(concentration_mg_g_dw), 3), 
+                     conc_mg_g_dw_low_quant = round(quantile(concentration_mg_g_dw, 
+                                                       probs = c(0.025)), 3),
+                     conc_mg_g_dw_mean = round(mean(concentration_mg_g_dw), 3),
+                     conc_mg_g_dw_high_quant = round(quantile(concentration_mg_g_dw, 
+                                                        probs = c(0.975)), 3),
+                     conc_mg_g_dw_max = round(max(concentration_mg_g_dw), 3), 
+                     conc_mg_g_dw_sd = round(sd(concentration_mg_g_dw), 3), 
+                     conc_mg_g_dw_cv = round(sd(concentration_mg_g_dw)/conc_mg_g_dw_mean, 3), )
   
   
   if (object_type == "file") {

@@ -619,6 +619,12 @@ boxplot_compo_clust <- function(clust_output,
     folder <- "fish and scats"
   }
   
+  colour_palette <- c("#D8AF39FF",
+                      "#58A449FF",
+                      "#AE93BEFF",
+                      "#B4DAE5FF",
+                      "#E75B64FF",
+                      "#1D2645FF")[1:max(clust_output$cluster)]
   
   compo_tib |> 
     dplyr::ungroup() |>
@@ -626,13 +632,18 @@ boxplot_compo_clust <- function(clust_output,
     tidyr::pivot_longer(cols = c("As":"Zn"), 
                         names_to = "Nutrient", 
                         values_to = "concentration_mg_g_dw") |>
+    dplyr::mutate(Nutrient = factor(Nutrient, 
+                                    levels = c("Ca", "P", "Na", "K", "Mg", 
+                                               "Fe", "Zn", "Cu", "Mn", "Se",
+                                               "As", "Ni","Co"))) |>
     ggplot2::ggplot(ggplot2::aes(x = cluster, y = concentration_mg_g_dw, 
                                  fill = cluster)) +
     ggplot2::geom_violin(width=1.4) +
     ggplot2::geom_boxplot() +
+    ggplot2::coord_flip() +
     ggplot2::ylab("Nutrient concentration (in mg/g dry weight)") +
     ggplot2::geom_jitter(color="darkgrey", size=0.7, alpha=0.2) +
-    ghibli::scale_fill_ghibli_d("YesterdayMedium", direction = -1) +
+    ggplot2::scale_fill_manual(values = colour_palette) +
     ggplot2::facet_wrap(~ Nutrient, scale = "free") +
     ggplot2::theme_bw() +
     ggplot2::theme(axis.title.x = ggplot2::element_blank(), 
@@ -680,7 +691,29 @@ barplot_clust <- function(clust_output,
     
     compo_tib |> 
       dplyr::ungroup() |>
-      dplyr::mutate(cluster = as.factor(clust_vec)) |>
+      dplyr::mutate(Family = factor(Family, 
+                                    levels = c("Achiropsettidae", 
+                                               "Bathydraconidae",
+                                               "Bathylagidae",
+                                               "Carapidae",
+                                               "Channichthyidae",
+                                               "Gempylidae",
+                                               "Macrouridae",
+                                               "Melamphaidae", 
+                                               "Microstomatidae",
+                                               "Muraenolepididae",
+                                               "Myctophidae",
+                                               "Notosudidae", 
+                                               "Nototheniidae", 
+                                               "Paralepididae", 
+                                               "Stomiidae",
+                                               "Zoarcidae")),
+                    habitat = factor(habitat, 
+                                     levels = c("Demersal", 
+                                                "Bathydemersal", 
+                                                "Benthopelagic",
+                                                "Bathypelagic")), 
+                    cluster = as.factor(clust_vec)) |>
       ggplot2::ggplot(ggplot2::aes(x = cluster, 
                                    fill = Family)) +
       ggplot2::geom_bar() +

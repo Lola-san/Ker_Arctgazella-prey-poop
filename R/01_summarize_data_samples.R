@@ -18,24 +18,67 @@ load_xl <- function(pathxl) {
 # clean file and summarise data on samples
 summary_fish_samples <- function(fish_tab, 
                                  compo_results_fish) {
-  fish_tab |>
+  table <- fish_tab |>
     dplyr::filter(Code_new_format %in% compo_results_fish$Code_sample) |>
-    dplyr::group_by(Family, Species, Campaign) |>
+    # add data on habitat as given on Fishbase
+    dplyr::mutate(Habitat = dplyr::case_when(Species %in% c("Gobionotothen acuta", 
+                                                            "Channichthys rhinoceratus",
+                                                            "Dissostichus eleginoides",
+                                                            "Mancopsetta mancopsetta",
+                                                            "Electrona antarctica") ~ "Demersal", 
+                                             Species %in% c("Lepidonotothen squamifrons", 
+                                                            "Champsocephalus gunnari",
+                                                            "Lindbergichthys mizops",
+                                                            "Muraenolepsis sp",
+                                                            "Gymnoscopelus piabilis",
+                                                            "Gymnoscopelus bolini") ~ "Benthopelagic", 
+                                             Species %in% c("Bathydraco antarcticus",
+                                                            "Macrourus carinatus",
+                                                            "Paradiplospinus gracilis",
+                                                            "Echiodon cryomargarites") ~ "Bathydemersal", 
+                                             Species %in% c("Krefftichthys anderssoni",
+                                                            "Melanostigma gelatinosum",
+                                                            "Bathylagus tenuis",
+                                                            "Luciosudis normani", 
+                                                            "Gymnoscopelus braueri", 
+                                                            "Gymnoscopelus fraseri", 
+                                                            "Gymnoscopelus nicholsi", 
+                                                            "Electrona subaspera",
+                                                            "Poromitra crassiceps", 
+                                                            "Nansenia antarctica",
+                                                            "Electrona carlsbergi", 
+                                                            "Protomyctophum andriashevi",
+                                                            "Protomyctophum bolini", 
+                                                            "Protomyctophum choriodon",
+                                                            "Stomias sp",
+                                                            "Idiacanthus atlanticus",
+                                                            "Arctozenus risso",
+                                                            "Notolepis coatsi", 
+                                                            "Protomyctophum tenisoni") ~ "Bathypelagic")) |>
+    dplyr::group_by(Family, Species, Campaign, Habitat) |>
     dplyr::mutate(SL_cm = as.integer(SL_cm)) |> # generates warnings because
     # of samples with approximate length (*XX) as they were damaged
     dplyr::summarize(n = dplyr::n_distinct(Code_new_format), 
                      length_mean = mean(SL_cm, na.rm = TRUE), 
                      length_min = min(SL_cm, na.rm = TRUE), 
                      length_max = max(SL_cm, na.rm = TRUE), 
+                     length_sd = sd(SL_cm, na.rm = TRUE),  
+                     length_cv = sd(SL_cm, na.rm = TRUE)/mean(SL_cm, na.rm = TRUE),
                      H20_mean = mean(Water_percent), 
                      H20_min = min(Water_percent), 
-                     H20_max= max(Water_percent))
+                     H20_max = max(Water_percent), 
+                     H20_sd = sd(Water_percent), 
+                     H20_cv = H20_sd/H20_mean)
+  
+  openxlsx::write.xlsx(table, 
+                       file = "output/summary_fish_samples_sp.xlsx")
 }
 
 
 # clean file and summarise data on samples
 summary_scat_samples <- function(scat_tab) {
-  scat_tab |>
+  
+  table <- scat_tab |>
     dplyr::group_by(site, date_collecte) |>
     dplyr::mutate(HPI_0 = dplyr::case_when(index_hard_parts == 0 ~ 1,
                                                   TRUE ~ 0),
@@ -56,6 +99,9 @@ summary_scat_samples <- function(scat_tab) {
                      percent_HPI1 = 100*(sum(HPI_1)/n), 
                      percent_HPI2 = 100*(sum(HPI_2)/n), 
                      percent_HPI3 = 100*(sum(HPI_3)/n))
+  
+  openxlsx::write.xlsx(table, 
+                       file = "output/summary_scat_samples_sp.xlsx")
 }
 
 
