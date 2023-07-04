@@ -29,13 +29,13 @@ table_compo_fish_sp <- function(res_fish_tib,
       tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, 
                                    Mg, Mn, Na, Ni, P, Se, Zn), 
                           names_to = "Nutrient", 
-                          values_to = "concentration_mg_g_dw") |>
+                          values_to = "concentration_mg_kg_dw") |>
       # remove NAs if there is still some
-      dplyr::filter(!(is.na(concentration_mg_g_dw))) |>
+      dplyr::filter(!(is.na(concentration_mg_kg_dw))) |>
       dplyr::group_by(Family, Species, Nutrient) |>
       dplyr::summarise(n = dplyr::n_distinct(Code_sample), 
-                       mean = round(mean(concentration_mg_g_dw), 3),
-                       sd = round(sd(concentration_mg_g_dw), 3)) |> 
+                       mean = round(mean(concentration_mg_kg_dw), 3),
+                       sd = round(sd(concentration_mg_kg_dw), 3)) |> 
       tidyr::pivot_wider(names_from = Nutrient, 
                          values_from = c(mean, sd), 
                          names_sep = "_")
@@ -47,20 +47,20 @@ table_compo_fish_sp <- function(res_fish_tib,
       tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, 
                                    Mg, Mn, Na, Ni, P, Se, Zn), 
                           names_to = "Nutrient", 
-                          values_to = "concentration_mg_g_dw") |>
+                          values_to = "concentration_mg_kg_dw") |>
       # remove NAs if there is still some
-      dplyr::filter(!(is.na(concentration_mg_g_dw))) |>
+      dplyr::filter(!(is.na(concentration_mg_kg_dw))) |>
       dplyr::group_by(Family, Species, Nutrient) |>
       dplyr::summarise(n = dplyr::n_distinct(Code_sample), 
-                       conc_mg_g_dw_min = round(min(concentration_mg_g_dw), 3), 
-                       conc_mg_g_dw_low_quant = round(quantile(concentration_mg_g_dw, 
+                       conc_mg_kg_dw_min = round(min(concentration_mg_kg_dw), 3), 
+                       conc_mg_kg_dw_low_quant = round(quantile(concentration_mg_kg_dw, 
                                                                probs = c(0.025)), 3),
-                       conc_mg_g_dw_mean = round(mean(concentration_mg_g_dw), 3),
-                       conc_mg_g_dw_high_quant = round(quantile(concentration_mg_g_dw, 
+                       conc_mg_kg_dw_mean = round(mean(concentration_mg_kg_dw), 3),
+                       conc_mg_kg_dw_high_quant = round(quantile(concentration_mg_kg_dw, 
                                                                 probs = c(0.975)), 3),
-                       conc_mg_g_dw_max = round(max(concentration_mg_g_dw), 3), 
-                       conc_mg_g_sd = round(sd(concentration_mg_g_dw), 3), 
-                       conc_mg_g_cv = round(sd(concentration_mg_g_dw)/conc_mg_g_dw_mean, 3))
+                       conc_mg_kg_dw_max = round(max(concentration_mg_kg_dw), 3), 
+                       conc_mg_kg_sd = round(sd(concentration_mg_kg_dw), 3), 
+                       conc_mg_kg_cv = round(sd(concentration_mg_kg_dw)/conc_mg_kg_dw_mean, 3))
   }
   
   
@@ -122,12 +122,12 @@ compute_means_sp <- function(compo_tib) {
   compo_tib |>
     tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, Mg, Mn, Na, Ni, P, Se, Zn), 
                         names_to = "Nutrient", 
-                        values_to = "concentration_mg_g_dw") |>
+                        values_to = "concentration_mg_kg_dw") |>
     dplyr::group_by(Species) |>
     dplyr::mutate(n = dplyr::n_distinct(Code_sample),
                   Speciesn = paste0(Species, "\n(n = ", n, ")")) |>
     dplyr::group_by(Family, habitat, Speciesn, Nutrient) |>
-    dplyr::summarise(mean_sp = mean(concentration_mg_g_dw)) |>
+    dplyr::summarise(mean_sp = mean(concentration_mg_kg_dw)) |>
     tidyr::pivot_wider(names_from = Nutrient, 
                        values_from = mean_sp) |>
     dplyr::rename(Species = Speciesn)
@@ -148,23 +148,23 @@ boxplot_compo_fish_sp <- function(res_fish_tib,
     tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, 
                                  Mg, Mn, Na, Ni, P, Se, Zn), 
                         names_to = "Nutrient", 
-                        values_to = "concentration_mg_g_dw") |>
+                        values_to = "concentration_mg_kg_dw") |>
     # remove NAs if there is still some
-    dplyr::filter(!(is.na(concentration_mg_g_dw))) |>
+    dplyr::filter(!(is.na(concentration_mg_kg_dw))) |>
     dplyr::filter(Nutrient == nutrient) |>
     dplyr::group_by(Species) |>
     dplyr::mutate(n = dplyr::n_distinct(Code_sample),
                   Speciesn = paste0(Species, "\n(n = ", n, ")")) |>
     ggplot2::ggplot(ggplot2::aes(x = reorder(Speciesn, 
-                                             concentration_mg_g_dw), 
-                                 y = concentration_mg_g_dw, fill = Species)) +
+                                             concentration_mg_kg_dw), 
+                                 y = concentration_mg_kg_dw, fill = Species)) +
     ggplot2::geom_violin(width=1.4) +
     ggplot2::geom_boxplot() +
     ggplot2::geom_jitter(color="darkgrey", size=0.7, alpha=0.5) +
     ggplot2::coord_flip() +
     viridis::scale_fill_viridis(option = "magma", 
                                 discrete = TRUE) +
-    ggplot2::ylab(paste0(nutrient, " concentration (in mg/g dry weight)")) +
+    ggplot2::ylab(paste0(nutrient, " concentration (in mg/kg dry weight)")) +
     ggplot2::xlab("Species") +
     ggplot2::theme_bw() +
     ggplot2::theme(axis.text.x = ggplot2::element_text(size = 15), 
@@ -197,11 +197,11 @@ boxplot_compo_fish_sp_all_nut <- function(res_fish_tib
     tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K,
                                  Mg, Mn, Na, Ni, P, Se, Zn), 
                         names_to = "Nutrient", 
-                        values_to = "concentration_mg_g_dw") |>
+                        values_to = "concentration_mg_kg_dw") |>
     dplyr::mutate(Species = factor(Species, 
                                    levels = c(# Paralepididae
                                      "Arctozenus risso", 
-                                     "Notolepsis coatsi",
+                                     "Notolepis coatsi",
                                      # Bathydraconidae
                                      "Bathydraco antarcticus",
                                      # Bathylagidae
@@ -256,7 +256,7 @@ boxplot_compo_fish_sp_all_nut <- function(res_fish_tib
     dplyr::mutate(n = dplyr::n_distinct(Code_sample),
                   Speciesn = paste0(Species, " (n = ", n, ")")) |>
     ggplot2::ggplot(ggplot2::aes(x = Speciesn, 
-                                 y = concentration_mg_g_dw, fill = Nutrient)) +
+                                 y = concentration_mg_kg_dw, fill = Nutrient)) +
     ggplot2::geom_violin(width=1.4) +
     ggplot2::facet_wrap(~ Nutrient, scale = "free_x", nrow = 3) +
     ggplot2::geom_boxplot() +
@@ -267,7 +267,7 @@ boxplot_compo_fish_sp_all_nut <- function(res_fish_tib
                                           "#E8C4A2FF", "#14191FFF", "#1D2645FF", 
                                           "#403369FF", "#AE93BEFF", "#B4DAE5FF", 
                                           "#F0D77BFF")) +
-    ggplot2::ylab("Nutrient concentration (in mg/g dry weight)") +
+    ggplot2::ylab("Nutrient concentration (in mg/kg dry weight)") +
     ggplot2::xlab("Species") +
     ggplot2::theme_bw() +
     ggplot2::theme(axis.text.x = ggplot2::element_text(size = 16), 
@@ -298,25 +298,25 @@ boxplot_compo_fish_genus <- function(res_fish_tib,
     tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, 
                                  Mg, Mn, Na, Ni, P, Se, Zn), 
                         names_to = "Nutrient", 
-                        values_to = "concentration_mg_g_dw") |>
+                        values_to = "concentration_mg_kg_dw") |>
     dplyr::mutate(Genus = stringr::str_split_fixed(Species, " ", 2)[,1], 
                   sp = stringr::str_split_fixed(Species, " ", 2)[,2]) |>
     dplyr::group_by(Genus) |>
     dplyr::mutate(n = dplyr::n_distinct(Code_sample),
                   Genusn = paste0(Genus, "\n(n = ", n, ")")) |>
     # remove NAs if there is still some
-    dplyr::filter(!(is.na(concentration_mg_g_dw))) |>
+    dplyr::filter(!(is.na(concentration_mg_kg_dw))) |>
     dplyr::filter(Nutrient == nutrient) |>
     ggplot2::ggplot(ggplot2::aes(x = reorder(Genusn,
-                                             concentration_mg_g_dw),
-                                 y = concentration_mg_g_dw, fill = Genus)) +
+                                             concentration_mg_kg_dw),
+                                 y = concentration_mg_kg_dw, fill = Genus)) +
     ggplot2::geom_violin(width=1.4) +
     ggplot2::geom_boxplot() +
     ggplot2::geom_jitter(color="darkgrey", size=0.7, alpha=0.5) +
     ggplot2::coord_flip() +
     viridis::scale_fill_viridis(option = "magma", 
                                 discrete = TRUE) +
-    ggplot2::ylab(paste0(nutrient, " concentration (in mg/g dry weight)")) +
+    ggplot2::ylab(paste0(nutrient, " concentration (in mg/kg dry weight)")) +
     ggplot2::xlab("Genus") +
     ggplot2::theme_bw() +
     ggplot2::theme(axis.text.x = ggplot2::element_text(size = 15), 
@@ -350,7 +350,7 @@ boxplot_compo_fish_genus_all_nut <- function(res_fish_tib
     tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K,
                                  Mg, Mn, Na, Ni, P, Se, Zn), 
                         names_to = "Nutrient", 
-                        values_to = "concentration_mg_g_dw") |>
+                        values_to = "concentration_mg_kg_dw") |>
     dplyr::mutate(Genus = stringr::str_split_fixed(Species, " ", 2)[,1], 
                   sp = stringr::str_split_fixed(Species, " ", 2)[,2], 
                   Nutrient = factor(Nutrient, 
@@ -378,7 +378,7 @@ boxplot_compo_fish_genus_all_nut <- function(res_fish_tib
                                             "Melanostigma",
                                             "Muraenolepsis",
                                             "Nansenia",
-                                            "Notolepsis",
+                                            "Notolepis",
                                             "Paradiplospinus",
                                             "Poromitra",
                                             "Protomyctophum",
@@ -387,7 +387,7 @@ boxplot_compo_fish_genus_all_nut <- function(res_fish_tib
     dplyr::mutate(n = dplyr::n_distinct(Code_sample),
                   Genusn = paste0(Genus, " (n = ", n, ")")) |>
     ggplot2::ggplot(ggplot2::aes(x = Genusn, 
-                                 y = concentration_mg_g_dw, fill = Nutrient)) +
+                                 y = concentration_mg_kg_dw, fill = Nutrient)) +
     ggplot2::geom_violin(width=1.4) +
     ggplot2::facet_wrap(~ Nutrient, scale = "free_x", nrow = 3) +
     ggplot2::geom_boxplot() +
@@ -398,7 +398,7 @@ boxplot_compo_fish_genus_all_nut <- function(res_fish_tib
                                           "#E8C4A2FF", "#14191FFF", "#1D2645FF", 
                                           "#403369FF", "#AE93BEFF", "#B4DAE5FF", 
                                           "#F0D77BFF"))+
-    ggplot2::ylab("Nutrient concentration (in mg/g dry weight)") +
+    ggplot2::ylab("Nutrient concentration (in mg/kg dry weight)") +
     ggplot2::xlab("Genus") +
     ggplot2::theme_bw() +
     ggplot2::theme(axis.text.x = ggplot2::element_text(size = 16), 
@@ -430,23 +430,23 @@ boxplot_compo_fish_fam <- function(res_fish_tib,
     tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K,
                                  Mg, Mn, Na, Ni, P, Se, Zn), 
                         names_to = "Nutrient", 
-                        values_to = "concentration_mg_g_dw") |>
+                        values_to = "concentration_mg_kg_dw") |>
     dplyr::group_by(Family) |>
     dplyr::mutate(n = dplyr::n_distinct(Code_sample),
                   Familyn = paste0(Family, "\n(n = ", n, ")")) |>
     # remove NAs if there is still some
-    dplyr::filter(!(is.na(concentration_mg_g_dw))) |>
+    dplyr::filter(!(is.na(concentration_mg_kg_dw))) |>
     dplyr::filter(Nutrient == nutrient) |>
     ggplot2::ggplot(ggplot2::aes(x = reorder(Familyn, 
-                                             concentration_mg_g_dw), 
-                                 y = concentration_mg_g_dw, fill = Family)) +
+                                             concentration_mg_kg_dw), 
+                                 y = concentration_mg_kg_dw, fill = Family)) +
     ggplot2::geom_violin(width=1.4) +
     ggplot2::geom_boxplot() +
     ggplot2::geom_jitter(color="darkgrey", size=0.7, alpha=0.5) +
     ggplot2::coord_flip() +
     viridis::scale_fill_viridis(option = "magma", 
                                 discrete = TRUE) +
-    ggplot2::ylab(paste0(nutrient, " concentration (in mg/g dry weight)")) +
+    ggplot2::ylab(paste0(nutrient, " concentration (in mg/kg dry weight)")) +
     ggplot2::xlab("Family") +
     ggplot2::theme_bw() +
     ggplot2::theme(axis.text.x = ggplot2::element_text(size = 15), 
@@ -478,7 +478,7 @@ boxplot_compo_fish_fam_all_nut <- function(res_fish_tib
     tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K,
                                  Mg, Mn, Na, Ni, P, Se, Zn), 
                         names_to = "Nutrient", 
-                        values_to = "concentration_mg_g_dw") |>
+                        values_to = "concentration_mg_kg_dw") |>
     dplyr::mutate(Family = factor(Family, 
                                   levels = c("Achiropsettidae", 
                                              "Bathydraconidae",
@@ -504,7 +504,7 @@ boxplot_compo_fish_fam_all_nut <- function(res_fish_tib
     dplyr::mutate(n = dplyr::n_distinct(Code_sample),
                   Familyn = paste0(Family, " (n = ", n, ")")) |>
     ggplot2::ggplot(ggplot2::aes(x = Familyn, 
-                                 y = concentration_mg_g_dw, fill = Nutrient)) +
+                                 y = concentration_mg_kg_dw, fill = Nutrient)) +
     ggplot2::geom_violin(width=1.4) +
     ggplot2::facet_wrap(~ Nutrient, scale = "free_x", nrow = 3) +
     ggplot2::geom_boxplot() +
@@ -515,7 +515,7 @@ boxplot_compo_fish_fam_all_nut <- function(res_fish_tib
                                           "#E8C4A2FF", "#14191FFF", "#1D2645FF", 
                                           "#403369FF", "#AE93BEFF", "#B4DAE5FF", 
                                           "#F0D77BFF"))+
-    ggplot2::ylab("Nutrient concentration (in mg/g dry weight)") +
+    ggplot2::ylab("Nutrient concentration (in mg/kg dry weight)") +
     ggplot2::xlab("Family") +
     ggplot2::theme_bw() +
     ggplot2::theme(axis.text.x = ggplot2::element_text(size = 16), 
@@ -547,15 +547,15 @@ boxplot_compo_fish_camp <- function(res_fish_tib,
     tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, 
                                  Mg, Mn, Na, Ni, P, Se, Zn), 
                         names_to = "Nutrient", 
-                        values_to = "concentration_mg_g_dw") |>
+                        values_to = "concentration_mg_kg_dw") |>
     dplyr::mutate(Genus = stringr::str_split_fixed(Species, " ", 2)[,1], 
                   sp = stringr::str_split_fixed(Species, " ", 2)[,2]) |>
     # remove NAs if there is still some
-    dplyr::filter(!(is.na(concentration_mg_g_dw))) |>
+    dplyr::filter(!(is.na(concentration_mg_kg_dw))) |>
     dplyr::filter(Nutrient == nutrient) |>
     ggplot2::ggplot(ggplot2::aes(x = reorder(campaign,
-                                             concentration_mg_g_dw), 
-                                 y = concentration_mg_g_dw, fill = campaign)) +
+                                             concentration_mg_kg_dw), 
+                                 y = concentration_mg_kg_dw, fill = campaign)) +
     ggplot2::geom_violin(width=1.4) +
     ggplot2::geom_boxplot() +
     ggplot2::geom_jitter(color="darkgrey", size=0.7, alpha=0.5) +
@@ -565,7 +565,7 @@ boxplot_compo_fish_camp <- function(res_fish_tib,
                                           "#E8C4A2FF", "#14191FFF", "#1D2645FF", 
                                           "#403369FF", "#AE93BEFF", "#B4DAE5FF", 
                                           "#F0D77BFF")) +
-    ggplot2::ylab(paste0(nutrient, " concentration (in mg/g dry weight)")) +
+    ggplot2::ylab(paste0(nutrient, " concentration (in mg/kg dry weight)")) +
     ggplot2::xlab("Campaign") +
     ggplot2::theme_bw() +
     ggplot2::theme(axis.text.x = ggplot2::element_text(size = 15), 
@@ -596,14 +596,14 @@ boxplot_compo_fish_camp_full <- function(res_fish_tib) {
     tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, 
                                  Mg, Mn, Na, Ni, P, Se, Zn), 
                         names_to = "Nutrient", 
-                        values_to = "concentration_mg_g_dw") |>
+                        values_to = "concentration_mg_kg_dw") |>
     dplyr::mutate(Genus = stringr::str_split_fixed(Species, " ", 2)[,1], 
                   sp = stringr::str_split_fixed(Species, " ", 2)[,2]) |>
     # remove NAs if there is still some
-    dplyr::filter(!(is.na(concentration_mg_g_dw))) |>
+    dplyr::filter(!(is.na(concentration_mg_kg_dw))) |>
     ggplot2::ggplot(ggplot2::aes(x = reorder(campaign,
-                                             concentration_mg_g_dw), 
-                                 y = concentration_mg_g_dw, fill = campaign)) +
+                                             concentration_mg_kg_dw), 
+                                 y = concentration_mg_kg_dw, fill = campaign)) +
     ggplot2::geom_violin(width=1.4) +
     ggplot2::geom_boxplot() +
     ggplot2::geom_jitter(color="darkgrey", size=0.7, alpha=0.5) +
@@ -614,7 +614,7 @@ boxplot_compo_fish_camp_full <- function(res_fish_tib) {
                                           "#E8C4A2FF", "#14191FFF", "#1D2645FF", 
                                           "#403369FF", "#AE93BEFF", "#B4DAE5FF", 
                                           "#F0D77BFF")) +
-    ggplot2::ylab("Nutrient concentration (in mg/g dry weight)") +
+    ggplot2::ylab("Nutrient concentration (in mg/kg dry weight)") +
     ggplot2::xlab("Campaign") +
     ggplot2::theme_bw() +
     ggplot2::theme(axis.text.x = ggplot2::element_text(size = 15), 
@@ -647,7 +647,7 @@ boxplot_compo_fish_hab_all_nut <- function(res_fish_tib
     tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K,
                                  Mg, Mn, Na, Ni, P, Se, Zn), 
                         names_to = "Nutrient", 
-                        values_to = "concentration_mg_g_dw") |>
+                        values_to = "concentration_mg_kg_dw") |>
     dplyr::mutate(habitat = factor(habitat, 
                                    levels = c("Demersal", 
                                               "Bathydemersal", 
@@ -662,14 +662,14 @@ boxplot_compo_fish_hab_all_nut <- function(res_fish_tib
                   nsp = dplyr::n_distinct(Species)) |>
     dplyr::group_by(Species, habitat, Nutrient) |>
     dplyr::summarise(habitatnsp = paste0(habitat, " (n(sp) = ", nsp, ")"), 
-                     mean_conc_mg_g_dw = mean(concentration_mg_g_dw)) |>
+                     mean_conc_mg_kg_dw = mean(concentration_mg_kg_dw)) |>
     dplyr::mutate(habitatnsp = factor(habitatnsp, 
                                    levels = c("Demersal (n(sp) = 5)", 
                                               "Bathydemersal (n(sp) = 4)", 
                                               "Benthopelagic (n(sp) = 6)",
                                               "Bathypelagic (n(sp) = 19)")))|>
     ggplot2::ggplot(ggplot2::aes(x = habitatnsp, 
-                                 y = mean_conc_mg_g_dw, fill = Nutrient)) +
+                                 y = mean_conc_mg_kg_dw, fill = Nutrient)) +
     ggplot2::geom_violin(width=1.4) +
     ggplot2::facet_wrap(~ Nutrient, scale = "free_x", nrow = 3) +
     ggplot2::geom_boxplot(alpha=0.9) +
@@ -680,7 +680,7 @@ boxplot_compo_fish_hab_all_nut <- function(res_fish_tib
                                           "#E8C4A2FF", "#14191FFF", "#1D2645FF", 
                                           "#403369FF", "#AE93BEFF", "#B4DAE5FF", 
                                           "#F0D77BFF")) +
-    ggplot2::ylab("Nutrient concentration (in mg/g dry weight)") +
+    ggplot2::ylab("Nutrient concentration (in mg/kg dry weight)") +
     ggplot2::xlab("Habitat") +
     ggplot2::theme_bw() +
     ggplot2::theme(axis.text.x = ggplot2::element_text(size = 16), 
@@ -712,7 +712,7 @@ MWtest_fish_hab <- function(res_fish_tib) {
     tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K,
                                  Mg, Mn, Na, Ni, P, Se, Zn), 
                         names_to = "Nutrient", 
-                        values_to = "concentration_mg_g_dw") |>
+                        values_to = "concentration_mg_kg_dw") |>
     dplyr::mutate(Nutrient = factor(Nutrient, 
                                     levels = c("Ca", "P", "Na", "K", "Mg", 
                                                "Fe", "Zn", "Cu", "Mn", "Se",
@@ -726,10 +726,10 @@ MWtest_fish_hab <- function(res_fish_tib) {
     
     table <- compo_tib |>
       dplyr::group_by(habitat, Species, Nutrient) |>
-      dplyr::summarise(mean_sp_conc_mg_g_dw = mean(concentration_mg_g_dw)) |>
+      dplyr::summarise(mean_sp_conc_mg_kg_dw = mean(concentration_mg_kg_dw)) |>
       dplyr::filter(Nutrient == nut) |>
       tidyr::pivot_wider(names_from = habitat, 
-                         values_from = mean_sp_conc_mg_g_dw)
+                         values_from = mean_sp_conc_mg_kg_dw)
     
     demersal <- na.omit(table$Demersal)
     bathypel <- na.omit(table$Bathypelagic)
@@ -793,15 +793,15 @@ boxplot_compo_fish_tot <- function(res_fish_tib) {
     tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, 
                                  Mg, Mn, Na, Ni, P, Se, Zn), 
                         names_to = "Nutrient", 
-                        values_to = "concentration_mg_g_dw") |>
+                        values_to = "concentration_mg_kg_dw") |>
     dplyr::mutate(Nutrient = factor(Nutrient, 
                                     levels = c("Ca", "P", "Na", "K", "Mg", 
                                                "Fe", "Zn", "Cu", "Mn", "Se",
                                                "As", "Ni","Co"))) |>
     # remove NAs if there is still some
-    dplyr::filter(!(is.na(concentration_mg_g_dw))) |>
+    dplyr::filter(!(is.na(concentration_mg_kg_dw))) |>
     ggplot2::ggplot(ggplot2::aes(x = Nutrient, 
-                                 y = concentration_mg_g_dw, fill = Nutrient)) +
+                                 y = concentration_mg_kg_dw, fill = Nutrient)) +
     ggplot2::geom_boxplot() +
     ggplot2::facet_wrap(~ Nutrient, scale = "free") +
     ggplot2::scale_fill_manual(values = c("#4C413FFF", "#5A6F80FF", "#278B9AFF",
@@ -809,7 +809,7 @@ boxplot_compo_fish_tot <- function(res_fish_tib) {
                                           "#E8C4A2FF", "#14191FFF", "#1D2645FF", 
                                           "#403369FF", "#AE93BEFF", "#B4DAE5FF", 
                                           "#F0D77BFF")) +
-    ggplot2::ylab("Nutrient concentration (in mg/g dry weight)") +
+    ggplot2::ylab("Nutrient concentration (in mg/kg dry weight)") +
     ggplot2::theme_bw() +
     ggplot2::theme(axis.text.x = ggplot2::element_blank(), 
                    axis.text.y = ggplot2::element_text(size = 15), 
@@ -839,14 +839,14 @@ densplot_compo_fish_tot <- function(res_fish_tib) {
     tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, 
                                  Mg, Mn, Na, Ni, P, Se, Zn), 
                         names_to = "Nutrient", 
-                        values_to = "concentration_mg_g_dw") |>
+                        values_to = "concentration_mg_kg_dw") |>
     dplyr::mutate(Nutrient = factor(Nutrient, 
                                     levels = c("Ca", "P", "Na", "K", "Mg", 
                                                "Fe", "Zn", "Cu", "Mn", "Se",
                                                "As", "Ni","Co"))) |>
     # remove NAs if there is still some
-    dplyr::filter(!(is.na(concentration_mg_g_dw))) |>
-    ggplot2::ggplot(ggplot2::aes(x = concentration_mg_g_dw, fill = Nutrient)) +
+    dplyr::filter(!(is.na(concentration_mg_kg_dw))) |>
+    ggplot2::ggplot(ggplot2::aes(x = concentration_mg_kg_dw, fill = Nutrient)) +
     ggplot2::geom_density() +
     ggplot2::facet_wrap(~ Nutrient, scale = "free") +
     ggplot2::scale_fill_manual(values = c("#4C413FFF", "#5A6F80FF", "#278B9AFF",
@@ -854,7 +854,7 @@ densplot_compo_fish_tot <- function(res_fish_tib) {
                                           "#E8C4A2FF", "#14191FFF", "#1D2645FF", 
                                           "#403369FF", "#AE93BEFF", "#B4DAE5FF", 
                                           "#F0D77BFF")) +
-    ggplot2::xlab("Nutrient concentration (in mg/g dry weight)") +
+    ggplot2::xlab("Nutrient concentration (in mg/kg dry weight)") +
     ggplot2::theme_bw() +
     ggplot2::theme(axis.text.x = ggplot2::element_text(size = 15), 
                    axis.text.y = ggplot2::element_blank(), 
@@ -940,18 +940,18 @@ table_compo_scats <- function(res_scat_tib,
     tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, 
                                  Mg, Mn, Na, Ni, P, Se, Zn), 
                         names_to = "Nutrient", 
-                        values_to = "concentration_mg_g_dw") |>
+                        values_to = "concentration_mg_kg_dw") |>
     dplyr::group_by(site, Nutrient) |>
     dplyr::summarise(n = dplyr::n_distinct(Code_sample), 
-                     conc_mg_g_dw_min = round(min(concentration_mg_g_dw), 3), 
-                     conc_mg_g_dw_low_quant = round(quantile(concentration_mg_g_dw, 
+                     conc_mg_kg_dw_min = round(min(concentration_mg_kg_dw), 3), 
+                     conc_mg_kg_dw_low_quant = round(quantile(concentration_mg_kg_dw, 
                                                        probs = c(0.025)), 3),
-                     conc_mg_g_dw_mean = round(mean(concentration_mg_g_dw), 3),
-                     conc_mg_g_dw_high_quant = round(quantile(concentration_mg_g_dw, 
+                     conc_mg_kg_dw_mean = round(mean(concentration_mg_kg_dw), 3),
+                     conc_mg_kg_dw_high_quant = round(quantile(concentration_mg_kg_dw, 
                                                         probs = c(0.975)), 3),
-                     conc_mg_g_dw_max = round(max(concentration_mg_g_dw), 3), 
-                     conc_mg_g_dw_sd = round(sd(concentration_mg_g_dw), 3), 
-                     conc_mg_g_dw_cv = round(sd(concentration_mg_g_dw)/conc_mg_g_dw_mean, 3), )
+                     conc_mg_kg_dw_max = round(max(concentration_mg_kg_dw), 3), 
+                     conc_mg_kg_dw_sd = round(sd(concentration_mg_kg_dw), 3), 
+                     conc_mg_kg_dw_cv = round(sd(concentration_mg_kg_dw)/conc_mg_kg_dw_mean, 3), )
   
   
   if (object_type == "file") {
@@ -1000,8 +1000,8 @@ boxplot_compo_scats_tot <- function(res_scat_tib,
   res_scat_tib |>
     tidyr::pivot_longer(cols = c("As":"Zn"), 
                         names_to = "Nutrient", 
-                        values_to = "concentration_mg_g_dw") |>
-    ggplot2::ggplot(ggplot2::aes(x = Nutrient, y = concentration_mg_g_dw, 
+                        values_to = "concentration_mg_kg_dw") |>
+    ggplot2::ggplot(ggplot2::aes(x = Nutrient, y = concentration_mg_kg_dw, 
                                  fill = Nutrient)) +
     ggplot2::geom_boxplot() +
     ggplot2::scale_fill_manual(values = c("#4C413FFF", "#5A6F80FF", "#278B9AFF",
@@ -1010,7 +1010,7 @@ boxplot_compo_scats_tot <- function(res_scat_tib,
                                           "#403369FF", "#AE93BEFF", "#B4DAE5FF", 
                                           "#F0D77BFF")) +
     ggplot2::facet_wrap(~ Nutrient, scale = "free") +
-    ggplot2::ylab("Nutrient concentration (in mg/g dry weight)") +
+    ggplot2::ylab("Nutrient concentration (in mg/kg dry weight)") +
     ggplot2::theme_bw() +
     ggplot2::theme(axis.title.x = ggplot2::element_blank(), 
                    axis.text.x = ggplot2::element_blank(),
@@ -1043,8 +1043,8 @@ densplot_compo_scats_tot <- function(res_scat_tib,
   res_scat_tib |>
     tidyr::pivot_longer(cols = c("As":"Zn"), 
                         names_to = "Nutrient", 
-                        values_to = "concentration_mg_g_dw") |>
-    ggplot2::ggplot(ggplot2::aes(x = concentration_mg_g_dw, 
+                        values_to = "concentration_mg_kg_dw") |>
+    ggplot2::ggplot(ggplot2::aes(x = concentration_mg_kg_dw, 
                                  fill = Nutrient)) +
     ggplot2::geom_density() +
     ggplot2::scale_fill_manual(values = c("#4C413FFF", "#5A6F80FF", "#278B9AFF",
@@ -1053,7 +1053,7 @@ densplot_compo_scats_tot <- function(res_scat_tib,
                                           "#403369FF", "#AE93BEFF", "#B4DAE5FF", 
                                           "#F0D77BFF")) +
     ggplot2::facet_wrap(~ Nutrient, scale = "free") +
-    ggplot2::xlab("Nutrient concentration (in mg/g dry weight)") +
+    ggplot2::xlab("Nutrient concentration (in mg/kg dry weight)") +
     ggplot2::theme_bw() +
     ggplot2::theme(axis.title.x = ggplot2::element_blank(), 
                    axis.text.x = ggplot2::element_text(size = 15),
@@ -1084,12 +1084,12 @@ boxplot_compo_scats_site <- function(res_scat_tib,
   res_scat_tib |>
     tidyr::pivot_longer(cols = c("As":"Zn"), 
                         names_to = "Nutrient", 
-                        values_to = "concentration_mg_g_dw") |>
-    ggplot2::ggplot(ggplot2::aes(x = site, y = concentration_mg_g_dw, 
+                        values_to = "concentration_mg_kg_dw") |>
+    ggplot2::ggplot(ggplot2::aes(x = site, y = concentration_mg_kg_dw, 
                                  fill = Nutrient)) +
     ggplot2::geom_violin(width=1.4) +
     ggplot2::geom_boxplot() +
-    ggplot2::ylab("Nutrient concentration (in mg/g dry weight)") +
+    ggplot2::ylab("Nutrient concentration (in mg/kg dry weight)") +
     ggplot2::geom_jitter(color="darkgrey", size=0.7, alpha=0.2) +
     ggplot2::scale_fill_manual(values = c("#4C413FFF", "#5A6F80FF", "#278B9AFF",
                                           "#E75B64FF", "#DE7862FF", "#D8AF39FF", 
@@ -1128,12 +1128,12 @@ boxplot_compo_scats_pups <- function(res_scat_tib,
   res_scat_tib |>
     tidyr::pivot_longer(cols = c("As":"Zn"), 
                         names_to = "Nutrient", 
-                        values_to = "concentration_mg_g_dw") |>
-    ggplot2::ggplot(ggplot2::aes(x = pup_suspicion, y = concentration_mg_g_dw, 
+                        values_to = "concentration_mg_kg_dw") |>
+    ggplot2::ggplot(ggplot2::aes(x = pup_suspicion, y = concentration_mg_kg_dw, 
                                  fill = Nutrient)) +
     ggplot2::geom_violin(width=1.4) +
     ggplot2::geom_boxplot() +
-    ggplot2::ylab("Nutrient concentration (in mg/g dry weight)") +
+    ggplot2::ylab("Nutrient concentration (in mg/kg dry weight)") +
     ggplot2::geom_jitter(color="darkgrey", size=0.7, alpha=0.2) +
     ggplot2::scale_fill_manual(values = c("#4C413FFF", "#5A6F80FF", "#278B9AFF",
                                           "#E75B64FF", "#DE7862FF", "#D8AF39FF", 
@@ -1173,13 +1173,13 @@ boxplot_compo_scats_HPI <- function(res_scat_tib,
   res_scat_tib |>
     tidyr::pivot_longer(cols = c("As":"Zn"), 
                         names_to = "Nutrient", 
-                        values_to = "concentration_mg_g_dw") |>
+                        values_to = "concentration_mg_kg_dw") |>
     ggplot2::ggplot(ggplot2::aes(x = factor(HPI), 
-                                 y = concentration_mg_g_dw, 
+                                 y = concentration_mg_kg_dw, 
                                  fill = Nutrient)) +
     ggplot2::geom_violin(width=1.4) +
     ggplot2::geom_boxplot() +
-    ggplot2::ylab("Nutrient concentration (in mg/g dry weight)") +
+    ggplot2::ylab("Nutrient concentration (in mg/kg dry weight)") +
     ggplot2::geom_jitter(color="darkgrey", size=0.7, alpha=0.2) +
     ggplot2::scale_fill_manual(values = c("#4C413FFF", "#5A6F80FF", "#278B9AFF",
                                           "#E75B64FF", "#DE7862FF", "#D8AF39FF", 
@@ -1219,13 +1219,13 @@ boxplot_compo_scats_HPI01 <- function(res_scat_tib,
   res_scat_tib |>
     tidyr::pivot_longer(cols = c("As":"Zn"), 
                         names_to = "Nutrient", 
-                        values_to = "concentration_mg_g_dw") |>
+                        values_to = "concentration_mg_kg_dw") |>
     ggplot2::ggplot(ggplot2::aes(x = HPI01, 
-                                 y = concentration_mg_g_dw, 
+                                 y = concentration_mg_kg_dw, 
                                  fill = Nutrient)) +
     ggplot2::geom_violin(width=1.4) +
     ggplot2::geom_boxplot() +
-    ggplot2::ylab("Nutrient concentration (in mg/g dry weight)") +
+    ggplot2::ylab("Nutrient concentration (in mg/kg dry weight)") +
     ggplot2::geom_jitter(color="darkgrey", size=0.7, alpha=0.2) +
     ggplot2::scale_fill_manual(values = c("#4C413FFF", "#5A6F80FF", "#278B9AFF",
                                           "#E75B64FF", "#DE7862FF", "#D8AF39FF", 
@@ -1267,7 +1267,7 @@ MWtest_scats_sites <- function(res_scat_tib,
     tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K,
                                  Mg, Mn, Na, Ni, P, Se, Zn), 
                         names_to = "Nutrient", 
-                        values_to = "concentration_mg_g_dw") |>
+                        values_to = "concentration_mg_kg_dw") |>
     dplyr::mutate(Nutrient = factor(Nutrient, 
                                     levels = c("Ca", "P", "Na", "K", "Mg", 
                                                "Fe", "Zn", "Cu", "Mn", "Se",
@@ -1282,7 +1282,7 @@ MWtest_scats_sites <- function(res_scat_tib,
     table <- compo_tib |>
       dplyr::filter(Nutrient == nut) |>
       tidyr::pivot_wider(names_from = site, 
-                         values_from = concentration_mg_g_dw)
+                         values_from = concentration_mg_kg_dw)
     
     CapNo <- na.omit(table$`Cap Noir`)
     PSuz <- na.omit(table$`Pointe Suzanne`)
@@ -1331,7 +1331,7 @@ MWtest_scats_pup_nopup <- function(res_scat_tib) {
     tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K,
                                  Mg, Mn, Na, Ni, P, Se, Zn), 
                         names_to = "Nutrient", 
-                        values_to = "concentration_mg_g_dw") |>
+                        values_to = "concentration_mg_kg_dw") |>
     dplyr::mutate(Nutrient = factor(Nutrient, 
                                     levels = c("Ca", "P", "Na", "K", "Mg", 
                                                "Fe", "Zn", "Cu", "Mn", "Se",
@@ -1346,7 +1346,7 @@ MWtest_scats_pup_nopup <- function(res_scat_tib) {
     table <- compo_tib |>
       dplyr::filter(Nutrient == nut) |>
       tidyr::pivot_wider(names_from = pup_suspicion, 
-                         values_from = concentration_mg_g_dw)
+                         values_from = concentration_mg_kg_dw)
     
     Nopupsus <- na.omit(table$`0`)
     pupsus <- na.omit(table$`1`)
@@ -1394,7 +1394,7 @@ MWtest_scats_HPI <- function(res_scat_tib,
     tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K,
                                  Mg, Mn, Na, Ni, P, Se, Zn), 
                         names_to = "Nutrient", 
-                        values_to = "concentration_mg_g_dw") |>
+                        values_to = "concentration_mg_kg_dw") |>
     dplyr::mutate(Nutrient = factor(Nutrient, 
                                     levels = c("Ca", "P", "Na", "K", "Mg", 
                                                "Fe", "Zn", "Cu", "Mn", "Se",
@@ -1409,7 +1409,7 @@ MWtest_scats_HPI <- function(res_scat_tib,
     table <- compo_tib |>
       dplyr::filter(Nutrient == nut) |>
       tidyr::pivot_wider(names_from = HPI01, 
-                         values_from = concentration_mg_g_dw)
+                         values_from = concentration_mg_kg_dw)
     
     HPI0 <- na.omit(table$`0`)
     HPI1 <- na.omit(table$`1`)
@@ -1522,7 +1522,7 @@ boxplot_compo_diets_sources <- function(conc_diet_tib) {
     viridis::scale_color_viridis(option = "magma", 
                                  discrete = TRUE) +
     #ggplot2::facet_wrap(~ Nutrient, scale = "free") +
-    ggplot2::ylab(paste0("Nutrient concentration in fish\nration (in mg/g wet weight)")) +
+    ggplot2::ylab(paste0("Nutrient concentration in fish\nration (in mg/kg wet weight)")) +
     ggplot2::xlab("Source") +
     ggplot2::theme_bw() +
     ggplot2::theme(axis.text.x = ggplot2::element_text(size = 14), 

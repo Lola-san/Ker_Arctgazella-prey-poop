@@ -28,9 +28,9 @@ clust_compo_full_tib <- function(compo_tib,
                        Mg + Mn + Na + Ni + P + Se + Zn) |>
        tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, Mg, Mn, Na, Ni, P, Se, Zn), 
                            names_to = "Nutrient", 
-                           values_to = "concentration_mg_g_dw") |>
-       dplyr::mutate(relative_concentration = concentration_mg_g_dw/sum) |>
-       dplyr::select(-c(sum, concentration_mg_g_dw)) |>
+                           values_to = "concentration_mg_kg_dw") |>
+       dplyr::mutate(relative_concentration = concentration_mg_kg_dw/sum) |>
+       dplyr::select(-c(sum, concentration_mg_kg_dw)) |>
        tidyr::pivot_wider(names_from = Nutrient, 
                           values_from = relative_concentration)
      data.act <- as.data.frame(compo_tib.relative |>
@@ -399,9 +399,9 @@ clust_find_k_table <- function(res_tib,
                       Mg + Mn + Na + Ni + P + Se + Zn) |>
       tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, Mg, Mn, Na, Ni, P, Se, Zn), 
                           names_to = "Nutrient", 
-                          values_to = "concentration_mg_g_dw") |>
-      dplyr::mutate(relative_concentration = concentration_mg_g_dw/sum) |>
-      dplyr::select(-c(sum, concentration_mg_g_dw)) |>
+                          values_to = "concentration_mg_kg_dw") |>
+      dplyr::mutate(relative_concentration = concentration_mg_kg_dw/sum) |>
+      dplyr::select(-c(sum, concentration_mg_kg_dw)) |>
       tidyr::pivot_wider(names_from = Nutrient, 
                          values_from = relative_concentration)
     data.act <- as.data.frame(res_tib.relative |>
@@ -631,17 +631,17 @@ boxplot_compo_clust <- function(clust_output,
     dplyr::mutate(cluster = as.factor(clust_vec)) |>
     tidyr::pivot_longer(cols = c("As":"Zn"), 
                         names_to = "Nutrient", 
-                        values_to = "concentration_mg_g_dw") |>
+                        values_to = "concentration_mg_kg_dw") |>
     dplyr::mutate(Nutrient = factor(Nutrient, 
                                     levels = c("Ca", "P", "Na", "K", "Mg", 
                                                "Fe", "Zn", "Cu", "Mn", "Se",
                                                "As", "Ni","Co"))) |>
-    ggplot2::ggplot(ggplot2::aes(x = cluster, y = concentration_mg_g_dw, 
+    ggplot2::ggplot(ggplot2::aes(x = cluster, y = concentration_mg_kg_dw, 
                                  fill = cluster)) +
     ggplot2::geom_violin(width=1.4) +
     ggplot2::geom_boxplot() +
     ggplot2::coord_flip() +
-    ggplot2::ylab("Nutrient concentration (in mg/g dry weight)") +
+    ggplot2::ylab("Nutrient concentration (in mg/kg dry weight)") +
     ggplot2::geom_jitter(color="darkgrey", size=0.7, alpha=0.2) +
     ggplot2::scale_fill_manual(values = colour_palette) +
     ggplot2::facet_wrap(~ Nutrient, scale = "free") +

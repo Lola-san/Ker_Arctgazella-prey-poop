@@ -40,9 +40,9 @@ pca_coda <- function(res_tib,
                       Mg + Mn + Na + Ni + P + Se + Zn) |>
       tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, Mg, Mn, Na, Ni, P, Se, Zn), 
                           names_to = "Nutrient", 
-                          values_to = "concentration_mg_g_dw") |>
-      dplyr::mutate(relative_concentration = concentration_mg_g_dw/sum) |>
-      dplyr::select(-c(sum, concentration_mg_g_dw)) |>
+                          values_to = "concentration_mg_kg_dw") |>
+      dplyr::mutate(relative_concentration = concentration_mg_kg_dw/sum) |>
+      dplyr::select(-c(sum, concentration_mg_kg_dw)) |>
       tidyr::pivot_wider(names_from = Nutrient, 
                          values_from = relative_concentration)
     
@@ -77,9 +77,9 @@ pca_coda_norob <- function(res_tib,
                       Mg + Mn + Na + Ni + P + Se + Zn) |>
       tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, Mg, Mn, Na, Ni, P, Se, Zn), 
                           names_to = "Nutrient", 
-                          values_to = "concentration_mg_g_dw") |>
-      dplyr::mutate(relative_concentration = concentration_mg_g_dw/sum) |>
-      dplyr::select(-c(sum, concentration_mg_g_dw)) |>
+                          values_to = "concentration_mg_kg_dw") |>
+      dplyr::mutate(relative_concentration = concentration_mg_kg_dw/sum) |>
+      dplyr::select(-c(sum, concentration_mg_kg_dw)) |>
       tidyr::pivot_wider(names_from = Nutrient, 
                          values_from = relative_concentration)
     
@@ -397,10 +397,10 @@ pca_nocoda <- function(res_tib,
     #   tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K,
     #                                Mg, Mn, Na, Ni, P, Se, Zn), 
     #                       names_to = "Nutrient", 
-    #                       values_to = "concentration_mg_g_dw") |>
+    #                       values_to = "concentration_mg_kg_dw") |>
     #   dplyr::ungroup() |>
     #   dplyr::group_by(type, Nutrient) |>
-    #   dplyr::summarise(scaled_value = scale_center_this(concentration_mg_g_dw)) |>
+    #   dplyr::summarise(scaled_value = scale_center_this(concentration_mg_kg_dw)) |>
     #   # add a unique identifier of lines
     #   dplyr::mutate(ID = dplyr::row_number()) |>
     #   tidyr::pivot_wider(names_from = Nutrient, 
@@ -413,9 +413,9 @@ pca_nocoda <- function(res_tib,
                       Mg + Mn + Na + Ni + P + Se + Zn) |>
       tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, Mg, Mn, Na, Ni, P, Se, Zn), 
                           names_to = "Nutrient", 
-                          values_to = "concentration_mg_g_dw") |>
-      dplyr::mutate(relative_concentration = concentration_mg_g_dw/sum) |>
-      dplyr::select(-c(sum, concentration_mg_g_dw)) |>
+                          values_to = "concentration_mg_kg_dw") |>
+      dplyr::mutate(relative_concentration = concentration_mg_kg_dw/sum) |>
+      dplyr::select(-c(sum, concentration_mg_kg_dw)) |>
       tidyr::pivot_wider(names_from = Nutrient, 
                          values_from = relative_concentration)
     

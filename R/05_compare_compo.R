@@ -24,9 +24,9 @@ pool_fish_sp_means_scat <- function(res_fish_tib,
   res_fish_tib <- res_fish_tib |>
     tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, Mg, Mn, Na, Ni, P, Se, Zn), 
                         names_to = "Nutrient", 
-                        values_to = "concentration_mg_g_dw") |>
+                        values_to = "concentration_mg_kg_dw") |>
     dplyr::group_by(diet, Family, Species, Nutrient) |>
-    dplyr::summarise(mean_sp = mean(concentration_mg_g_dw)) |>
+    dplyr::summarise(mean_sp = mean(concentration_mg_kg_dw)) |>
     tidyr::pivot_wider(names_from = Nutrient, 
                        values_from = mean_sp) |>
     dplyr::mutate(Code_sample = NA, 
@@ -70,19 +70,19 @@ boxplot_compare_compo_full <- function(res_fish_scat_pooled,
   res_fish_scat_pooled |>
     tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, Mg, Mn, Na, Ni, P, Se, Zn), 
                         names_to = "Nutrient", 
-                        values_to = "concentration_mg_g_dw") |>
+                        values_to = "concentration_mg_kg_dw") |>
     # remove NAs if there is still some
-    dplyr::filter(!(is.na(concentration_mg_g_dw))) |>
+    dplyr::filter(!(is.na(concentration_mg_kg_dw))) |>
     ggplot2::ggplot(ggplot2::aes(x = reorder(Nutrient, 
-                                             concentration_mg_g_dw), 
-                                 y = log(concentration_mg_g_dw), fill = type)) +
+                                             concentration_mg_kg_dw), 
+                                 y = log(concentration_mg_kg_dw), fill = type)) +
     #ggplot2::geom_violin(width=1.4) +
     ggplot2::geom_boxplot() +
     #ggplot2::geom_jitter(color="darkgrey", size=0.7, alpha=0.5) +
     ggplot2::coord_flip() +
     viridis::scale_fill_viridis(option = "magma", 
                                 discrete = TRUE) +
-    ggplot2::ylab(paste0(" concentration (in mg/g dry weight)")) +
+    ggplot2::ylab(paste0(" concentration (in mg/kg dry weight)")) +
     ggplot2::xlab("Nutrient") +
     ggplot2::theme_bw() +
     ggplot2::theme(axis.text.x = ggplot2::element_text(size = 15), 
@@ -114,9 +114,9 @@ boxplot_compare_compo_prey <- function(res_fish_scat_pooled,
   res_fish_scat_pooled |>
     tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, Mg, Mn, Na, Ni, P, Se, Zn), 
                         names_to = "Nutrient", 
-                        values_to = "concentration_mg_g_dw") |>
+                        values_to = "concentration_mg_kg_dw") |>
     # remove NAs if there is still some
-    dplyr::filter(!(is.na(concentration_mg_g_dw))) |>
+    dplyr::filter(!(is.na(concentration_mg_kg_dw))) |>
     # make non-prey and prey species of fur seals distinct
     dplyr::mutate(type = dplyr::case_when(type == "fish" & diet %in% c(1, 
                                                                        NA # NA are for scat data 
@@ -124,13 +124,13 @@ boxplot_compare_compo_prey <- function(res_fish_scat_pooled,
                                           type == "fur seal scat" ~ "fur seal scat",
                                           TRUE ~ "other fish")) |>
     ggplot2::ggplot(ggplot2::aes(x = reorder(Nutrient, 
-                                             concentration_mg_g_dw), 
-                                 y = log(concentration_mg_g_dw), fill = type)) +
+                                             concentration_mg_kg_dw), 
+                                 y = log(concentration_mg_kg_dw), fill = type)) +
     ggplot2::geom_boxplot() +
     ggplot2::coord_flip() +
     viridis::scale_fill_viridis(option = "magma", 
                                 discrete = TRUE) +
-    ggplot2::ylab(paste0(" concentration (in mg/g dry weight)")) +
+    ggplot2::ylab(paste0(" concentration (in mg/kg dry weight)")) +
     ggplot2::xlab("Nutrient") +
     ggplot2::theme_bw() +
     ggplot2::theme(axis.text.x = ggplot2::element_text(size = 15), 
@@ -163,8 +163,8 @@ boxplot_compare_compo_prey_relative <- function(res_fish_scat_pooled,
                     Mg + Mn + Na + Ni + P + Se + Zn) |>
     tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, Mg, Mn, Na, Ni, P, Se, Zn), 
                         names_to = "Nutrient", 
-                        values_to = "concentration_mg_g_dw") |>
-    dplyr::mutate(relative_concentration = concentration_mg_g_dw/sum) |>
+                        values_to = "concentration_mg_kg_dw") |>
+    dplyr::mutate(relative_concentration = concentration_mg_kg_dw/sum) |>
     # make non-prey and prey species of fur seals distinct
     dplyr::mutate(type = dplyr::case_when(type == "fish" & diet %in% c(1, 
                                                                        NA # NA are for scat data 
@@ -178,7 +178,7 @@ boxplot_compare_compo_prey_relative <- function(res_fish_scat_pooled,
     ggplot2::coord_flip() +
     viridis::scale_fill_viridis(option = "magma", 
                                 discrete = TRUE) +
-    ggplot2::ylab("Relative concentration (in mg/g dry weight)") +
+    ggplot2::ylab("Relative concentration (in mg/kg dry weight)") +
     ggplot2::xlab("Nutrient") +
     ggplot2::theme_bw() +
     ggplot2::theme(axis.text.x = ggplot2::element_text(size = 15), 
@@ -213,8 +213,8 @@ boxplot_compare_compo_fish_scat_relative <- function(res_fish_scat_pooled,
                     Mg + Mn + Na + Ni + P + Se + Zn) |>
     tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, Mg, Mn, Na, Ni, P, Se, Zn), 
                         names_to = "Nutrient", 
-                        values_to = "concentration_mg_g_dw") |>
-    dplyr::mutate(relative_concentration = concentration_mg_g_dw/sum) |>
+                        values_to = "concentration_mg_kg_dw") |>
+    dplyr::mutate(relative_concentration = concentration_mg_kg_dw/sum) |>
     # remove NAs if there is still some
     dplyr::filter(!(is.na(relative_concentration))) |>
     ggplot2::ggplot(ggplot2::aes(x = reorder(Nutrient, 
@@ -226,7 +226,7 @@ boxplot_compare_compo_fish_scat_relative <- function(res_fish_scat_pooled,
     ggplot2::coord_flip() +
     viridis::scale_fill_viridis(option = "magma", 
                                 discrete = TRUE) +
-    ggplot2::ylab("Relative concentration (in mg/g dry weight)") +
+    ggplot2::ylab("Relative concentration (in mg/kg dry weight)") +
     ggplot2::xlab("Nutrient") +
     ggplot2::theme_bw() +
     ggplot2::theme(axis.text.x = ggplot2::element_text(size = 15), 
@@ -261,8 +261,8 @@ MWtest_conc_rel_fish_scats <- function(res_fish_scat_pooled,
                     Mg + Mn + Na + Ni + P + Se + Zn) |>
     tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, Mg, Mn, Na, Ni, P, Se, Zn), 
                         names_to = "Nutrient", 
-                        values_to = "concentration_mg_g_dw") |>
-    dplyr::mutate(relative_concentration = concentration_mg_g_dw/sum)
+                        values_to = "concentration_mg_kg_dw") |>
+    dplyr::mutate(relative_concentration = concentration_mg_kg_dw/sum)
   
   nut_vec <- unique(compo_tib$Nutrient)
   

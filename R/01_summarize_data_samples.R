@@ -55,7 +55,7 @@ summary_fish_samples <- function(fish_tab,
                                                             "Arctozenus risso",
                                                             "Notolepis coatsi", 
                                                             "Protomyctophum tenisoni") ~ "Bathypelagic")) |>
-    dplyr::group_by(Family, Species, Campaign, Habitat) |>
+    dplyr::group_by(Family, Species, Habitat) |>
     dplyr::mutate(SL_cm = as.integer(SL_cm)) |> # generates warnings because
     # of samples with approximate length (*XX) as they were damaged
     dplyr::summarize(n = dplyr::n_distinct(Code_new_format), 
