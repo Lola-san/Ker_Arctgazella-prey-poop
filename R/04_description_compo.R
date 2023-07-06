@@ -526,9 +526,77 @@ boxplot_compo_fish_fam_all_nut <- function(res_fish_tib
                                                         face = "bold"),
                    strip.text.x = ggplot2::element_text(size = 16), 
                    legend.position = "none")
-  ggplot2::ggsave(paste0("output/compo fish/per-fam/boxplot_fam_all_nut.jpg"),
+  ggplot2::ggsave("output/compo fish/per-fam/boxplot_fam_all_nut.jpg",
                   scale = 1,
                   height = 18, width = 22
+  )
+  
+}
+
+#'
+#'
+#'
+#'
+#'
+# function to display boxplot of elemental composition per family
+boxplot_compo_fish_fam_few_nut <- function(res_fish_tib, 
+                                           nutrients
+) {
+  
+  
+  res_fish_tib |>
+    tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K,
+                                 Mg, Mn, Na, Ni, P, Se, Zn), 
+                        names_to = "Nutrient", 
+                        values_to = "concentration_mg_kg_dw") |>
+    dplyr::group_by(Family) |>
+    dplyr::mutate(n = dplyr::n_distinct(Code_sample),
+                  Familyn = paste0(Family, " (n = ", n, ")"))|> 
+    dplyr::mutate(Familyn = factor(Familyn, 
+                                  levels = c("Channichthyidae (n = 20)",
+                                             "Zoarcidae (n = 10)",
+                                             "Microstomatidae (n = 5)",
+                                             "Melamphaidae (n = 1)", 
+                                             "Bathylagidae (n = 11)",
+                                             "Notosudidae (n = 1)", 
+                                             "Nototheniidae (n = 27)", 
+                                             "Carapidae (n = 10)",
+                                             "Myctophidae (n = 119)",
+                                             "Achiropsettidae (n = 2)", 
+                                             "Muraenolepididae (n = 10)",
+                                             "Macrouridae (n = 10)",
+                                             "Bathydraconidae (n = 5)",
+                                             "Gempylidae (n = 10)",
+                                             "Stomiidae (n = 11)",
+                                             "Paralepididae (n = 12)")), 
+                  Nutrient = factor(Nutrient, 
+                                    levels = c("Ca", "P", "Na", "K", "Mg", 
+                                               "Fe", "Zn", "Cu", "Mn", "Se",
+                                               "As", "Ni","Co"))) |>
+    dplyr::filter(Nutrient %in% nutrients) |>
+    ggplot2::ggplot(ggplot2::aes(x = Familyn, 
+                                 y = concentration_mg_kg_dw, fill = Nutrient)) +
+    ggplot2::geom_violin(width=1.4) +
+    ggplot2::facet_wrap(~ Nutrient, scale = "free_x", nrow = 2) +
+    ggplot2::geom_boxplot() +
+    ggplot2::geom_jitter(color="darkgrey", size=0.7, alpha=0.5) +
+    ggplot2::coord_flip() +
+    viridis::scale_fill_viridis(option = "magma", discrete = TRUE) +
+    ggplot2::ylab("Nutrient concentration (in mg/kg dry weight)") +
+    ggplot2::xlab("Family") +
+    ggplot2::theme_bw() +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(size = 16), 
+                   axis.text.y = ggplot2::element_text(size = 16), 
+                   axis.title.x = ggplot2::element_text(size = 17, 
+                                                        face = "bold"), 
+                   axis.title.y = ggplot2::element_text(size = 17, 
+                                                        face = "bold"),
+                   strip.text.x = ggplot2::element_text(size = 16), 
+                   legend.position = "none")
+  ggplot2::ggsave(paste0("output/compo fish/per-fam/boxplot_fam_", 
+                         stringr::str_c(nutrients, collapse = ""), ".jpg"),
+                  scale = 1,
+                  height = 8, width = 9
   )
   
 }
@@ -1250,6 +1318,58 @@ boxplot_compo_scats_HPI01 <- function(res_scat_tib,
   )
   
 }
+
+
+
+#'
+#'
+#'
+#'
+#'
+# function to display boxplot of elemental composition of scats per 
+# hard part index HPI 0/1 and showing that of pups separately
+boxplot_compo_scats_HPI01_pups <- function(res_scat_tib,
+                                      file_name) {
+  
+  res_scat_tib |>
+    tidyr::pivot_longer(cols = c("As":"Zn"), 
+                        names_to = "Nutrient", 
+                        values_to = "concentration_mg_kg_dw") |>
+    dplyr::mutate(HPI_pup_nopup = dplyr::case_when(HPI01 == "0" & pup_suspicion == "1" ~ "probable pup\nscat",
+                                                   HPI01 == "0" & pup_suspicion == "0" ~ "adult scat with\nno hard parts",
+                                                   HPI01 == "1" & pup_suspicion == "0" ~ "adult scat with\nhard parts")) |>
+    ggplot2::ggplot(ggplot2::aes(x = HPI_pup_nopup, 
+                                 y = concentration_mg_kg_dw, 
+                                 fill = Nutrient)) +
+    ggplot2::geom_violin(width=1.4) +
+    ggplot2::geom_boxplot() +
+    ggplot2::ylab("Nutrient concentration (in mg/kg dry weight)") +
+    ggplot2::geom_jitter(color="darkgrey", size=0.7, alpha=0.2) +
+    ggplot2::coord_flip() +
+    ggplot2::scale_fill_manual(values = c("#4C413FFF", "#5A6F80FF", "#278B9AFF",
+                                          "#E75B64FF", "#DE7862FF", "#D8AF39FF", 
+                                          "#E8C4A2FF", "#14191FFF", "#1D2645FF", 
+                                          "#403369FF", "#AE93BEFF", "#B4DAE5FF", 
+                                          "#F0D77BFF")) +
+    ggplot2::facet_wrap(~ Nutrient, scale = "free") +
+    ggplot2::xlab("Hard-parts index") +
+    ggplot2::theme_bw() +
+    ggplot2::theme(axis.title.x = ggplot2::element_blank(), 
+                   axis.text.x = ggplot2::element_text(size = 15),
+                   axis.text.y = ggplot2::element_text(size = 15),
+                   axis.title.y = ggplot2::element_text(size = 16, 
+                                                        face = "bold"), 
+                   strip.text.x = ggplot2::element_text(size = 16, 
+                                                        face = "bold"), 
+                   legend.position = "none")
+  ggplot2::ggsave(paste0("output/compo scats/", 
+                         file_name, ".jpg"), 
+                  scale = 1,
+                  height = 12, width = 17
+  )
+  
+}
+
 
 
 #'

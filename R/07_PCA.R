@@ -371,6 +371,193 @@ biplot_pca_coda <- function(res_pca,
   
 }
 
+
+
+
+#'
+#'
+#'
+#'
+#'
+# function to create histogram showing scores of variables on PCs 
+###### CAREFUL
+# In this function, some data is entered by hand so it should be used
+# with these outputs only : PCA_fish_clean_scats_nopup_coda_rob, 
+# PCA_fish_clean_coda_rob and PCA_scats_nopup_coda_rob
+pca_coda_loadings_nut <- function(res_pca, # coda method
+                                  type, # either "fish" or "scats" or "both"
+                                  file_name # should be explicit regarding dataset (fish
+                                  # or scats), method (coda or nocoda), "cleanness" of 
+                                  # dataset (with ou without stat outliers), ellipse
+                                  # or not and PC chosen (if other than 1,2)
+                                  #pcomp = c(1:2) # choices of the PC to plot (2 in total), 
+                                  # 1 and 2 by default
+) {
+  
+  load_tib_large <- tibble::as_tibble(res_pca$loadings) |>
+    # add nutrients as they were rownames and no variable in pca output
+    dplyr::mutate(Nutrient = c("As", "Ca", "Co", "Cu", "Fe", "K", "Mg", 
+                               "Mn", "Na", "Ni", "P", "Se", "Zn")) 
+  
+  # save table as is 
+  # define folder to save plot 
+  if (type %in% c("fish", "scats")) {
+    folder <- type
+  } else if (type == "both") {
+    folder <- "fish and scats"
+  }
+  
+  openxlsx::write.xlsx(load_tib_large, 
+                       file = paste0("output/PCA/", 
+                                     folder, "/Nut_loadings_PCs_", 
+                                     file_name, 
+                                     ".xlsx"))
+  
+  # plots with the 6th first PCs
+  load_tib_long <- load_tib_large|>
+    tidyr::pivot_longer(cols = c(`Comp.1`:`Comp.12`), 
+                        names_to = "PC", 
+                        values_to = "score") |>
+    dplyr::mutate(abs_score = abs(score))
+  
+  
+  
+  # the latter are not accessible automatically from summary(res_pca)
+  # (or I failed to find the way)
+  # so these are entered by hand here... and this function should thus be used
+  # with these outputs !!!
+  if (type == "both") {
+    comp_prop_var <- c(0.7413316, 0.08776791, 0.06398254, 
+                       0.03519628, 0.02495698, 0.01146791)
+  } else if (type == "scats") {
+    comp_prop_var <- c(0.8461865, 0.06193904, 0.03429155, 
+                       0.01849665, 0.01608361, 0.009448452)
+  } else if (type == "fish") {
+    comp_prop_var <- c(0.5042501, 0.2335199, 0.09193904, 
+                       0.05291126, 0.04654996, 0.03140671)
+  }
+  
+  # with details per PCs, with proportion of variance explained by each PC  
+  load_tib_long |> 
+    # order nutrients as they are on the first PCs
+    dplyr::mutate(Nutrient = factor(Nutrient, 
+                                    levels = c("K", "As", "Na", "Fe", "Mn", 
+                                               "Ca", "Cu", "Zn", "P", "Co", 
+                                               "Mg", "Ni", "Se"))) |>
+    dplyr::filter(PC %in% c("Comp.1", "Comp.2", "Comp.3", 
+                            "Comp.4", "Comp.5", "Comp.6")) |>
+    dplyr::mutate(PC_prop_var = dplyr::case_when(PC == "Comp.1" ~ paste0(PC,
+                                                                         " (",
+                                                                         100*round(comp_prop_var[1], 
+                                                                                   3), 
+                                                                         "%)"),
+                                                 PC == "Comp.2" ~ paste0(PC,
+                                                                         " (",
+                                                                         100*round(comp_prop_var[2], 
+                                                                                   3), 
+                                                                         "%)"),
+                                                 PC == "Comp.3" ~ paste0(PC,
+                                                                         " (",
+                                                                         100*round(comp_prop_var[3], 
+                                                                                   3), 
+                                                                         "%)"), 
+                                                 PC == "Comp.4" ~ paste0(PC,
+                                                                         " (",
+                                                                         100*round(comp_prop_var[4], 
+                                                                                   3), 
+                                                                         "%)"), 
+                                                 PC == "Comp.5" ~ paste0(PC,
+                                                                         " (",
+                                                                         100*round(comp_prop_var[5], 
+                                                                                   3), 
+                                                                         "%)"), 
+                                                 PC == "Comp.6" ~ paste0(PC,
+                                                                         " (",
+                                                                         100*round(comp_prop_var[6], 
+                                                                                   3), 
+                                                                         "%)"))) |>
+    ggplot2::ggplot() + 
+    ggplot2::geom_bar(ggplot2::aes(x = Nutrient, 
+                                   y = abs_score, 
+                                   fill = Nutrient), 
+                      stat = "identity") +
+    ggplot2::facet_wrap(~ PC_prop_var) +
+    ggplot2::scale_fill_manual(values = c("#4C413FFF", "#5A6F80FF", "#278B9AFF",
+                                          "#E75B64FF", "#DE7862FF", "#D8AF39FF", 
+                                          "#E8C4A2FF", "#14191FFF", "#1D2645FF", 
+                                          "#403369FF", "#AE93BEFF", "#B4DAE5FF", 
+                                          "#F0D77BFF")) +
+    ggplot2::ylab("Absolute loading on Principal Component") +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(size = 15), 
+                   axis.text.y = ggplot2::element_text(size = 15), 
+                   axis.title.x = ggplot2::element_text(size = 16, 
+                                                        face = "bold"), 
+                   axis.title.y = ggplot2::element_text(size = 16, 
+                                                        face = "bold"), 
+                   legend.position = "none")
+  # save plot 
+  ggplot2::ggsave(paste0("output/PCA/", 
+                         folder, 
+                         "/Nut_loadings_PCs16_",
+                         file_name,
+                         ".jpg"),
+                  scale = 1,
+                  height = 8, width = 10
+  )
+  
+  
+  # mean over all PCs, normalising by the proportion of variance 
+  # explained by each PC 
+  load_tib_long |> 
+    dplyr::filter(PC %in% c("Comp.1", "Comp.2", "Comp.3",
+                            "Comp.4", "Comp.5" )) |>
+    dplyr::group_by(Nutrient) |>
+    dplyr::mutate(mean_abs_score = mean(abs_score),
+                  var_PC = dplyr::case_when(PC == "Comp.1" ~ comp_prop_var[1], 
+                                            PC == "Comp.2" ~ comp_prop_var[2],
+                                            PC == "Comp.3" ~ comp_prop_var[3], 
+                                            PC == "Comp.4" ~ comp_prop_var[4], 
+                                            PC == "Comp.5" ~ comp_prop_var[5]),
+                  mean_abs_score_norm = mean_abs_score/var_PC) |>
+    ggplot2::ggplot() + 
+    ggplot2::geom_bar(ggplot2::aes(x = reorder(Nutrient,
+                                               mean_abs_score_norm), 
+                                   y = mean_abs_score_norm, 
+                                   fill = Nutrient), 
+                      stat = "identity") +
+    ggplot2::scale_fill_manual(values = c("#4C413FFF", "#5A6F80FF", "#278B9AFF",
+                                          "#E75B64FF", "#DE7862FF", "#D8AF39FF", 
+                                          "#E8C4A2FF", "#14191FFF", "#1D2645FF", 
+                                          "#403369FF", "#AE93BEFF", "#B4DAE5FF", 
+                                          "#F0D77BFF")) +
+    ggplot2::xlab("Nutrient") +
+    ggplot2::ylab("Mean absolute loading\non the first 5th Principal Components\nnormalised by proportion of\nvariance of the comp") +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(size = 15), 
+                   axis.text.y = ggplot2::element_text(size = 15), 
+                   axis.title.x = ggplot2::element_text(size = 16, 
+                                                        face = "bold"), 
+                   axis.title.y = ggplot2::element_text(size = 16, 
+                                                        face = "bold"), 
+                   legend.position = "none")
+  
+  
+  # save plot 
+  ggplot2::ggsave(paste0("output/PCA/", 
+                         folder, 
+                         "/Nut_loadings_means_PCs15_",
+                         file_name,
+                         ".jpg"),
+                  scale = 1,
+                  height = 8, width = 10
+  )
+  
+}
+
+
+
+
+
+
 #'
 #'
 #'
