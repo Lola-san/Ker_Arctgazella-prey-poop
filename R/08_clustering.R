@@ -22,26 +22,26 @@ clust_compo_full_tib <- function(compo_tib,
                                  scale = "robust", # other option is "classical"
                                  method) {
   
-   if (type == "both") {
-     compo_tib.relative <- compo_tib |>
-       dplyr::mutate(sum = As + Ca + Co + Cu + Fe + K +
-                       Mg + Mn + Na + Ni + P + Se + Zn) |>
-       tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, Mg, Mn, Na, Ni, P, Se, Zn), 
-                           names_to = "Nutrient", 
-                           values_to = "concentration_mg_kg_dw") |>
-       dplyr::mutate(relative_concentration = concentration_mg_kg_dw/sum) |>
-       dplyr::select(-c(sum, concentration_mg_kg_dw)) |>
-       tidyr::pivot_wider(names_from = Nutrient, 
-                          values_from = relative_concentration)
-     
-     data.act <- as.data.frame(compo_tib.relative |>
-                                 dplyr::ungroup() |>
-                                 dplyr::select(tidyselect::all_of(nutrients)))
-   } else {
-     data.act <- as.data.frame(compo_tib |>
-                                 dplyr::ungroup() |>
-                                 dplyr::select(tidyselect::all_of(nutrients)))
-   }
+  if (type == "both") {
+    compo_tib.relative <- compo_tib |>
+      dplyr::mutate(sum = As + Ca + Co + Cu + Fe + K +
+                      Mg + Mn + Na + Ni + P + Se + Zn) |>
+      tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, Mg, Mn, Na, Ni, P, Se, Zn), 
+                          names_to = "Nutrient", 
+                          values_to = "concentration_mg_kg_dw") |>
+      dplyr::mutate(relative_concentration = concentration_mg_kg_dw/sum) |>
+      dplyr::select(-c(sum, concentration_mg_kg_dw)) |>
+      tidyr::pivot_wider(names_from = Nutrient, 
+                         values_from = relative_concentration)
+    
+    data.act <- as.data.frame(compo_tib.relative |>
+                                dplyr::ungroup() |>
+                                dplyr::select(tidyselect::all_of(nutrients)))
+  } else {
+    data.act <- as.data.frame(compo_tib |>
+                                dplyr::ungroup() |>
+                                dplyr::select(tidyselect::all_of(nutrients)))
+  }
   
   
   
@@ -129,11 +129,12 @@ clust_compo_PCs <- function(res_pca,
 #'
 # function to plot dendrogram for fish based on PC results of robust PCA
 clust_compo_PCs_dendro_fish <- function(res_pca, 
-                                   compo_tib,
-                                   method, 
-                                   k, # useful when colour is "Cluster"
-                                   colour, # "Family", "habitat" or "Cluster"
-                                   file_name
+                                        compo_tib,
+                                        diet_or_not, # fish_sp_means_and_scats target
+                                        method, 
+                                        k, # useful when colour is "Cluster"
+                                        colour, # "Family", "habitat" or "Cluster", "diet"
+                                        file_name
 ) {
   # select the 5 first PCs
   pcomp <- c(1:5)
@@ -154,12 +155,29 @@ clust_compo_PCs_dendro_fish <- function(res_pca,
   # cut the tree in k clusters and save output in a df
   clust_output <- data.frame(cluster = stats::cutree(tree = tree, k = k))
   
+  # identify species that are known to be prey of A. gazella
+  diet_or_not <- diet_or_not |>
+    dplyr::filter(type == "forage fish") |>
+    dplyr::mutate(diet = dplyr::case_when(diet == 0 ~ "not identified\nas a prey of\nA. gazella", 
+                                          diet == 1 ~ "identified as\na prey of\nA. gazella"))
+  
+  # change species name 
+  compo_tib <- compo_tib |>
+    dplyr::mutate(Species_short = paste0(
+        stringr::str_sub(stringr::str_split_fixed(Species, 
+                                                  " ", 
+                                                  n = 2)[,1], 
+                         start = 1, 
+                         end = 1), ". ", 
+        stringr::str_split_fixed(Species, " ", n = 2)[,2])) 
+  
   # change labels to species name and add colour grouping
   dendro.labels <- dendro.dat$labels |>
-    dplyr::mutate(label = compo_tib$Species[tree$order], 
+    dplyr::mutate(label = compo_tib$Species_short[tree$order], 
                   Family = compo_tib$Family[tree$order], 
                   Habitat = compo_tib$habitat[tree$order], 
-                  Cluster = factor(clust_output$cluster[tree$order])) |>
+                  Cluster = factor(clust_output$cluster[tree$order]), 
+                  diet_agazella = diet_or_not$diet[tree$order]) |>
     dplyr::mutate(label = stringr::str_replace(label, "\n", " "), 
                   Family = factor(Family, 
                                   levels = c("Zoarcidae",
@@ -265,7 +283,7 @@ clust_compo_PCs_dendro_fish <- function(res_pca,
                          hjust = 1, size = 4) +
       ggplot2::scale_color_manual(values = colour_palette) +
       ggplot2::coord_flip() +
-      ggplot2::ylim(-6, 6) +
+      ggplot2::ylim(-4, 6) +
       ggplot2::guides(colour = ggplot2::guide_legend(title = "Cluster",
                                                      override.aes = list(shape = 12)))  +
       ggplot2::theme_classic()
@@ -275,7 +293,32 @@ clust_compo_PCs_dendro_fish <- function(res_pca,
                            file_name, "_",
                            colour, "_k", k, ".jpg"),
                     scale = 1,
-                    height = 6, width = 8)
+                    height = 5, width = 6)
+    
+  } else if (colour == "diet") {
+    
+    # plot dendrogram
+    ggplot2::ggplot(dendro.dat$segments) + 
+      ggplot2::geom_segment(ggplot2::aes(x = x, y = y, xend = xend, yend = yend))+
+      ggplot2::geom_text(data = dendro.labels, 
+                         ggplot2::aes(x, y, 
+                                      label = label, 
+                                      colour = diet_agazella),
+                         hjust = 1, size = 4) +
+      ggplot2::scale_color_manual(values = c("#1D2645FF",
+                                             "#278B9AFF")) +
+      ggplot2::coord_flip() +
+      ggplot2::ylim(-5, 6) +
+      ggplot2::guides(colour = ggplot2::guide_legend(title = "",
+                                                     override.aes = list(shape = 12)))  +
+      ggplot2::theme_classic()
+    
+    # save plot 
+    ggplot2::ggsave(paste0("output/Clustering/fish/dendrogram_", 
+                           file_name, "_",
+                           colour, ".jpg"),
+                    scale = 1,
+                    height = 5, width = 6)
     
   }
   
@@ -290,12 +333,23 @@ clust_compo_PCs_dendro_fish <- function(res_pca,
 #'
 # function to plot dendrogram for scats based on PC results of robust PCA
 clust_compo_PCs_dendro_scats <- function(res_pca, 
-                                   compo_tib,
-                                   method, 
-                                   k, # useful when colour is "Cluster"
-                                   colour, # "HPI01", "site"
-                                   file_name
+                                         compo_tib,
+                                         method, 
+                                         k, # useful when colour is "Cluster"
+                                         colour, # "HPI01", "site", "HPI_pup_nopup"
+                                         file_name
 ) {
+  # compo tib add pup index
+  compo_tib <- compo_tib |>
+    dplyr::mutate(HPI_pup_nopup = dplyr::case_when(HPI01 == "0" & pup_suspicion == "1" ~ "probable nursed\npup scat",
+                                                   HPI01 == "0" & pup_suspicion == "0" ~ "scat of non-nursed\nindividual with\nno hard parts",
+                                                   HPI01 == "1" & pup_suspicion == "0" ~ "scat of non-nursed\nindividual with\nhard parts")) |>
+    dplyr::mutate(HPI_pup_nopup = factor(HPI_pup_nopup, 
+                                         levels = c("probable nursed\npup scat",
+                                                    "scat of non-nursed\nindividual with\nno hard parts", 
+                                                    "scat of non-nursed\nindividual with\nhard parts" 
+                                         )))
+  
   # select the 2 first PCs
   pcomp <- c(1:2)
   
@@ -320,8 +374,9 @@ clust_compo_PCs_dendro_scats <- function(res_pca,
     dplyr::mutate(label = compo_tib$Code_sample[tree$order], 
                   Site = compo_tib$site[tree$order], 
                   HPI01 = compo_tib$HPI01[tree$order], 
+                  HPI_pup_nopup = compo_tib$HPI_pup_nopup[tree$order],
                   Cluster = factor(clust_output$cluster[tree$order])) 
-
+  
   if (colour == "HPI01") {  
     # plot dendrogram
     ggplot2::ggplot(dendro.dat$segments) + 
@@ -344,6 +399,32 @@ clust_compo_PCs_dendro_scats <- function(res_pca,
                            colour, ".jpg"),
                     scale = 1,
                     height = 7, width = 8)
+    
+  } else if (colour == "HPI_pup_nopup") {
+    # plot dendrogram
+    ggplot2::ggplot(dendro.dat$segments) + 
+      ggplot2::geom_segment(ggplot2::aes(x = x, y = y, xend = xend, yend = yend))+
+      ggplot2::geom_text(data = dendro.labels, 
+                         ggplot2::aes(x, y, 
+                                      label = label, 
+                                      colour = HPI_pup_nopup),
+                         hjust = 1, size = 4) +
+      ggplot2::scale_color_manual(values = c("#F0D77BFF", 
+                                             "#278B9AFF", 
+                                             "#E75B64FF")) +
+      ggplot2::coord_flip() +
+      ggplot2::ylim(-2, 25) +
+      ggplot2::guides(colour = ggplot2::guide_legend(title = "",
+                                                     override.aes = list(shape = 12)))  +
+      ggplot2::theme_classic() +
+      ggplot2::theme(legend.key.height = ggplot2::unit(1.25, "cm"))
+    
+    # save plot 
+    ggplot2::ggsave(paste0("output/Clustering/scats/dendrogram_", 
+                           file_name, "_",
+                           colour, ".jpg"),
+                    scale = 1,
+                    height = 8, width = 6)
     
   } else if (colour == "Site") {
     # plot dendrogram
@@ -369,6 +450,31 @@ clust_compo_PCs_dendro_scats <- function(res_pca,
                     scale = 1,
                     height = 7, width = 8)
     
+  } else if (colour == "Cluster") {
+    # plot dendrogram
+    ggplot2::ggplot(dendro.dat$segments) + 
+      ggplot2::geom_segment(ggplot2::aes(x = x, y = y, xend = xend, yend = yend))+
+      ggplot2::geom_text(data = dendro.labels, 
+                         ggplot2::aes(x, y, 
+                                      label = label, 
+                                      colour = Cluster),
+                         hjust = 1, size = 4) +
+      ggplot2::scale_color_manual(values = c("#58A449FF",
+                                             "#D8AF39FF",
+                                             "#AE93BEFF")) +
+      ggplot2::coord_flip() +
+      ggplot2::ylim(-2, 25) +
+      ggplot2::guides(colour = ggplot2::guide_legend(title = "Cluster",
+                                                     override.aes = list(shape = 12)))  +
+      ggplot2::theme_classic()
+    
+    # save plot 
+    ggplot2::ggsave(paste0("output/Clustering/scats/dendrogram_", 
+                           file_name, "_",
+                           colour, "_k", k, ".jpg"),
+                    scale = 1,
+                    height = 7, width = 8)
+    
   } 
   
 }
@@ -379,11 +485,11 @@ clust_compo_PCs_dendro_scats <- function(res_pca,
 #'
 # function to plot dendrogram for fish and scats based on PC results of robust PCA
 clust_compo_PCs_dendro_both <- function(res_pca, 
-                                         compo_tib,
-                                         method, 
-                                         k, # useful when colour is "Cluster"
-                                          colour, # either "type" (fish or scats) or "Cluster"
-                                         file_name
+                                        compo_tib,
+                                        method, 
+                                        k, # useful when colour is "Cluster"
+                                        colour, # either "type" (fish or scats) or "Cluster"
+                                        file_name
 ) {
   # select the 4 first PCs
   pcomp <- c(1:4)
@@ -404,12 +510,23 @@ clust_compo_PCs_dendro_both <- function(res_pca,
   # cut the tree in k clusters and save output in a df
   clust_output <- data.frame(cluster = stats::cutree(tree = tree, k = k))
   
+  # change species name 
+  compo_tib <- compo_tib |>
+    dplyr::mutate(label = dplyr::case_when(type == "forage fish" ~ paste0(
+      stringr::str_sub(stringr::str_split_fixed(Species, 
+                                                " ", 
+                                                n = 2)[,1], 
+                       start = 1, 
+                       end = 1), ". ", 
+      stringr::str_split_fixed(Species, " ", n = 2)[,2]),
+                                                   type == "fur seal scat" ~ Code_sample)) 
+  
   # change labels to species name and add colour grouping
   dendro.labels <- dendro.dat$labels |>
     dplyr::mutate(type = compo_tib$type[tree$order], 
-                  label = dplyr::case_when(type == "fish" ~ compo_tib$Species[tree$order],
-                                           type == "fur seal scat" ~ compo_tib$Code_sample[tree$order]), 
-                  Cluster = factor(clust_output$cluster[tree$order])) 
+                  label = compo_tib$label[tree$order], 
+                  Cluster = factor(clust_output$cluster[tree$order])) |> 
+    dplyr::mutate()
   
   if (colour == "type") {  
     # plot dendrogram
@@ -424,7 +541,7 @@ clust_compo_PCs_dendro_both <- function(res_pca,
       viridis::scale_fill_viridis(option = "magma", 
                                   discrete = TRUE) +
       ggplot2::coord_flip() +
-      ggplot2::ylim(-15, 40) +
+      ggplot2::ylim(-5, 40) +
       ggplot2::guides(colour = ggplot2::guide_legend(title = "Sample type",
                                                      override.aes = list(shape = 12)))  +
       ggplot2::theme_classic() 
@@ -444,10 +561,11 @@ clust_compo_PCs_dendro_both <- function(res_pca,
                                       label = label, 
                                       colour = Cluster),
                          hjust = 1, size = 4) +
-      ggplot2::scale_color_manual(values = c("#AE93BEFF", 
-                                             "#278B9AFF")) +
+      ggplot2::scale_color_manual(values = c("#278B9AFF",
+                                             "#4C413FFF",
+                                             "#AE93BEFF")) +
       ggplot2::coord_flip() +
-      ggplot2::ylim(-15, 40) +
+      ggplot2::ylim(-5, 40) +
       ggplot2::guides(colour = ggplot2::guide_legend(title = "Cluster",
                                                      override.aes = list(shape = 12)))  +
       ggplot2::theme_classic()
@@ -469,30 +587,30 @@ clust_compo_PCs_dendro_both <- function(res_pca,
 #'
 # function to plot dendrogram for fish and scats based on PC results of robust PCA
 clust_compo_PCs_dendro_both_nut <- function(compo_tib,
-                                        nutrients, # vector specifying the nutrients to use
-                                        k,
-                                        scale = "robust", # other option is "classical"
-                                        method
+                                            nutrients, # vector specifying the nutrients to use
+                                            k,
+                                            scale = "robust", # other option is "classical"
+                                            method
 ) {
   compo_tib.relative <- compo_tib |>
-      dplyr::mutate(sum = As + Ca + Co + Cu + Fe + K +
-                      Mg + Mn + Na + Ni + P + Se + Zn) |>
-      tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, Mg, Mn, Na, Ni, P, Se, Zn), 
-                          names_to = "Nutrient", 
-                          values_to = "concentration_mg_kg_dw") |>
-      dplyr::mutate(relative_concentration = concentration_mg_kg_dw/sum) |>
-      dplyr::select(-c(sum, concentration_mg_kg_dw)) |>
-      tidyr::pivot_wider(names_from = Nutrient, 
-                         values_from = relative_concentration)
+    dplyr::mutate(sum = As + Ca + Co + Cu + Fe + K +
+                    Mg + Mn + Na + Ni + P + Se + Zn) |>
+    tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, Mg, Mn, Na, Ni, P, Se, Zn), 
+                        names_to = "Nutrient", 
+                        values_to = "concentration_mg_kg_dw") |>
+    dplyr::mutate(relative_concentration = concentration_mg_kg_dw/sum) |>
+    dplyr::select(-c(sum, concentration_mg_kg_dw)) |>
+    tidyr::pivot_wider(names_from = Nutrient, 
+                       values_from = relative_concentration)
   
   data.act <- as.data.frame(compo_tib.relative |>
-                                dplyr::ungroup() |>
-                                dplyr::select(tidyselect::all_of(nutrients)))
-
+                              dplyr::ungroup() |>
+                              dplyr::select(tidyselect::all_of(nutrients)))
+  
   clust.data <- robCompositions::clustCoDa(data.act,
-                             k = k, 
-                             scale = scale, 
-                             method = method)
+                                           k = k, 
+                                           scale = scale, 
+                                           method = method)
   
   
   # dendrogram
@@ -501,14 +619,14 @@ clust_compo_PCs_dendro_both_nut <- function(compo_tib,
   
   # change labels to species name and add colour grouping
   tree.labels <- data.frame(type = compo_tib$type[tree.data$order], 
-                            label = dplyr::case_when(compo_tib$type[tree.data$order] == "fish" ~ compo_tib$Species[tree.data$order],
+                            label = dplyr::case_when(compo_tib$type[tree.data$order] == "forage fish" ~ compo_tib$Species[tree.data$order],
                                                      compo_tib$type[tree.data$order] == "fur seal scat" ~ compo_tib$Code_sample[tree.data$order]), 
-                  Cluster = factor(clust.data$cluster[tree.data$order])) 
+                            Cluster = factor(clust.data$cluster[tree.data$order])) 
   
   tree.data$labels <- tree.labels$label
   tar
   plot(tree.data)
-    
+  
   
 }
 
@@ -863,11 +981,11 @@ boxplot_compo_clust <- function(clust_output,
                                       levels = c("Ca", "P", "Na", "K", "Mg", 
                                                  "Fe", "Zn", "Cu", "Mn", "Se",
                                                  "As", "Ni","Co"))) |>
-      ggplot2::ggplot(ggplot2::aes(x = cluster, y = concentration_mg_kg_dw, 
+      ggplot2::ggplot(ggplot2::aes(x = cluster, 
+                                   y = concentration_mg_kg_dw, 
                                    fill = cluster)) +
       ggplot2::geom_violin(width=1.4) +
       ggplot2::geom_boxplot() +
-      ggplot2::coord_flip() +
       ggplot2::ylab("Nutrient concentration (in mg/kg dry weight)") +
       ggplot2::geom_jitter(color="darkgrey", size=0.7, alpha=0.2) +
       ggplot2::scale_fill_manual(values = colour_palette) +
@@ -898,7 +1016,6 @@ boxplot_compo_clust <- function(clust_output,
                                    fill = cluster)) +
       ggplot2::geom_violin(width=1.4) +
       ggplot2::geom_boxplot() +
-      ggplot2::coord_flip() +
       ggplot2::ylab("Nutrient concentration (in mg/kg dry weight)") +
       ggplot2::geom_jitter(color="darkgrey", size=0.7, alpha=0.2) +
       ggplot2::scale_fill_manual(values = colour_palette) +
@@ -932,7 +1049,6 @@ boxplot_compo_clust <- function(clust_output,
                                    fill = cluster)) +
       ggplot2::geom_violin(width=1.4) +
       ggplot2::geom_boxplot() +
-      ggplot2::coord_flip() +
       ggplot2::ylab("Nutrient relative concentration (in mg/kg dry weight)") +
       ggplot2::geom_jitter(color="darkgrey", size=0.7, alpha=0.2) +
       ggplot2::scale_fill_manual(values = colour_palette) +
@@ -1136,7 +1252,7 @@ barplot_clust <- function(clust_output,
                            ".jpg"),
                     scale = 1,
                     height = 8, width = 10)
-  
+    
   }
   
   
@@ -1152,8 +1268,8 @@ barplot_clust <- function(clust_output,
 # function to compute Mann-Whitney U Test to assess difference between 
 # concentration of fish in different clusters 
 MWtest_clust_k4 <- function(clust_output,
-                         compo_tib,
-                         file_name) {
+                            compo_tib,
+                            file_name) {
   
   # assign each sample to its cluster
   clust_vec <- clust_output$cluster
@@ -1192,11 +1308,11 @@ MWtest_clust_k4 <- function(clust_output,
     
     nut_test <- data.frame(Nutrient = rep(nut, 6), 
                            Cluster_comp_1 = c("1", "1", "1",
-                                        "2", "2", 
-                                        "3"), 
+                                              "2", "2", 
+                                              "3"), 
                            Cluster_comp_2 = c("2", "3", "4",
-                                        "3", "4", 
-                                        "4"), 
+                                              "3", "4", 
+                                              "4"), 
                            alpha_MW = c(wilcox.test(clust1, clust2)[[3]],
                                         wilcox.test(clust1, clust3)[[3]],
                                         wilcox.test(clust1, clust4)[[3]],
@@ -1238,9 +1354,9 @@ MWtest_clust_k4 <- function(clust_output,
   
   openxlsx::write.xlsx(df_test, 
                        file = paste0("output/clustering/", folder,
-                       "/Mann_Whitney_test_clust_", file_name, ".xlsx"))
+                                     "/Mann_Whitney_test_clust_", file_name, ".xlsx"))
   
- 
+  
 }
 
 
@@ -1269,8 +1385,8 @@ MWtest_clust_k2 <- function(clust_output,
                                       levels = c("Ca", "P", "Na", "K", "Mg", 
                                                  "Fe", "Zn", "Cu", "Mn", "Se",
                                                  "As", "Ni","Co"))) |>
-    dplyr::group_by(Species, Nutrient) |>
-    dplyr::summarise(concentration_mg_kg_dw = mean(concentration_mg_kg_dw))
+      dplyr::group_by(Species, Nutrient) |>
+      dplyr::summarise(concentration_mg_kg_dw = mean(concentration_mg_kg_dw))
     
   } else if (stringr::str_detect(file_name, "scats")) {
     compo_tib <- compo_tib |>
@@ -1354,6 +1470,127 @@ MWtest_clust_k2 <- function(clust_output,
   
   
 }
+
+
+
+#'
+#'
+#'
+#'
+#'
+# function to compute Mann-Whitney U Test to assess difference between 
+# concentration of fish in different clusters 
+MWtest_clust_k3 <- function(clust_output,
+                            compo_tib,
+                            file_name) {
+  
+  # assign each sample to its cluster
+  clust_vec <- clust_output$cluster
+  
+  
+  if (stringr::str_detect(file_name, "fish")) {
+    compo_tib <- compo_tib |>
+      tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K,
+                                   Mg, Mn, Na, Ni, P, Se, Zn), 
+                          names_to = "Nutrient", 
+                          values_to = "concentration_mg_kg_dw") |>
+      dplyr::mutate(Nutrient = factor(Nutrient, 
+                                      levels = c("Ca", "P", "Na", "K", "Mg", 
+                                                 "Fe", "Zn", "Cu", "Mn", "Se",
+                                                 "As", "Ni","Co"))) |>
+      dplyr::group_by(Species, Nutrient) |>
+      dplyr::summarise(concentration_mg_kg_dw = mean(concentration_mg_kg_dw))
+    
+  } else if (stringr::str_detect(file_name, "scats")) {
+    compo_tib <- compo_tib |>
+      tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K,
+                                   Mg, Mn, Na, Ni, P, Se, Zn), 
+                          names_to = "Nutrient", 
+                          values_to = "concentration_mg_kg_dw") |>
+      dplyr::mutate(Nutrient = factor(Nutrient, 
+                                      levels = c("Ca", "P", "Na", "K", "Mg", 
+                                                 "Fe", "Zn", "Cu", "Mn", "Se",
+                                                 "As", "Ni","Co")))
+    
+  } else if (stringr::str_detect(file_name, "both")) {
+    compo_tib <- compo_tib |>
+      dplyr::mutate(sum = As + Ca + Co + Cu + Fe + K +
+                      Mg + Mn + Na + Ni + P + Se + Zn) |>
+      tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, Mg, Mn, Na, Ni, P, Se, Zn), 
+                          names_to = "Nutrient", 
+                          values_to = "concentration_mg_kg_dw") |>
+      dplyr::mutate(Nutrient = factor(Nutrient, 
+                                      levels = c("Ca", "P", "Na", "K", "Mg", 
+                                                 "Fe", "Zn", "Cu", "Mn", "Se",
+                                                 "As", "Ni","Co")), 
+                    # use relative concentrations
+                    concentration_mg_kg_dw = concentration_mg_kg_dw/sum) 
+  }
+  
+  nut_vec <- unique(compo_tib$Nutrient)
+  
+  list_outputs <- list()
+  
+  for (nut in nut_vec) {
+    
+    table <- compo_tib |>
+      dplyr::filter(Nutrient == nut)
+    
+    table$cluster <- factor(clust_output$cluster)
+    
+    table <- table |>
+      tidyr::pivot_wider(names_from = cluster, 
+                         values_from = concentration_mg_kg_dw) 
+    
+    clust1 <- na.omit(table$`1`)
+    clust2 <- na.omit(table$`2`)
+    clust3 <- na.omit(table$`3`)
+    
+    nut_test <- data.frame(Nutrient = nut, 
+                           clust1 = c("cluster 1", "cluster 1", "cluster 2"),
+                           clust2 = c("cluster 2", "cluster 3", "cluster 3"),
+                           alpha_MW = c(wilcox.test(clust1, clust2)[[3]], 
+                                        wilcox.test(clust1, clust3)[[3]],
+                                        wilcox.test(clust2, clust3)[[3]]))
+    
+    list_outputs <- append(list_outputs, list(nut_test))
+  }
+  
+  
+  df_test <- data.frame(Nutrient = NA, 
+                        clust1 = NA, 
+                        clust2 = NA,
+                        alpha_MW = NA)
+  
+  for (i in 1:length(nut_vec)) {
+    df_test <- rbind(df_test, list_outputs[[i]])
+  }
+  
+  # delete first line of NAs
+  df_test <- df_test[-1,]
+  
+  df_test <- df_test |>
+    dplyr::mutate(significant = dplyr::case_when(alpha_MW <= 0.05 ~ "yes", 
+                                                 TRUE ~ "no"))
+  
+  # assign folder for the output 
+  if (stringr::str_detect(file_name, "fish")) {
+    folder <- "fish"
+  } else if (stringr::str_detect(file_name, "scats")) {
+    folder <- "scats"
+  } else if (stringr::str_detect(file_name, "both")) {
+    folder <- "fish and scats"
+  }
+  
+  
+  openxlsx::write.xlsx(df_test, 
+                       file = paste0("output/clustering/", folder,
+                                     "/Mann_Whitney_test_clust_", file_name, ".xlsx"))
+  
+  
+  
+}
+
 
 
 

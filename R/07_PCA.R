@@ -397,7 +397,19 @@ pca_coda_loadings_nut <- function(res_pca, # coda method
   load_tib_large <- tibble::as_tibble(res_pca$loadings) |>
     # add nutrients as they were rownames and no variable in pca output
     dplyr::mutate(Nutrient = c("As", "Ca", "Co", "Cu", "Fe", "K", "Mg", 
-                               "Mn", "Na", "Ni", "P", "Se", "Zn")) 
+                               "Mn", "Na", "Ni", "P", "Se", "Zn")) |>
+    dplyr::rename("PC1" = `Comp.1`,
+                  "PC2" = `Comp.2`,
+                  "PC3" = `Comp.3`,
+                  "PC4" = `Comp.4`,
+                  "PC5" = `Comp.5`,
+                  "PC6" = `Comp.6`,
+                  "PC7" = `Comp.7`,
+                  "PC8" = `Comp.8`,
+                  "PC9" = `Comp.9`,
+                  "PC10" = `Comp.10`,
+                  "PC11" = `Comp.11`,
+                  "PC12" = `Comp.12`)
   
   # save table as is 
   # define folder to save plot 
@@ -415,7 +427,7 @@ pca_coda_loadings_nut <- function(res_pca, # coda method
   
   # plots with the 6th first PCs
   load_tib_long <- load_tib_large|>
-    tidyr::pivot_longer(cols = c(`Comp.1`:`Comp.12`), 
+    tidyr::pivot_longer(cols = c(PC1:PC12), 
                         names_to = "PC", 
                         values_to = "score") |>
     dplyr::mutate(abs_score = abs(score))
@@ -429,12 +441,32 @@ pca_coda_loadings_nut <- function(res_pca, # coda method
   if (type == "both") {
     comp_prop_var <- c(0.7413316, 0.08776791, 0.06398254, 
                        0.03519628, 0.02495698, 0.01146791)
+    # take the first 4 into account for means (90% of var)
+    comp_for_means <- c("PC1", "PC2", "PC3", "PC4")
+    
+    # plot settings
+    hght <- 8
+    wdth <- 10
+    
   } else if (type == "scats") {
     comp_prop_var <- c(0.8461865, 0.06193904, 0.03429155, 
                        0.01849665, 0.01608361, 0.009448452)
+        # take the first 2 into account for means (90% var)
+    comp_for_means <- c("PC1", "PC2")
+    
+    # plot settings
+    hght <- 6
+    wdth <- 9
+    
   } else if (type == "fish") {
     comp_prop_var <- c(0.5042501, 0.2335199, 0.09193904, 
                        0.05291126, 0.04654996, 0.03140671)
+    # take the first 5 into account for means 
+    comp_for_means <- c("PC1", "PC2", "PC3", "PC4", "PC5")
+    
+    # plot settings
+    hght <- 8
+    wdth <- 14
   }
   
   # with details per PCs, with proportion of variance explained by each PC  
@@ -444,36 +476,30 @@ pca_coda_loadings_nut <- function(res_pca, # coda method
                                     levels = c("K", "As", "Na", "Fe", "Mn", 
                                                "Ca", "Cu", "Zn", "P", "Co", 
                                                "Mg", "Ni", "Se"))) |>
-    dplyr::filter(PC %in% c("Comp.1", "Comp.2", "Comp.3", 
-                            "Comp.4", "Comp.5", "Comp.6")) |>
-    dplyr::mutate(PC_prop_var = dplyr::case_when(PC == "Comp.1" ~ paste0(PC,
+    dplyr::filter(PC %in% comp_for_means) |>
+    dplyr::mutate(PC_prop_var = dplyr::case_when(PC == "PC1" ~ paste0(PC,
                                                                          " (",
                                                                          100*round(comp_prop_var[1], 
                                                                                    3), 
                                                                          "%)"),
-                                                 PC == "Comp.2" ~ paste0(PC,
+                                                 PC == "PC2" ~ paste0(PC,
                                                                          " (",
                                                                          100*round(comp_prop_var[2], 
                                                                                    3), 
                                                                          "%)"),
-                                                 PC == "Comp.3" ~ paste0(PC,
+                                                 PC == "PC3" ~ paste0(PC,
                                                                          " (",
                                                                          100*round(comp_prop_var[3], 
                                                                                    3), 
                                                                          "%)"), 
-                                                 PC == "Comp.4" ~ paste0(PC,
+                                                 PC == "PC4" ~ paste0(PC,
                                                                          " (",
                                                                          100*round(comp_prop_var[4], 
                                                                                    3), 
                                                                          "%)"), 
-                                                 PC == "Comp.5" ~ paste0(PC,
+                                                 PC == "PC5" ~ paste0(PC,
                                                                          " (",
                                                                          100*round(comp_prop_var[5], 
-                                                                                   3), 
-                                                                         "%)"), 
-                                                 PC == "Comp.6" ~ paste0(PC,
-                                                                         " (",
-                                                                         100*round(comp_prop_var[6], 
                                                                                    3), 
                                                                          "%)"))) |>
     ggplot2::ggplot() + 
@@ -493,7 +519,9 @@ pca_coda_loadings_nut <- function(res_pca, # coda method
                    axis.title.x = ggplot2::element_text(size = 16, 
                                                         face = "bold"), 
                    axis.title.y = ggplot2::element_text(size = 16, 
-                                                        face = "bold"), 
+                                                        face = "bold"),
+                   strip.text = ggplot2::element_text(size = 15, 
+                                                      face = "bold"),
                    legend.position = "none")
   # save plot 
   ggplot2::ggsave(paste0("output/PCA/", 
@@ -502,54 +530,9 @@ pca_coda_loadings_nut <- function(res_pca, # coda method
                          file_name,
                          ".jpg"),
                   scale = 1,
-                  height = 8, width = 10
+                  height = hght, width = wdth
   )
   
-  
-  # mean over all PCs, normalising by the proportion of variance 
-  # explained by each PC 
-  load_tib_long |> 
-    dplyr::filter(PC %in% c("Comp.1", "Comp.2", "Comp.3",
-                            "Comp.4", "Comp.5" )) |>
-    dplyr::group_by(Nutrient) |>
-    dplyr::mutate(mean_abs_score = mean(abs_score),
-                  var_PC = dplyr::case_when(PC == "Comp.1" ~ comp_prop_var[1], 
-                                            PC == "Comp.2" ~ comp_prop_var[2],
-                                            PC == "Comp.3" ~ comp_prop_var[3], 
-                                            PC == "Comp.4" ~ comp_prop_var[4], 
-                                            PC == "Comp.5" ~ comp_prop_var[5]),
-                  mean_abs_score_norm = mean_abs_score/var_PC) |>
-    ggplot2::ggplot() + 
-    ggplot2::geom_bar(ggplot2::aes(x = reorder(Nutrient,
-                                               mean_abs_score_norm), 
-                                   y = mean_abs_score_norm, 
-                                   fill = Nutrient), 
-                      stat = "identity") +
-    ggplot2::scale_fill_manual(values = c("#4C413FFF", "#5A6F80FF", "#278B9AFF",
-                                          "#E75B64FF", "#DE7862FF", "#D8AF39FF", 
-                                          "#E8C4A2FF", "#14191FFF", "#1D2645FF", 
-                                          "#403369FF", "#AE93BEFF", "#B4DAE5FF", 
-                                          "#F0D77BFF")) +
-    ggplot2::xlab("Nutrient") +
-    ggplot2::ylab("Mean absolute loading\non the first 5th Principal Components\nnormalised by proportion of\nvariance of the comp") +
-    ggplot2::theme(axis.text.x = ggplot2::element_text(size = 15), 
-                   axis.text.y = ggplot2::element_text(size = 15), 
-                   axis.title.x = ggplot2::element_text(size = 16, 
-                                                        face = "bold"), 
-                   axis.title.y = ggplot2::element_text(size = 16, 
-                                                        face = "bold"), 
-                   legend.position = "none")
-  
-  
-  # save plot 
-  ggplot2::ggsave(paste0("output/PCA/", 
-                         folder, 
-                         "/Nut_loadings_means_PCs15_",
-                         file_name,
-                         ".jpg"),
-                  scale = 1,
-                  height = 8, width = 10
-  )
   
 }
 
