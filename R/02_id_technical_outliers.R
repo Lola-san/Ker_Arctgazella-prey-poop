@@ -243,27 +243,3 @@ tib_id_outliers <- function(res_tib, # tibble with results of compo of prey
   
 }
 
-
-#'
-#'
-#'
-#'
-#'
-# function to add data to the result table with composition of prey
-complete_fish_data <- function(res_fish_tib,
-                               diet_tib) {
-  
-  # create vector with list of species identified as prey of Arctocephalus gazella in the SO
-  prey_sp <- unique(diet_tib$Species)
-  
-  res_fish_tib |>
-    dplyr::mutate(campaign = dplyr::case_when(stringr::str_starts(Code_sample, 
-                                                                  "2005", 
-                                                                  negate = FALSE) ~ "Isotopes 2005", 
-                                              stringr::str_starts(Code_sample, 
-                                                                  "2010", 
-                                                                  negate = FALSE) ~ "Poker II 2010"), 
-                  diet = dplyr::case_when(Species %in% c(prey_sp) ~ 1, 
-                                          TRUE ~ 0))
-}
-

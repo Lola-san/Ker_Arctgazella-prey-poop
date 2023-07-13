@@ -70,6 +70,68 @@ table_compo_fish_sp <- function(res_fish_tib,
 #'
 #'
 #'
+#'
+#'
+# function to add data to the result table with composition of prey
+complete_fish_data <- function(res_fish_tib,
+                               diet_tib) {
+  
+  # create vector with list of species identified as prey of Arctocephalus gazella in the SO
+  prey_sp <- unique(diet_tib$Species)
+  
+  res_fish_tib |>
+    # prey species
+    dplyr::mutate(campaign = dplyr::case_when(stringr::str_starts(Code_sample, 
+                                                                  "2005", 
+                                                                  negate = FALSE) ~ "Isotopes 2005", 
+                                              stringr::str_starts(Code_sample, 
+                                                                  "2010", 
+                                                                  negate = FALSE) ~ "Poker II 2010"), 
+                  diet = dplyr::case_when(Species %in% c(prey_sp) ~ 1,
+                                          # some sp of Muraenolepis sp. were found in 
+                                          # A. gazella scats but they don't match here because 
+                                          # we did not specified species
+                                          Species == "Muraenolepis sp" ~ 1,
+                                          TRUE ~ 0), 
+                  habitat = dplyr::case_when(Species %in% c("Gobionotothen acuta", 
+                                                            "Channichthys rhinoceratus",
+                                                            "Dissostichus eleginoides",
+                                                            "Mancopsetta mancopsetta",
+                                                            "Electrona antarctica") ~ "Demersal", 
+                                             Species %in% c("Lepidonotothen squamifrons", 
+                                                            "Champsocephalus gunnari",
+                                                            "Lindbergichthys mizops",
+                                                            "Muraenolepsis sp",
+                                                            "Gymnoscopelus piabilis",
+                                                            "Gymnoscopelus bolini") ~ "Benthopelagic", 
+                                             Species %in% c("Bathydraco antarcticus",
+                                                            "Macrourus carinatus",
+                                                            "Paradiplospinus gracilis",
+                                                            "Echiodon cryomargarites") ~ "Bathydemersal", 
+                                             Species %in% c("Krefftichthys anderssoni",
+                                                            "Melanostigma gelatinosum",
+                                                            "Bathylagus tenuis",
+                                                            "Luciosudis normani", 
+                                                            "Gymnoscopelus braueri", 
+                                                            "Gymnoscopelus fraseri", 
+                                                            "Gymnoscopelus nicholsi", 
+                                                            "Electrona subaspera",
+                                                            "Poromitra crassiceps", 
+                                                            "Nansenia antarctica",
+                                                            "Electrona carlsbergi", 
+                                                            "Protomyctophum andriashevi",
+                                                            "Protomyctophum bolini", 
+                                                            "Protomyctophum choriodon",
+                                                            "Stomias sp",
+                                                            "Idiacanthus atlanticus",
+                                                            "Arctozenus risso",
+                                                            "Notolepis coatsi", 
+                                                            "Protomyctophum tenisoni") ~ "Bathypelagic"))
+}
+
+#'
+#'
+#'
 # simple function to add ecological group to each species
 # ecological habitat given on Fishbase
 add_eco_habitat_sp <- function(compo_tib) {
@@ -206,55 +268,55 @@ boxplot_compo_fish_sp_all_nut <- function(res_fish_tib
                        end = 1), ". ", 
       stringr::str_split_fixed(Species, " ", n = 2)[,2])) |>
     dplyr::mutate(Species_short = factor(Species_short, 
-                                   levels = c(# Paralepididae
-                                     "A. risso", 
-                                     "N. coatsi",
-                                     # Bathydraconidae
-                                     "B. antarcticus",
-                                     # Bathylagidae
-                                     "B. tenuis",
-                                     # Channichthyidae
-                                     "C. gunnari",
-                                     "C. rhinoceratus",
-                                     # Nototheniidae
-                                     "D. eleginoides",
-                                     "G. acuta",
-                                     "L. squamifrons",
-                                     "L. mizops",
-                                     # Carapidae
-                                     "E. cryomargarites",
-                                     # Myctophidae
-                                     "E. antarctica",
-                                     "E. carlsbergi", 
-                                     "E. subaspera",
-                                     "G. bolini",
-                                     "G. braueri",
-                                     "G. fraseri",
-                                     "G. nicholsi", 
-                                     "G. piabilis", 
-                                     "K. anderssoni",
-                                     "P. andriashevi",
-                                     "P. bolini",
-                                     "P. choriodon",
-                                     "P. tenisoni",
-                                     # Stomiidae
-                                     "I. atlanticus", 
-                                     "S. sp",
-                                     # Notosudidae
-                                     "L. normani",
-                                     # Macrouridae
-                                     "M. carinatus",
-                                     # Achiropsettidae
-                                     "M. mancopsetta",
-                                     "M. gelatinosum",
-                                     # Muraenolepididae
-                                     "M. sp",
-                                     # Microstomatidae
-                                     "N. antarctica",
-                                     # Gempylidae
-                                     "P. gracilis",
-                                     # Melamphaidae
-                                     "P. crassiceps")), 
+                                         levels = c(# Paralepididae
+                                           "A. risso", 
+                                           "N. coatsi",
+                                           # Bathydraconidae
+                                           "B. antarcticus",
+                                           # Bathylagidae
+                                           "B. tenuis",
+                                           # Channichthyidae
+                                           "C. gunnari",
+                                           "C. rhinoceratus",
+                                           # Nototheniidae
+                                           "D. eleginoides",
+                                           "G. acuta",
+                                           "L. squamifrons",
+                                           "L. mizops",
+                                           # Carapidae
+                                           "E. cryomargarites",
+                                           # Myctophidae
+                                           "E. antarctica",
+                                           "E. carlsbergi", 
+                                           "E. subaspera",
+                                           "G. bolini",
+                                           "G. braueri",
+                                           "G. fraseri",
+                                           "G. nicholsi", 
+                                           "G. piabilis", 
+                                           "K. anderssoni",
+                                           "P. andriashevi",
+                                           "P. bolini",
+                                           "P. choriodon",
+                                           "P. tenisoni",
+                                           # Stomiidae
+                                           "I. atlanticus", 
+                                           "S. sp",
+                                           # Notosudidae
+                                           "L. normani",
+                                           # Macrouridae
+                                           "M. carinatus",
+                                           # Achiropsettidae
+                                           "M. mancopsetta",
+                                           "M. gelatinosum",
+                                           # Muraenolepididae
+                                           "M. sp",
+                                           # Microstomatidae
+                                           "N. antarctica",
+                                           # Gempylidae
+                                           "P. gracilis",
+                                           # Melamphaidae
+                                           "P. crassiceps")), 
                   Nutrient = factor(Nutrient, 
                                     levels = c("Ca", "P", "Na", "K", "Mg", 
                                                "Fe", "Zn", "Cu", "Mn", "Se",
@@ -1330,16 +1392,15 @@ densplot_compo_fish_tot <- function(res_fish_tib) {
 #'
 # function to compare composition of fish species identified as prey of
 # A. gazella and fish never identified as prey of A. gazella around Kerguelen
-table_compare_compo_prey_not_prey_abs <- function(res_fish_scat_pooled) {
+table_compare_compo_prey_not_prey_abs <- function(res_fish_tib) {
   options(scipen = 999)
   
-  table <- res_fish_scat_pooled |>
+  table <- res_fish_tib |>
     tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, Mg, Mn, Na, Ni, P, Se, Zn), 
                         names_to = "Nutrient", 
                         values_to = "concentration_mg_kg_dw") |>
-    dplyr::filter(!(type == "fur seal scat")) |>
-    dplyr::mutate(type = factor(dplyr::case_when(type == "forage fish" & diet == 1 ~ "fish species identied as fur seal prey", 
-                                                 type == "forage fish" & diet == 0 ~ "fish species never identied as fur seal prey"), 
+    dplyr::mutate(type = factor(dplyr::case_when(diet == 1 ~ "fish species identied as fur seal prey", 
+                                                 diet == 0 ~ "fish species never identied as fur seal prey"), 
                                 levels = c("fish species never identied as fur seal prey", 
                                            "fish species identied as fur seal prey"))) |>
     dplyr::group_by(Nutrient, type) |>
@@ -1375,16 +1436,15 @@ table_compare_compo_prey_not_prey_abs <- function(res_fish_scat_pooled) {
 #'
 # function to create barplot displaying CV for major and trace nutrients in
 # both scats and prey
-barplot_cv_comp_nut_prey_not_prey <- function(res_fish_scat_pooled
+barplot_comp_nut_prey_not_prey <- function(res_fish_tib
 ) {
   
   options(scipen = 999)
   
-  res_fish_scat_pooled |>
+  res_fish_tib |>
     tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, Mg, Mn, Na, Ni, P, Se, Zn), 
                         names_to = "Nutrient", 
                         values_to = "concentration_mg_kg_dw") |>
-    dplyr::filter(!(type == "fur seal scat")) |>
     dplyr::mutate(Nutrient = factor(Nutrient, 
                                     levels = c("Ca", "P", "Na", "K", "Mg", 
                                                "Fe", "Zn", "Cu", "Mn", "Se",
@@ -1396,14 +1456,20 @@ barplot_cv_comp_nut_prey_not_prey <- function(res_fish_scat_pooled
                                                                     "Cu", "Mn", 
                                                                     "Se", "As", 
                                                                     "Ni","Co") ~ "Trace"), 
-                  type = factor(dplyr::case_when(type == "forage fish" & diet == 1 ~ "fish species identied as fur seal prey", 
-                                                 type == "forage fish" & diet == 0 ~ "fish species never identied as fur seal prey"), 
+                  type = factor(dplyr::case_when(diet == 1 ~ "fish species identied as fur seal prey", 
+                                                 diet == 0 ~ "fish species never identied as fur seal prey"), 
                                 levels = c("fish species never identied as fur seal prey", 
                                            "fish species identied as fur seal prey"))) |>
+    dplyr::group_by(Nutrient) |>
+    dplyr::mutate(conc_norm = (concentration_mg_kg_dw - min(concentration_mg_kg_dw))/
+                    (max(concentration_mg_kg_dw) - min(concentration_mg_kg_dw))) |>
     dplyr::group_by(major_or_trace, Nutrient, type) |>
     dplyr::summarise(mean = round(mean(concentration_mg_kg_dw), 2), 
-                     median = round(median(concentration_mg_kg_dw), 2), 
-                     IQR = round(stats::IQR(concentration_mg_kg_dw), 2),
+                     mean_norm = round(mean(conc_norm), 2),
+                     `2.5_quant_norm` = round(quantile(conc_norm, 
+                                                       probs = c(0.025)), 2), 
+                     `97.5_quant_norm` = round(quantile(conc_norm, 
+                                                        probs = c(0.975)), 2),
                      sd = round(sd(concentration_mg_kg_dw), 2), 
                      cv = round(sd/mean, 3)) |>
     ggplot2::ggplot() +
@@ -1411,6 +1477,17 @@ barplot_cv_comp_nut_prey_not_prey <- function(res_fish_scat_pooled
                                    y = cv, 
                                    fill = major_or_trace), 
                       stat = "identity") +
+    ggplot2::geom_linerange(ggplot2::aes(x = Nutrient, 
+                                         ymin = `2.5_quant_norm`, 
+                                         ymax = `97.5_quant_norm`), 
+                            linewidth = 1, 
+                            color = "#B4DAE5FF", 
+                            position = ggplot2::position_dodge(0.5)) +
+    ggplot2::geom_point(ggplot2::aes(x = Nutrient, 
+                                     y = mean_norm), 
+                        size = 3, 
+                        color = "#B4DAE5FF", 
+                        position = ggplot2::position_dodge(0.5)) +
     ggplot2::scale_fill_manual(values = c("Major" = "#DE7862FF", 
                                           "Trace" = "#1D2645FF")) +
     ggplot2::facet_wrap(~ type) +
@@ -1446,26 +1523,49 @@ barplot_cv_comp_nut_prey_not_prey <- function(res_fish_scat_pooled
 #'
 # function to compare composition of fish species identified as prey of
 # A. gazella and fish never identified as prey of A. gazella around Kerguelen
-boxplot_compare_compo_prey_not_prey_abs <- function(res_fish_scat_pooled) {
+lineplot_compare_compo_prey_not_prey_abs <- function(res_fish_tib) {
   options(scipen = 999)
   
-  res_fish_scat_pooled |>
+  res_fish_tib |>
     tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, Mg, Mn, Na, Ni, P, Se, Zn), 
                         names_to = "Nutrient", 
                         values_to = "concentration_mg_kg_dw") |>
-    dplyr::filter(!(type == "fur seal scat")) |>
-    dplyr::mutate(type = factor(dplyr::case_when(type == "forage fish" & diet == 1 ~ "fish species identied as fur seal prey", 
-                                                 type == "forage fish" & diet == 0 ~ "fish species never identied as fur seal prey"), 
+    dplyr::mutate(type = factor(dplyr::case_when(diet == 1 ~ "fish species identied as fur seal prey", 
+                                                 diet == 0 ~ "fish species never identied as fur seal prey"), 
                                 levels = c("fish species never identied as fur seal prey", 
-                                           "fish species identied as fur seal prey"))) |>
-    ggplot2::ggplot(ggplot2::aes(x = reorder(Nutrient, 
-                                             concentration_mg_kg_dw), 
-                                 y = concentration_mg_kg_dw, fill = type)) +
-    ggplot2::geom_boxplot() +
+                                           "fish species identied as fur seal prey")), 
+                  Nutrient = factor(Nutrient, 
+                                    levels = c("Co", "Ni", "As", "Se", "Mn",
+                                               "Cu", "Zn", "Fe", "Mg", "K",
+                                               "Na", "P", "Ca"))) |>
+    dplyr::group_by(Nutrient) |>
+    dplyr::mutate(conc_norm = (concentration_mg_kg_dw - min(concentration_mg_kg_dw))/
+                    (max(concentration_mg_kg_dw) - min(concentration_mg_kg_dw))) |>
+    dplyr::group_by(Nutrient, type) |>
+    dplyr::summarise(mean = round(mean(concentration_mg_kg_dw), 2), 
+                     mean_norm = round(mean(conc_norm), 2),
+                     median_norm = round(mean(conc_norm), 2),
+                     `2.5_quant_norm` = round(quantile(conc_norm, 
+                                                       probs = c(0.025)), 2), 
+                     `97.5_quant_norm` = round(quantile(conc_norm, 
+                                                        probs = c(0.975)), 2),
+                     sd = round(sd(concentration_mg_kg_dw), 2), 
+                     cv = round(sd/mean, 3)) |>
+    ggplot2::ggplot() +
+    ggplot2::geom_linerange(ggplot2::aes(x = Nutrient, 
+                                         ymin = `2.5_quant_norm`, 
+                                         ymax = `97.5_quant_norm`, 
+                                         color = type), 
+                            linewidth = 1, 
+                            position = ggplot2::position_dodge(0.5)) +
+    ggplot2::geom_point(ggplot2::aes(x = Nutrient, 
+                                     y = median_norm, 
+                                     color = type), 
+                        size = 3, 
+                        position = ggplot2::position_dodge(0.5)) +
     ggplot2::coord_flip() +
-    ggplot2::scale_fill_manual(values = c("fish species identied as fur seal prey" = "#278B9AFF", 
-                                          "fish species never identied as fur seal prey" = "#B4DAE5FF")) +
-    ggplot2::scale_y_continuous(trans = "log10") +
+    ggplot2::scale_color_manual(values = c("fish species identied as fur seal prey" = "#278B9AFF", 
+                                           "fish species never identied as fur seal prey" = "#B4DAE5FF")) +
     ggplot2::ylab(paste0("Concentration (in mg/kg dry weight)")) +
     ggplot2::xlab("Nutrient") +
     ggplot2::theme_bw() +
@@ -1477,7 +1577,60 @@ boxplot_compare_compo_prey_not_prey_abs <- function(res_fish_scat_pooled) {
                    legend.title = ggplot2::element_blank(),
                    legend.text = ggplot2::element_text(size = 15)
     )
-  ggplot2::ggsave("output/compo fish/compo_prey_vs_not_prey_abs.jpg",
+  ggplot2::ggsave("output/compo fish/line_plot_compo_prey_vs_not_prey_abs.jpg",
+                  scale = 1,
+                  height = 8, width = 9
+  )
+  
+}
+
+
+#'
+#'
+#'
+#'
+#'
+# function to compare composition of fish species identified as prey of
+# A. gazella and fish never identified as prey of A. gazella around Kerguelen
+boxplot_compare_compo_prey_not_prey_abs <- function(res_fish_tib) {
+  options(scipen = 999)
+  
+  res_fish_tib |>
+    tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, Mg, Mn, Na, Ni, P, Se, Zn), 
+                        names_to = "Nutrient", 
+                        values_to = "concentration_mg_kg_dw") |>
+    dplyr::mutate(type = factor(dplyr::case_when(diet == 1 ~ "fish species identied as fur seal prey", 
+                                                 diet == 0 ~ "fish species never identied as fur seal prey"), 
+                                levels = c("fish species never identied as fur seal prey", 
+                                           "fish species identied as fur seal prey")), 
+                  Nutrient = factor(Nutrient, 
+                                    levels = c("Co", "Ni", "As", "Se", "Mn",
+                                               "Cu", "Zn", "Fe", "Mg", "K",
+                                               "Na", "P", "Ca"))) |>
+    dplyr::group_by(Nutrient) |>
+    dplyr::mutate(conc_norm = (concentration_mg_kg_dw - min(concentration_mg_kg_dw))/
+                    (max(concentration_mg_kg_dw) - min(concentration_mg_kg_dw))) |>
+    ggplot2::ggplot() +
+    ggplot2::geom_boxplot(ggplot2::aes(x = Nutrient, 
+                                       y = conc_norm, 
+                                       color = type), 
+                          size = 3, 
+                          position = ggplot2::position_dodge(0.5)) +
+    ggplot2::coord_flip() +
+    ggplot2::scale_color_manual(values = c("fish species identied as fur seal prey" = "#278B9AFF", 
+                                           "fish species never identied as fur seal prey" = "#B4DAE5FF")) +
+    ggplot2::ylab(paste0("Concentration (in mg/kg dry weight)")) +
+    ggplot2::xlab("Nutrient") +
+    ggplot2::theme_bw() +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(size = 15), 
+                   axis.text.y = ggplot2::element_text(size = 15), 
+                   axis.title.x = ggplot2::element_text(size = 16, face = "bold"), 
+                   axis.title.y = ggplot2::element_text(size = 16, face = "bold"), 
+                   legend.position = "bottom",
+                   legend.title = ggplot2::element_blank(),
+                   legend.text = ggplot2::element_text(size = 15)
+    )
+  ggplot2::ggsave("output/compo fish/boxplot_compo_prey_vs_not_prey_abs.jpg",
                   scale = 1,
                   height = 8, width = 9
   )
@@ -1493,18 +1646,17 @@ boxplot_compare_compo_prey_not_prey_abs <- function(res_fish_scat_pooled) {
 #'
 # function to compare composition of fish species identified as prey of
 # A. gazella and fish never identified as prey of A. gazella around Kerguelen
-boxplot_compare_compo_prey_not_prey_rel <- function(res_fish_scat_pooled) {
+boxplot_compare_compo_prey_not_prey_rel <- function(res_fish_tib) {
   options(scipen = 999)
   
-  res_fish_scat_pooled |>
+  res_fish_tib |>
     dplyr::mutate(sum = As + Co + Cu + Fe + 
                     Mn + Ni + Se + Zn) |>
     tidyr::pivot_longer(cols = c(As, Co, Cu, Fe, Mn, Ni, Se, Zn), 
                         names_to = "Nutrient", 
                         values_to = "concentration_mg_kg_dw") |>
-    dplyr::filter(!(type == "fur seal scat")) |>
-    dplyr::mutate(type = factor(dplyr::case_when(type == "forage fish" & diet == 1 ~ "fish species identied as fur seal prey", 
-                                          type == "forage fish" & diet == 0 ~ "fish species never identied as fur seal prey"), 
+    dplyr::mutate(type = factor(dplyr::case_when(diet == 1 ~ "fish species identied as fur seal prey", 
+                                                 diet == 0 ~ "fish species never identied as fur seal prey"), 
                                 levels = c("fish species never identied as fur seal prey", 
                                            "fish species identied as fur seal prey"))) |>
     ggplot2::ggplot(ggplot2::aes(x = reorder(Nutrient, 
@@ -1544,17 +1696,16 @@ boxplot_compare_compo_prey_not_prey_rel <- function(res_fish_scat_pooled) {
 # function to compute Mann-Whitney U Test to assess difference between 
 # absolute concentrations of nutrients in fish species identified as prey of
 # A. gazella and fish never identified as prey of A. gazella around Kerguelen
-MWtest_compo_prey_not_prey_abs <- function(res_fish_scat_pooled) {
+MWtest_compo_prey_not_prey_abs <- function(res_fish_tib) {
   options(scipen = 999)
   
-  compo_tib <- res_fish_scat_pooled |>
+  compo_tib <- res_fish_tib |>
     tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, Mg, Mn, Na, Ni, P, Se, Zn), 
                         names_to = "Nutrient", 
                         values_to = "concentration_mg_kg_dw") |>
-    dplyr::filter(!(type == "fur seal scat")) |>
     # make non-prey and prey species of fur seals distinct
-    dplyr::mutate(type = dplyr::case_when(type == "forage fish" & diet == 1 ~ "prey",
-                                          type == "forage fish" & diet == 0 ~ "not prey")) 
+    dplyr::mutate(type = dplyr::case_when(diet == 1 ~ "prey",
+                                          diet == 0 ~ "not prey")) 
   
   nut_vec <- unique(compo_tib$Nutrient)
   
@@ -1606,20 +1757,19 @@ MWtest_compo_prey_not_prey_abs <- function(res_fish_scat_pooled) {
 # function to compute Mann-Whitney U Test to assess difference between 
 # relative concentrations of nutrients in fish species identified as prey of
 # A. gazella and fish never identified as prey of A. gazella around Kerguelen
-MWtest_compo_prey_not_prey_rel_trace_only <- function(res_fish_scat_pooled) {
+MWtest_compo_prey_not_prey_rel_trace_only <- function(res_fish_tib) {
   options(scipen = 999)
   
-  compo_tib <- res_fish_scat_pooled |>
+  compo_tib <- res_fish_tib |>
     dplyr::mutate(sum = As + Co + Cu + Fe + 
                     Mn + Ni + Se + Zn) |>
     tidyr::pivot_longer(cols = c(As, Co, Cu, Fe, Mn, Ni, Se, Zn), 
                         names_to = "Nutrient", 
                         values_to = "concentration_mg_kg_dw") |>
     dplyr::mutate(relative_concentration = concentration_mg_kg_dw/sum) |>
-    dplyr::filter(!(type == "fur seal scat")) |>
     # make non-prey and prey species of fur seals distinct
-    dplyr::mutate(type = dplyr::case_when(type == "forage fish" & diet == 1 ~ "prey",
-                                          type == "forage fish" & diet == 0 ~ "not prey")) 
+    dplyr::mutate(type = dplyr::case_when(diet == 1 ~ "prey",
+                                          diet == 0 ~ "not prey")) 
   
   nut_vec <- unique(compo_tib$Nutrient)
   
@@ -1670,20 +1820,19 @@ MWtest_compo_prey_not_prey_rel_trace_only <- function(res_fish_scat_pooled) {
 # function to compute Mann-Whitney U Test to assess difference between 
 # relative concentrations of nutrients in fish species identified as prey of
 # A. gazella and fish never identified as prey of A. gazella around Kerguelen
-MWtest_compo_prey_not_prey_rel_all_nut <- function(res_fish_scat_pooled) {
+MWtest_compo_prey_not_prey_rel_all_nut <- function(res_fish_tib) {
   options(scipen = 999)
   
-  compo_tib <- res_fish_scat_pooled |>
+  compo_tib <- res_fish_tib |>
     dplyr::mutate(sum = As + Ca + Co + Cu + Fe + K +
                     Mg + Mn + Na + Ni + P + Se + Zn) |>
     tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, Mg, Mn, Na, Ni, P, Se, Zn), 
                         names_to = "Nutrient", 
                         values_to = "concentration_mg_kg_dw") |>
     dplyr::mutate(relative_concentration = concentration_mg_kg_dw/sum) |>
-    dplyr::filter(!(type == "fur seal scat")) |>
     # make non-prey and prey species of fur seals distinct
-    dplyr::mutate(type = dplyr::case_when(type == "forage fish" & diet == 1 ~ "prey",
-                                          type == "forage fish" & diet == 0 ~ "not prey")) 
+    dplyr::mutate(type = dplyr::case_when(diet == 1 ~ "prey",
+                                          diet == 0 ~ "not prey")) 
   
   nut_vec <- unique(compo_tib$Nutrient)
   
@@ -1788,7 +1937,7 @@ corr_compo_fish <- function(res_fish_tib) {
 #'
 # function to produce table with summary of elemental analysis
 table_compo_scats_tot <- function(res_scat_tib, 
-                              object_type # either "output" or "file" 
+                                  object_type # either "output" or "file" 
 ) {
   
   table <- res_scat_tib |>
@@ -1826,7 +1975,7 @@ table_compo_scats_tot <- function(res_scat_tib,
 #'
 # function to produce table with summary of elemental analysis
 table_compo_scats_site <- function(res_scat_tib, 
-                              object_type # either "output" or "file" 
+                                   object_type # either "output" or "file" 
 ) {
   
   table <- res_scat_tib |>
@@ -1979,15 +2128,19 @@ boxplot_compo_scats_site <- function(res_scat_tib,
                         names_to = "Nutrient", 
                         values_to = "concentration_mg_kg_dw") |>
     dplyr::mutate(site = dplyr::case_when(site == "Cap Noir" ~ "Cap\nNoir", 
-                                          site == "Pointe Suzanne" ~ "Pointe\nSuzanne")) |>
+                                          site == "Pointe Suzanne" ~ "Pointe\nSuzanne"), 
+                  Nutrient = factor(Nutrient, 
+                                    levels = c("Ca", "P", "Na", "K", "Mg", 
+                                               "Fe", "Zn", "Cu", "Mn", "Se",
+                                               "As", "Ni","Co"))) |>
     dplyr::mutate(site = factor(site, 
                                 levels = c("Cap\nNoir", 
                                            "Pointe\nSuzanne"))) |>
-  ggplot2::ggplot(ggplot2::aes(x = site, y = concentration_mg_kg_dw, 
-                               fill = site)) +
+    ggplot2::ggplot(ggplot2::aes(x = site, y = concentration_mg_kg_dw, 
+                                 fill = site)) +
     ggplot2::geom_violin(width=1.4) +
     ggplot2::geom_boxplot() +
-    ggplot2::coord_flip() +
+    #ggplot2::coord_flip() +
     ggplot2::ylab("Nutrient concentration (in mg/kg dry weight)") +
     ggplot2::geom_jitter(color="darkgrey", size=0.7, alpha=0.2) +
     ggplot2::scale_fill_manual(values = c( "#14191FFF", 
@@ -1995,9 +2148,9 @@ boxplot_compo_scats_site <- function(res_scat_tib,
     ggplot2::facet_wrap(~ Nutrient, scale = "free") +
     ggplot2::theme_bw() +
     ggplot2::theme(axis.title.x = ggplot2::element_blank(), 
-                   axis.text.x = ggplot2::element_text(size = 15),
-                   axis.text.y = ggplot2::element_text(size = 15),
-                   axis.title.y = ggplot2::element_text(size = 16, 
+                   axis.text.x = ggplot2::element_text(size = 16),
+                   axis.text.y = ggplot2::element_text(size = 16),
+                   axis.title.y = ggplot2::element_text(size = 17, 
                                                         face = "bold"), 
                    strip.text.x = ggplot2::element_text(size = 16, 
                                                         face = "bold"), 
@@ -2005,7 +2158,7 @@ boxplot_compo_scats_site <- function(res_scat_tib,
   ggplot2::ggsave(paste0("output/compo scats/", 
                          file_name, ".jpg"),
                   scale = 1,
-                  height = 12, width = 23
+                  height = 9, width = 10
   )
   
 }
@@ -2119,11 +2272,14 @@ boxplot_compo_scats_HPI01 <- function(res_scat_tib,
     tidyr::pivot_longer(cols = c("As":"Zn"), 
                         names_to = "Nutrient", 
                         values_to = "concentration_mg_kg_dw") |>
-    dplyr::mutate(HPI01 = dplyr::case_when(HPI01 == 0 ~ "scat of\nnon-nursed\nindividual\nwith no hard\nparts", 
-                                           HPI01 == 1 ~ "scat of\nnon-nursed\nindividual\nwith hard parts")) |>
-    dplyr::mutate(HPI01 = factor(HPI01, 
-                                 levels = c("scat of\nnon-nursed\nindividual\nwith no hard\nparts", 
-                                            "scat of\nnon-nursed\nindividual\nwith hard parts"))) |>
+    dplyr::mutate(HPI01 = factor(dplyr::case_when(HPI01 == 0 ~ "HPI=0", 
+                                                  HPI01 == 1 ~ "HPI=1"), 
+                                 levels = c("HPI=0", 
+                                            "HPI=1")), 
+                  Nutrient = factor(Nutrient, 
+                                    levels = c("Ca", "P", "Na", "K", "Mg", 
+                                               "Fe", "Zn", "Cu", "Mn", "Se",
+                                               "As", "Ni","Co"))) |>
     ggplot2::ggplot(ggplot2::aes(x = HPI01, 
                                  y = concentration_mg_kg_dw, 
                                  fill = HPI01)) +
@@ -2137,9 +2293,9 @@ boxplot_compo_scats_HPI01 <- function(res_scat_tib,
     ggplot2::xlab("Hard-parts index") +
     ggplot2::theme_bw() +
     ggplot2::theme(axis.title.x = ggplot2::element_blank(), 
-                   axis.text.x = ggplot2::element_text(size = 15),
-                   axis.text.y = ggplot2::element_text(size = 15),
-                   axis.title.y = ggplot2::element_text(size = 16, 
+                   axis.text.x = ggplot2::element_text(size = 16),
+                   axis.text.y = ggplot2::element_text(size = 16),
+                   axis.title.y = ggplot2::element_text(size = 17, 
                                                         face = "bold"), 
                    strip.text.x = ggplot2::element_text(size = 16, 
                                                         face = "bold"), 
@@ -2147,7 +2303,7 @@ boxplot_compo_scats_HPI01 <- function(res_scat_tib,
   ggplot2::ggsave(paste0("output/compo scats/", 
                          file_name, ".jpg"), 
                   scale = 1,
-                  height = 12, width = 15
+                  height = 9, width = 10
   )
   
 }
@@ -2169,20 +2325,24 @@ boxplot_compo_scats_HPI01_pups <- function(res_scat_tib,
     tidyr::pivot_longer(cols = c("As":"Zn"), 
                         names_to = "Nutrient", 
                         values_to = "concentration_mg_kg_dw") |>
-    dplyr::mutate(HPI_pup_nopup = dplyr::case_when(HPI01 == "0" & pup_suspicion == "1" ~ "probable nursed\npup scat",
-                                                   HPI01 == "0" & pup_suspicion == "0" ~ "scat of non-nursed\nindividual with\nno hard parts",
-                                                   HPI01 == "1" & pup_suspicion == "0" ~ "scat of non-nursed\nindividual with\nhard parts")) |>
+    dplyr::mutate(HPI_pup_nopup = dplyr::case_when(HPI01 == "0" & pup_suspicion == "1" ~ "probable\nnursed\npup",
+                                                   HPI01 == "0" & pup_suspicion == "0" ~ "non-\nnursed\nHPI=0",
+                                                   HPI01 == "1" & pup_suspicion == "0" ~ "non-\nnursed\nHPI=1")) |>
     dplyr::mutate(HPI_pup_nopup = factor(HPI_pup_nopup, 
-                                         levels = c("probable nursed\npup scat",
-                                                    "scat of non-nursed\nindividual with\nno hard parts", 
-                                                    "scat of non-nursed\nindividual with\nhard parts" 
-                                         ))) |>
+                                         levels = c("probable\nnursed\npup",
+                                                    "non-\nnursed\nHPI=0", 
+                                                    "non-\nnursed\nHPI=1" 
+                                         )), 
+                  Nutrient = factor(Nutrient, 
+                                    levels = c("Ca", "P", "Na", "K", "Mg", 
+                                               "Fe", "Zn", "Cu", "Mn", "Se",
+                                               "As", "Ni","Co"))) |>
     ggplot2::ggplot(ggplot2::aes(x = HPI_pup_nopup, 
                                  y = concentration_mg_kg_dw, 
                                  fill = HPI_pup_nopup)) +
     ggplot2::geom_violin(width=1.4) +
     ggplot2::geom_boxplot() +
-    ggplot2::coord_flip() +
+    #ggplot2::coord_flip() +
     ggplot2::ylab("Nutrient concentration (in mg/kg dry weight)") +
     ggplot2::geom_jitter(color="darkgrey", size=0.7, alpha=0.2) +
     ggplot2::scale_fill_manual(values = c("#F0D77BFF", 
@@ -2202,7 +2362,7 @@ boxplot_compo_scats_HPI01_pups <- function(res_scat_tib,
   ggplot2::ggsave(paste0("output/compo scats/", 
                          file_name, ".jpg"), 
                   scale = 1,
-                  height = 12, width = 23
+                  height = 10, width = 13
   )
   
 }
