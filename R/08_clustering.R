@@ -62,6 +62,8 @@ clust_compo_full_tib <- function(compo_tib,
 # with hclust algorithm
 clust_compo_PCs <- function(res_pca, 
                             type, # either "fish" or "scats" or "both"
+                            pup = FALSE, # should be true only when 
+                            # suspected pup scats are included when type is "both"
                             k,
                             method, 
                             file_type, # either "file" or "output"
@@ -74,7 +76,13 @@ clust_compo_PCs <- function(res_pca,
   } else if (type == "scats") {
     pcomp <- c(1:2)
   } else if (type == "both") {
-    pcomp <- c(1:4)
+    # select the 4 first PCs if scats of suspected pups are not included 
+    # and three if there are included 
+    if (pup == TRUE) {
+      pcomp <- c(1:3)
+    } else {
+      pcomp <- c(1:4)
+    }
   }
   
   # extract the data i.e coordinates of individuals on the PCs
@@ -158,8 +166,8 @@ clust_compo_PCs_dendro_fish <- function(res_pca,
   # identify species that are known to be prey of A. gazella
   compo_tib_full <- compo_tib |>
     dplyr::mutate(Species_clean = stringr::str_split_fixed(Species, 
-                                                                  "\n", 
-                                                                  n = 3)[,1]) |>
+                                                           "\n", 
+                                                           n = 3)[,1]) |>
     dplyr::left_join(diet_or_not |>
                        dplyr::filter(type == "forage fish") |>
                        dplyr::mutate(diet = dplyr::case_when(diet == 0 ~ "not identified\nas a prey of\nA. gazella", 
@@ -169,12 +177,12 @@ clust_compo_PCs_dendro_fish <- function(res_pca,
                      by = c("Species_clean", "Family"), keep = FALSE) |>
     # change species name 
     dplyr::mutate(Species_short = paste0(
-        stringr::str_sub(stringr::str_split_fixed(Species, 
-                                                  " ", 
-                                                  n = 2)[,1], 
-                         start = 1, 
-                         end = 1), ". ", 
-        stringr::str_split_fixed(Species, " ", n = 2)[,2])) 
+      stringr::str_sub(stringr::str_split_fixed(Species, 
+                                                " ", 
+                                                n = 2)[,1], 
+                       start = 1, 
+                       end = 1), ". ", 
+      stringr::str_split_fixed(Species, " ", n = 2)[,2])) 
   
   
   # change labels to species name and add colour grouping
@@ -238,7 +246,7 @@ clust_compo_PCs_dendro_fish <- function(res_pca,
       ggplot2::guides(colour = ggplot2::guide_legend(title = "Family",
                                                      override.aes = list(shape = 12)))  +
       ggplot2::theme_classic() 
-      
+    
     # save plot 
     ggplot2::ggsave(paste0("output/Clustering/fish/dendrogram_", 
                            file_name, "_",
@@ -295,7 +303,7 @@ clust_compo_PCs_dendro_fish <- function(res_pca,
                                                      override.aes = list(shape = 12)))  +
       ggplot2::theme_classic() +
       ggplot2::theme(legend.title = ggplot2::element_text(size = 13, 
-                                                         face = "bold"),
+                                                          face = "bold"),
                      legend.text = ggplot2::element_text(size = 13, 
                                                          face = "bold"), 
                      legend.key.height = ggplot2::unit(1, "cm"))
@@ -355,8 +363,8 @@ clust_compo_PCs_dendro_scats <- function(res_pca,
   # compo tib add pup index
   compo_tib <- compo_tib |>
     dplyr::mutate(HPI_pup_nopup = factor(dplyr::case_when(HPI01 == "0" & pup_suspicion == "1" ~ "probable nursed\npup scat",
-                                                   HPI01 == "0" & pup_suspicion == "0" ~ "scat of non-nursed\nindividual with\nno hard parts",
-                                                   HPI01 == "1" & pup_suspicion == "0" ~ "scat of non-nursed\nindividual with\nhard parts"), 
+                                                          HPI01 == "0" & pup_suspicion == "0" ~ "scat of non-nursed\nindividual with\nno hard parts",
+                                                          HPI01 == "1" & pup_suspicion == "0" ~ "scat of non-nursed\nindividual with\nhard parts"), 
                                          levels = c("probable nursed\npup scat",
                                                     "scat of non-nursed\nindividual with\nno hard parts", 
                                                     "scat of non-nursed\nindividual with\nhard parts" 
@@ -509,13 +517,20 @@ clust_compo_PCs_dendro_scats <- function(res_pca,
 # function to plot dendrogram for fish and scats based on PC results of robust PCA
 clust_compo_PCs_dendro_both <- function(res_pca, 
                                         compo_tib,
+                                        pup = FALSE, # should be set to TRUE if 
+                                        # suspected pup scats are included
                                         method, 
                                         k, # useful when colour is "Cluster"
                                         colour, # either "type" (fish or scats) or "Cluster"
                                         file_name
 ) {
-  # select the 4 first PCs
-  pcomp <- c(1:4)
+  # select the 4 first PCs if scats of suspected pups are not included 
+  # and three if there are included 
+  if (pup == TRUE) {
+    pcomp <- c(1:3)
+  } else {
+    pcomp <- c(1:4)
+  }
   
   # extract the data i.e coordinates of individuals on the PCs
   data.act <- as.data.frame(res_pca$scores[, pcomp])
@@ -542,7 +557,7 @@ clust_compo_PCs_dendro_both <- function(res_pca,
                        start = 1, 
                        end = 1), ". ", 
       stringr::str_split_fixed(Species, " ", n = 2)[,2]),
-                                                   type == "fur seal scat" ~ Code_sample)) 
+      type == "fur seal scat" ~ Code_sample)) 
   
   # change labels to species name and add colour grouping
   dendro.labels <- dendro.dat$labels |>
@@ -585,8 +600,8 @@ clust_compo_PCs_dendro_both <- function(res_pca,
                                       label = label, 
                                       colour = Cluster),
                          hjust = 1, size = 4) +
-      ggplot2::scale_color_manual(values = c("#D8AF39FF",
-                                             "#58A449FF",
+      ggplot2::scale_color_manual(values = c("#278B9AFF",
+                                             "#4C413FFF",
                                              "#AE93BEFF")) +
       ggplot2::coord_flip() +
       ggplot2::ylim(-5, 40) +
@@ -665,6 +680,8 @@ clust_compo_PCs_dendro_both_nut <- function(compo_tib,
 clust_find_k_table_PCs <- function(res_pca, 
                                    type, # either fish, fish_sp_means or scats 
                                    # or both or both_sp_means
+                                   pup = FALSE, # should be true only when 
+                                   # suspected pup scats are included when type is "both"
                                    k_range = c(2:10),
                                    method, 
                                    object_type, # either "output" or "file"
@@ -676,7 +693,13 @@ clust_find_k_table_PCs <- function(res_pca,
   } else if (type == "scats") {
     pcomp <- c(1:2)
   } else if (type == "both") {
-    pcomp <- c(1:4)
+    # select the 4 first PCs if scats of suspected pups are not included 
+    # and three if there are included 
+    if (pup == TRUE) {
+      pcomp <- c(1:3)
+    } else {
+      pcomp <- c(1:4)
+    }
   }
   
   # extract the data i.e coordinates of individuals on the PCs
@@ -1055,37 +1078,45 @@ boxplot_compo_clust <- function(clust_output,
                      legend.position = "none")
   } else if (stringr::str_detect(file_name, "both")) {
     folder <- "fish and scats"
-    
-    compo_tib |> 
-      dplyr::ungroup() |>
-      dplyr::mutate(sum = As + Ca + Co + Cu + Fe + K +
-                      Mg + Mn + Na + Ni + P + Se + Zn, 
-                    cluster = as.factor(clust_vec)) |>
-      tidyr::pivot_longer(cols = c("As":"Zn"), 
-                          names_to = "Nutrient", 
-                          values_to = "concentration_mg_kg_dw") |>
-      dplyr::mutate(Nutrient = factor(Nutrient, 
-                                      levels = c("Ca", "P", "Na", "K", "Mg", 
-                                                 "Fe", "Zn", "Cu", "Mn", "Se",
-                                                 "As", "Ni","Co")), 
-                    relative_conc = concentration_mg_kg_dw/sum) |>
-      ggplot2::ggplot(ggplot2::aes(x = cluster, y = relative_conc, 
-                                   fill = cluster)) +
-      ggplot2::geom_violin(width=1.4) +
-      ggplot2::geom_boxplot() +
-      ggplot2::ylab("Nutrient relative concentration (in mg/kg dry weight)") +
-      ggplot2::geom_jitter(color="darkgrey", size=0.7, alpha=0.2) +
-      ggplot2::scale_fill_manual(values = colour_palette) +
-      ggplot2::facet_wrap(~ Nutrient, scale = "free") +
-      ggplot2::theme_bw() +
-      ggplot2::theme(axis.title.x = ggplot2::element_blank(), 
-                     axis.text.x = ggplot2::element_text(size = 15),
-                     axis.text.y = ggplot2::element_text(size = 15),
-                     axis.title.y = ggplot2::element_text(size = 16, 
-                                                          face = "bold"), 
-                     strip.text.x = ggplot2::element_text(size = 16, 
-                                                          face = "bold"), 
-                     legend.position = "none")
+    colour_palette <- c("#278B9AFF",
+                        "#4C413FFF", 
+                        "#D8AF39FF",
+                        "#58A449FF",
+                        "#AE93BEFF",
+                        "#B4DAE5FF",
+                        "#E75B64FF",
+                        "#1D2645FF")[1:max(clust_output$cluster)]
+
+compo_tib |> 
+  dplyr::ungroup() |>
+  dplyr::mutate(sum = As + Ca + Co + Cu + Fe + K +
+                  Mg + Mn + Na + Ni + P + Se + Zn, 
+                cluster = as.factor(clust_vec)) |>
+  tidyr::pivot_longer(cols = c("As":"Zn"), 
+                      names_to = "Nutrient", 
+                      values_to = "concentration_mg_kg_dw") |>
+  dplyr::mutate(Nutrient = factor(Nutrient, 
+                                  levels = c("Ca", "P", "Na", "K", "Mg", 
+                                             "Fe", "Zn", "Cu", "Mn", "Se",
+                                             "As", "Ni","Co")), 
+                relative_conc = concentration_mg_kg_dw/sum) |>
+  ggplot2::ggplot(ggplot2::aes(x = cluster, y = relative_conc, 
+                               fill = cluster)) +
+  ggplot2::geom_violin(width=1.4) +
+  ggplot2::geom_boxplot() +
+  ggplot2::ylab("Nutrient relative concentration (in mg/kg dry weight)") +
+  ggplot2::geom_jitter(color="darkgrey", size=0.7, alpha=0.2) +
+  ggplot2::scale_fill_manual(values = colour_palette) +
+  ggplot2::facet_wrap(~ Nutrient, scale = "free") +
+  ggplot2::theme_bw() +
+  ggplot2::theme(axis.title.x = ggplot2::element_blank(), 
+                 axis.text.x = ggplot2::element_text(size = 15),
+                 axis.text.y = ggplot2::element_text(size = 15),
+                 axis.title.y = ggplot2::element_text(size = 16, 
+                                                      face = "bold"), 
+                 strip.text.x = ggplot2::element_text(size = 16, 
+                                                      face = "bold"), 
+                 legend.position = "none")
   }
   
   
@@ -1282,6 +1313,85 @@ barplot_clust <- function(clust_output,
   
   
 }
+
+
+#'
+#'
+#'
+#'
+# function to show elemental composition of samples from the different clusters
+stats_compo_clust <- function(clust_output,
+                                compo_tib,
+                                file_name
+) {
+  
+  # assign each sample to its cluster
+  clust_vec <- clust_output$cluster
+  
+  # assign folder for the output 
+  if (stringr::str_detect(file_name, "fish")) {
+    folder <- type <- "fish"
+  } else if (stringr::str_detect(file_name, "scats")) {
+    folder <- type <- "scats"
+  } else if (stringr::str_detect(file_name, "both")) {
+    folder <- "fish and scats"
+  }
+  
+  stats_tib <- rbind(compo_tib |> 
+    dplyr::ungroup() |>
+    dplyr::mutate(cluster = as.factor(clust_vec)) |>
+    tidyr::pivot_longer(cols = c("As":"Zn"), 
+                        names_to = "Nutrient", 
+                        values_to = "concentration_mg_kg_dw") |>
+    dplyr::mutate(Nutrient = factor(Nutrient, 
+                                    levels = c("Ca", "P", "Na", "K", "Mg", 
+                                               "Fe", "Zn", "Cu", "Mn", "Se",
+                                               "As", "Ni","Co"))) |>
+    dplyr::group_by(cluster, Nutrient) |>
+    dplyr::summarise(mean = round(mean(concentration_mg_kg_dw), 3),
+                     median = round(median(concentration_mg_kg_dw), 3),
+                     sd = round(sd(concentration_mg_kg_dw), 3)) |>
+    tidyr::pivot_wider(names_from = Nutrient, 
+                       values_from = c(mean, median, sd),
+                       names_sep = "_"),
+    compo_tib |> 
+      dplyr::mutate(sample_type = type) |>
+      tidyr::pivot_longer(cols = c("As":"Zn"), 
+                          names_to = "Nutrient", 
+                          values_to = "concentration_mg_kg_dw") |>
+      dplyr::mutate(Nutrient = factor(Nutrient, 
+                                      levels = c("Ca", "P", "Na", "K", "Mg", 
+                                                 "Fe", "Zn", "Cu", "Mn", "Se",
+                                                 "As", "Ni","Co"))) |>
+      dplyr::group_by(sample_type, Nutrient) |>
+      dplyr::summarise(mean = round(mean(concentration_mg_kg_dw), 3),
+                       median = round(median(concentration_mg_kg_dw), 3),
+                       sd = round(sd(concentration_mg_kg_dw), 3)) |>
+      tidyr::pivot_wider(names_from = Nutrient, 
+                         values_from = c(mean, median, sd),
+                         names_sep = "_")
+  )
+  
+  
+  # assign folder for the output 
+  if (stringr::str_detect(file_name, "fish")) {
+    folder <- "fish"
+      } else if (stringr::str_detect(file_name, "scats")) {
+    folder <- "scats"
+      } else if (stringr::str_detect(file_name, "both")) {
+    folder <- "fish and scats"
+      }
+  
+  
+  
+  # save 
+  openxlsx::write.xlsx(stats_tib, 
+                       file = paste0("output/clustering/", folder,
+                                     "/stats_compo_clust_", file_name, ".xlsx"))
+}
+
+
+
 
 
 #'
@@ -1919,7 +2029,7 @@ MWtest_clust_k5 <- function(clust_output,
                                         wilcox.test(clust3, clust4)[[3]],
                                         wilcox.test(clust3, clust5)[[3]],
                                         wilcox.test(clust4, clust5)[[3]]
-                                        ))
+                           ))
     
     list_outputs <- append(list_outputs, list(nut_test))
   }

@@ -101,7 +101,7 @@ complete_fish_data <- function(res_fish_tib,
                                              Species %in% c("Lepidonotothen squamifrons", 
                                                             "Champsocephalus gunnari",
                                                             "Lindbergichthys mizops",
-                                                            "Muraenolepsis sp",
+                                                            "Muraenolepis sp",
                                                             "Gymnoscopelus piabilis",
                                                             "Gymnoscopelus bolini") ~ "Benthopelagic", 
                                              Species %in% c("Bathydraco antarcticus",
@@ -145,7 +145,7 @@ add_eco_habitat_sp <- function(compo_tib) {
                                              Species %in% c("Lepidonotothen squamifrons", 
                                                             "Champsocephalus gunnari",
                                                             "Lindbergichthys mizops",
-                                                            "Muraenolepsis sp",
+                                                            "Muraenolepis sp",
                                                             "Gymnoscopelus piabilis",
                                                             "Gymnoscopelus bolini") ~ "Benthopelagic", 
                                              Species %in% c("Bathydraco antarcticus",
@@ -485,6 +485,17 @@ boxplot_compo_fish_sp_one_nut_grad <- function(res_fish_tib,
                                                nutrient
 ) {
   
+  # calculate median for all species
+  median_allsp <- (res_fish_tib |>
+                     tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K,
+                                                  Mg, Mn, Na, Ni, P, Se, Zn), 
+                                         names_to = "Nutrient", 
+                                         values_to = "concentration_mg_kg_dw") |>
+                     dplyr::filter(Nutrient == nutrient) |>
+                     dplyr::summarise(mean_allsp = mean(concentration_mg_kg_dw), 
+                                      median_allsp = median(concentration_mg_kg_dw)))$median_allsp
+  
+  
   res_fish_tib |>
     tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K,
                                  Mg, Mn, Na, Ni, P, Se, Zn), 
@@ -496,64 +507,164 @@ boxplot_compo_fish_sp_one_nut_grad <- function(res_fish_tib,
                                                 n = 2)[,1], 
                        start = 1, 
                        end = 1), ". ", 
-      stringr::str_split_fixed(Species, " ", n = 2)[,2])) |>
-    dplyr::mutate(Species_short = factor(Species_short, 
-                                         levels = c(# Paralepididae
-                                           "A. risso", 
-                                           "N. coatsi",
-                                           # Bathydraconidae
-                                           "B. antarcticus",
-                                           # Bathylagidae
-                                           "B. tenuis",
-                                           # Channichthyidae
-                                           "C. gunnari",
-                                           "C. rhinoceratus",
-                                           # Nototheniidae
-                                           "D. eleginoides",
-                                           "G. acuta",
-                                           "L. squamifrons",
-                                           "L. mizops",
-                                           # Carapidae
-                                           "E. cryomargarites",
-                                           # Myctophidae
-                                           "E. antarctica",
-                                           "E. carlsbergi", 
-                                           "E. subaspera",
-                                           "G. bolini",
-                                           "G. braueri",
-                                           "G. fraseri",
-                                           "G. nicholsi", 
-                                           "G. piabilis", 
-                                           "K. anderssoni",
-                                           "P. andriashevi",
-                                           "P. bolini",
-                                           "P. choriodon",
-                                           "P. tenisoni",
-                                           # Stomiidae
-                                           "I. atlanticus", 
-                                           "S. sp",
-                                           # Notosudidae
-                                           "L. normani",
-                                           # Macrouridae
-                                           "M. carinatus",
-                                           # Achiropsettidae
-                                           "M. mancopsetta",
-                                           "M. gelatinosum",
-                                           # Muraenolepididae
-                                           "M. sp",
-                                           # Microstomatidae
-                                           "N. antarctica",
-                                           # Gempylidae
-                                           "P. gracilis",
-                                           # Melamphaidae
-                                           "P. crassiceps")), 
-                  Nutrient = factor(Nutrient, 
-                                    levels = c("Ca", "P", "Na", "K", "Mg", 
-                                               "Fe", "Zn", "Cu", "Mn", "Se",
-                                               "As", "Ni","Co"))) |>
+      stringr::str_split_fixed(Species, " ", n = 2)[,2]),
+      Nutrient = factor(Nutrient, 
+                        levels = c("Ca", "P", "Na", "K", "Mg", 
+                                   "Fe", "Zn", "Cu", "Mn", "Se",
+                                   "As", "Ni","Co"))) |>
     dplyr::group_by(Species_short) |>
     dplyr::mutate(n = dplyr::n_distinct(Code_sample),
-                  Speciesn = paste0(Species_short, " (n = ", n, ")")) |>
+                  Speciesn = factor(paste0(Species_short, " (n = ", n, ")"), 
+                                    levels = c(# classification is that of median
+                                      # for Fe concentrations
+                                      "A. risso (n = 2)", 
+                                      "N. coatsi (n = 10)",
+                                      "S. sp (n = 10)",
+                                      "P. bolini (n = 10)",
+                                      "P. tenisoni (n = 10)",
+                                      "K. anderssoni (n = 4)",
+                                      "P. andriashevi (n = 3)",
+                                      "M. carinatus (n = 10)",
+                                      "B. antarcticus (n = 5)",
+                                      "P. choriodon (n = 8)",
+                                      "M. sp (n = 10)",
+                                      "L. mizops (n = 7)",
+                                      "M. mancopsetta (n = 2)",
+                                      "G. acuta (n = 8)",
+                                      "I. atlanticus (n = 1)", 
+                                      "L. normani (n = 1)",
+                                      "E. carlsbergi (n = 10)", 
+                                      "P. gracilis (n = 10)",
+                                      "D. eleginoides (n = 2)",
+                                      "G. fraseri (n = 12)",
+                                      "L. squamifrons (n = 10)",
+                                      "N. antarctica (n = 5)",
+                                      "P. crassiceps (n = 1)",
+                                      "B. tenuis (n = 11)",
+                                      "E. antarctica (n = 10)",
+                                      "E. subaspera (n = 10)",
+                                      "G. piabilis (n = 10)", 
+                                      "G. nicholsi (n = 10)", 
+                                      "M. gelatinosum (n = 10)",
+                                      "C. rhinoceratus (n = 10)",
+                                      "E. cryomargarites (n = 10)",
+                                      "G. bolini (n = 10)",
+                                      "G. braueri (n = 12)",
+                                      "C. gunnari (n = 10)"
+                                    ))) |>
+    dplyr::group_by(Speciesn, Nutrient) |>
+    dplyr::summarise(`2.5_quant` = quantile(concentration_mg_kg_dw, 
+                                            probs = c(0.025)), 
+                     mean = mean(concentration_mg_kg_dw), 
+                     median = median(concentration_mg_kg_dw), 
+                     `97.5_quant` = quantile(concentration_mg_kg_dw, 
+                                             probs = c(0.975))) |>
+    dplyr::filter(Nutrient == nutrient) |>
+    ggplot2::ggplot() +
+    ggplot2::geom_linerange(ggplot2::aes(x = reorder(Speciesn, 
+                                                     median), 
+                                         ymin = `2.5_quant`, 
+                                         ymax = `97.5_quant`, 
+                                         color = Speciesn), 
+                            linewidth = 2) +
+    ggplot2::geom_point(ggplot2::aes(x = reorder(Speciesn, 
+                                                 median), 
+                                     y = median, 
+                                     color = Speciesn), 
+                        size = 3) +
+    ggplot2::geom_hline(yintercept = median_allsp, 
+                        linetype = "dotdash", 
+                        size = 1) +
+    ggplot2::facet_wrap(~ Nutrient, scale = "free", nrow = 3) +
+    #ggplot2::geom_jitter(color="darkgrey", size=0.7, alpha=0.5) +
+    ggplot2::coord_flip() +
+    viridis::scale_color_viridis(option = "magma", discrete = TRUE) +
+    ggplot2::ylab("Nutrient concentration (in mg/kg dry weight)") +
+    ggplot2::theme_bw() +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(size = 16), 
+                   axis.text.y = ggplot2::element_blank(), 
+                   axis.title.x = ggplot2::element_text(size = 17, 
+                                                        face = "bold"), 
+                   axis.title.y = ggplot2::element_blank(),
+                   strip.text.x = ggplot2::element_text(size = 16),
+                   legend.position = "none")
+  ggplot2::ggsave(paste0("output/compo fish/per-sp/boxplot_sp_nut_grad_", 
+                         nutrient, ".jpg"),
+                  scale = 1,
+                  height = 5, width = 5
+  )
+  
+}
+
+
+#'
+#'
+#'
+#'
+#'
+# function to display boxplot of elemental composition per species
+# with a gradient color and only mean and quantiles 
+# only for one nutrient, with sp names
+boxplot_compo_fish_sp_one_nut_grad_sp <- function(res_fish_tib, 
+                                                  nutrient
+) {
+  
+  res_fish_tib |>
+    tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K,
+                                 Mg, Mn, Na, Ni, P, Se, Zn), 
+                        names_to = "Nutrient", 
+                        values_to = "concentration_mg_kg_dw") |>
+    dplyr::mutate(Species_short = paste0(
+      stringr::str_sub(stringr::str_split_fixed(Species, 
+                                                " ", 
+                                                n = 2)[,1], 
+                       start = 1, 
+                       end = 1), ". ", 
+      stringr::str_split_fixed(Species, " ", n = 2)[,2]),
+      Nutrient = factor(Nutrient, 
+                        levels = c("Ca", "P", "Na", "K", "Mg", 
+                                   "Fe", "Zn", "Cu", "Mn", "Se",
+                                   "As", "Ni","Co"))) |>
+    dplyr::group_by(Species_short) |>
+    dplyr::mutate(n = dplyr::n_distinct(Code_sample),
+                  Speciesn = factor(paste0(Species_short, " (n = ", n, ")"), 
+                                    levels = c(# classification is that of median
+                                      # for Fe concentrations
+                                      "A. risso (n = 2)", 
+                                      "N. coatsi (n = 10)",
+                                      "S. sp (n = 10)",
+                                      "P. bolini (n = 10)",
+                                      "P. tenisoni (n = 10)",
+                                      "K. anderssoni (n = 4)",
+                                      "P. andriashevi (n = 3)",
+                                      "M. carinatus (n = 10)",
+                                      "B. antarcticus (n = 5)",
+                                      "P. choriodon (n = 8)",
+                                      "M. sp (n = 10)",
+                                      "L. mizops (n = 7)",
+                                      "M. mancopsetta (n = 2)",
+                                      "G. acuta (n = 8)",
+                                      "I. atlanticus (n = 1)", 
+                                      "L. normani (n = 1)",
+                                      "E. carlsbergi (n = 10)", 
+                                      "P. gracilis (n = 10)",
+                                      "D. eleginoides (n = 2)",
+                                      "G. fraseri (n = 12)",
+                                      "L. squamifrons (n = 10)",
+                                      "N. antarctica (n = 5)",
+                                      "P. crassiceps (n = 1)",
+                                      "B. tenuis (n = 11)",
+                                      "E. antarctica (n = 10)",
+                                      "E. subaspera (n = 10)",
+                                      "G. piabilis (n = 10)", 
+                                      "G. nicholsi (n = 10)", 
+                                      "M. gelatinosum (n = 10)",
+                                      "C. rhinoceratus (n = 10)",
+                                      "E. cryomargarites (n = 10)",
+                                      "G. bolini (n = 10)",
+                                      "G. braueri (n = 12)",
+                                      "C. gunnari (n = 10)"
+                                    ))) |>
     dplyr::group_by(Speciesn, Nutrient) |>
     dplyr::summarise(`2.5_quant` = quantile(concentration_mg_kg_dw, 
                                             probs = c(0.025)), 
@@ -581,13 +692,13 @@ boxplot_compo_fish_sp_one_nut_grad <- function(res_fish_tib,
     ggplot2::ylab("Nutrient concentration (in mg/kg dry weight)") +
     ggplot2::theme_bw() +
     ggplot2::theme(axis.text.x = ggplot2::element_text(size = 16), 
-                   axis.text.y = ggplot2::element_blank(), 
+                   axis.text.y = ggplot2::element_text(size = 12),
                    axis.title.x = ggplot2::element_text(size = 17, 
                                                         face = "bold"), 
                    axis.title.y = ggplot2::element_blank(),
                    strip.text.x = ggplot2::element_text(size = 16),
                    legend.position = "none")
-  ggplot2::ggsave(paste0("output/compo fish/per-sp/boxplot_sp_nut_grad_", 
+  ggplot2::ggsave(paste0("output/compo fish/per-sp/boxplot_sp_nut_grad_spnames_", 
                          nutrient, ".jpg"),
                   scale = 1,
                   height = 5, width = 5
@@ -620,110 +731,97 @@ boxplot_compo_fish_sp_one_nut_legend <- function(res_fish_tib,
                                                 n = 2)[,1], 
                        start = 1, 
                        end = 1), ". ", 
-      stringr::str_split_fixed(Species, " ", n = 2)[,2])) |>
-    dplyr::mutate(Species_short = factor(Species_short, 
-                                         levels = c(# Paralepididae
-                                           "A. risso", 
-                                           "N. coatsi",
-                                           # Bathydraconidae
-                                           "B. antarcticus",
-                                           # Bathylagidae
-                                           "B. tenuis",
-                                           # Channichthyidae
-                                           "C. gunnari",
-                                           "C. rhinoceratus",
-                                           # Nototheniidae
-                                           "D. eleginoides",
-                                           "G. acuta",
-                                           "L. squamifrons",
-                                           "L. mizops",
-                                           # Carapidae
-                                           "E. cryomargarites",
-                                           # Myctophidae
-                                           "E. antarctica",
-                                           "E. carlsbergi", 
-                                           "E. subaspera",
-                                           "G. bolini",
-                                           "G. braueri",
-                                           "G. fraseri",
-                                           "G. nicholsi", 
-                                           "G. piabilis", 
-                                           "K. anderssoni",
-                                           "P. andriashevi",
-                                           "P. bolini",
-                                           "P. choriodon",
-                                           "P. tenisoni",
-                                           # Stomiidae
-                                           "I. atlanticus", 
-                                           "S. sp",
-                                           # Notosudidae
-                                           "L. normani",
-                                           # Macrouridae
-                                           "M. carinatus",
-                                           # Achiropsettidae
-                                           "M. mancopsetta",
-                                           "M. gelatinosum",
-                                           # Muraenolepididae
-                                           "M. sp",
-                                           # Microstomatidae
-                                           "N. antarctica",
-                                           # Gempylidae
-                                           "P. gracilis",
-                                           # Melamphaidae
-                                           "P. crassiceps")), 
-                  Nutrient = factor(Nutrient, 
-                                    levels = c("Ca", "P", "Na", "K", "Mg", 
-                                               "Fe", "Zn", "Cu", "Mn", "Se",
-                                               "As", "Ni","Co"))) |>
-    dplyr::group_by(Species_short) |>
-    dplyr::mutate(n = dplyr::n_distinct(Code_sample),
-                  Speciesn = paste0(Species_short, " (n = ", n, ")")) |>
-    dplyr::group_by(Speciesn, Nutrient) |>
-    dplyr::summarise(`2.5_quant` = quantile(concentration_mg_kg_dw, 
-                                            probs = c(0.025)), 
-                     mean = mean(concentration_mg_kg_dw), 
-                     median = median(concentration_mg_kg_dw), 
-                     `97.5_quant` = quantile(concentration_mg_kg_dw, 
-                                             probs = c(0.975))) |>
-    dplyr::rename(Species = Speciesn) |>
-    dplyr::filter(Nutrient == nutrient) |>
-    ggplot2::ggplot() +
-    ggplot2::geom_linerange(ggplot2::aes(x = reorder(Species, 
-                                                     median), 
-                                         ymin = `2.5_quant`, 
-                                         ymax = `97.5_quant`, 
-                                         color = Species), 
-                            linewidth = 2) +
-    ggplot2::geom_point(ggplot2::aes(x = reorder(Species, 
-                                                 median), 
-                                     y = median, 
-                                     color = Species), 
-                        size = 3) +
-    ggplot2::facet_wrap(~ Nutrient, scale = "free", nrow = 3) +
-    #ggplot2::geom_jitter(color="darkgrey", size=0.7, alpha=0.5) +
-    ggplot2::coord_flip() +
-    viridis::scale_color_viridis(option = "magma", discrete = TRUE) +
-    ggplot2::xlab("Nutrient concentration (in mg/kg dry weight)") +
-    ggplot2::guides(color = ggplot2::guide_legend(ncol = 1)) +
-    ggplot2::theme_bw() +
-    ggplot2::theme(axis.text.x = ggplot2::element_text(size = 16), 
-                   axis.text.y = ggplot2::element_blank(), 
-                   axis.title.x = ggplot2::element_text(size = 17, 
-                                                        face = "bold"), 
-                   axis.title.y = ggplot2::element_blank(),
-                   strip.text.x = ggplot2::element_text(size = 16),
-                   legend.position = "right", 
-                   legend.text = ggplot2::element_text(size = 16), 
-                   legend.title = ggplot2::element_text(size = 17, 
-                                                        face = "bold"))
-  ggplot2::ggsave("output/compo fish/per-sp/boxplot_sp_nut_grad_legend.jpg",
-                  scale = 1,
-                  height = 10, width = 9)
-  # ggplot2::ggsave("output/compo fish/per-sp/boxplot_sp_nut_grad_legend.jpg",
-  #                 width = 9,
-  #                 height = 4,
-  #                 dpi = 300)
-  
+      stringr::str_split_fixed(Species, " ", n = 2)[,2]),
+      Nutrient = factor(Nutrient, 
+                    levels = c("Ca", "P", "Na", "K", "Mg", 
+                               "Fe", "Zn", "Cu", "Mn", "Se",
+                               "As", "Ni","Co"))) |>
+  dplyr::group_by(Species_short) |>
+  dplyr::mutate(n = dplyr::n_distinct(Code_sample),
+                Speciesn = factor(paste0(Species_short, " (n = ", n, ")"), 
+                                  levels = c(# classification is that of median
+                                    # for Fe concentrations
+                                    "A. risso (n = 2)", 
+                                    "N. coatsi (n = 10)",
+                                    "S. sp (n = 10)",
+                                    "P. bolini (n = 10)",
+                                    "P. tenisoni (n = 10)",
+                                    "K. anderssoni (n = 4)",
+                                    "P. andriashevi (n = 3)",
+                                    "M. carinatus (n = 10)",
+                                    "B. antarcticus (n = 5)",
+                                    "P. choriodon (n = 8)",
+                                    "M. sp (n = 10)",
+                                    "L. mizops (n = 7)",
+                                    "M. mancopsetta (n = 2)",
+                                    "G. acuta (n = 8)",
+                                    "I. atlanticus (n = 1)", 
+                                    "L. normani (n = 1)",
+                                    "E. carlsbergi (n = 10)", 
+                                    "P. gracilis (n = 10)",
+                                    "D. eleginoides (n = 2)",
+                                    "G. fraseri (n = 12)",
+                                    "L. squamifrons (n = 10)",
+                                    "N. antarctica (n = 5)",
+                                    "P. crassiceps (n = 1)",
+                                    "B. tenuis (n = 11)",
+                                    "E. antarctica (n = 10)",
+                                    "E. subaspera (n = 10)",
+                                    "G. piabilis (n = 10)", 
+                                    "G. nicholsi (n = 10)", 
+                                    "M. gelatinosum (n = 10)",
+                                    "C. rhinoceratus (n = 10)",
+                                    "E. cryomargarites (n = 10)",
+                                    "G. bolini (n = 10)",
+                                    "G. braueri (n = 12)",
+                                    "C. gunnari (n = 10)"
+                                  ))) |>
+  dplyr::group_by(Speciesn, Nutrient) |>
+  dplyr::summarise(`2.5_quant` = quantile(concentration_mg_kg_dw, 
+                                          probs = c(0.025)), 
+                   mean = mean(concentration_mg_kg_dw), 
+                   median = median(concentration_mg_kg_dw), 
+                   `97.5_quant` = quantile(concentration_mg_kg_dw, 
+                                           probs = c(0.975))) |>
+  dplyr::rename(Species = Speciesn) |>
+  dplyr::filter(Nutrient == nutrient) |>
+  ggplot2::ggplot() +
+  ggplot2::geom_linerange(ggplot2::aes(x = reorder(Species, 
+                                                   median), 
+                                       ymin = `2.5_quant`, 
+                                       ymax = `97.5_quant`, 
+                                       color = Species), 
+                          linewidth = 2) +
+  ggplot2::geom_point(ggplot2::aes(x = reorder(Species, 
+                                               median), 
+                                   y = median, 
+                                   color = Species), 
+                      size = 3) +
+  ggplot2::facet_wrap(~ Nutrient, scale = "free", nrow = 3) +
+  #ggplot2::geom_jitter(color="darkgrey", size=0.7, alpha=0.5) +
+  ggplot2::coord_flip() +
+  viridis::scale_color_viridis(option = "magma", discrete = TRUE) +
+  ggplot2::xlab("Nutrient concentration (in mg/kg dry weight)") +
+  ggplot2::guides(color = ggplot2::guide_legend(ncol = 1)) +
+  ggplot2::theme_bw() +
+  ggplot2::theme(axis.text.x = ggplot2::element_text(size = 16), 
+                 axis.text.y = ggplot2::element_blank(), 
+                 axis.title.x = ggplot2::element_text(size = 17, 
+                                                      face = "bold"), 
+                 axis.title.y = ggplot2::element_blank(),
+                 strip.text.x = ggplot2::element_text(size = 16),
+                 legend.position = "right", 
+                 legend.text = ggplot2::element_text(size = 16), 
+                 legend.title = ggplot2::element_text(size = 17, 
+                                                      face = "bold"))
+ggplot2::ggsave("output/compo fish/per-sp/boxplot_sp_nut_grad_legend.jpg",
+                scale = 1,
+                height = 10, width = 9)
+# ggplot2::ggsave("output/compo fish/per-sp/boxplot_sp_nut_grad_legend.jpg",
+#                 width = 9,
+#                 height = 4,
+#                 dpi = 300)
+
 }
 
 
@@ -820,7 +918,7 @@ boxplot_compo_fish_genus_all_nut <- function(res_fish_tib
                                             "Macrourus", 
                                             "Mancopsetta", 
                                             "Melanostigma",
-                                            "Muraenolepsis",
+                                            "Muraenolepis",
                                             "Nansenia",
                                             "Notolepis",
                                             "Paradiplospinus",
