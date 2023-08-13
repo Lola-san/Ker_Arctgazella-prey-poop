@@ -18,6 +18,20 @@ lapply(list.files(here::here("R"),
 
 
 list(
+  #################### RESULTS : SAMPLE COMPOSITION ############################
+  # define and load results of composition of fish samples
+  tar_target(res_compo_fish_file,
+             "data/res_compo_fish.xlsx", 
+             format = "file"),
+  tar_target(res_compo_fish, # add campaign data
+             load_xl(res_compo_fish_file)),
+  
+  # define and load results of composition of scats 
+  tar_target(res_compo_scats_file,
+             "data/res_compo_scats.xlsx", 
+             format = "file"),
+  tar_target(res_compo_scats, load_xl(res_compo_scats_file)), 
+  
   #################### DATA : SAMPLES & DIET ###################################
   # script 01_summarize_data_samples.R
   ##### 1 - on fish samples 
@@ -47,21 +61,6 @@ list(
   # summarize data on diets 
   tar_target(data_diet_summary, summary_diet_data(data_diet, 
                                                   res_compo_fish)),
-  
-  
-  #################### RESULTS : SAMPLE COMPOSITION ############################
-  # define and load results of composition of fish samples
-  tar_target(res_compo_fish_file,
-             "data/res_compo_fish.xlsx", 
-             format = "file"),
-  tar_target(res_compo_fish, # add campaign data
-             load_xl(res_compo_fish_file)),
-  
-  # define and load results of composition of scats 
-  tar_target(res_compo_scats_file,
-             "data/res_compo_scats.xlsx", 
-             format = "file"),
-  tar_target(res_compo_scats, load_xl(res_compo_scats_file)), 
   
   ####### IDENTIFY ANALYTICAL OUTLIERS + POTENTIAL CONTAMINATION ###############
   ###### samples identified with adnormal values must be treated independently 
@@ -422,6 +421,11 @@ list(
                                               "corrplot_compo_scats")),
   tar_target(corrplot_scats_nopup, corr_compo_scats(full_res_compo_scats_nopup,
                                                     "corrplot_compo_scats_nopup")),
+  
+  # scatterplot or nut concentrations and % water
+  tar_target(scatterplot_water_nut_scats, 
+             scatterplot_compo_water_scats(full_res_compo_scats, 
+                                           data_scat_samples)),
   
   ######## OF DIET OF A.GAZELLA #######
   tar_target(compo_prey_ww, dw_to_ww_prey(full_res_compo_fish, 
@@ -1700,6 +1704,10 @@ list(
              stats_compo_clust(clust_fish_clean_PCs_k4_ward_output,
                                fish_sp_means_clean, 
                                file_name = "fish_clean_PCs_k4")),
+  tar_target(clust_fish_clean_PCs_k4_samples_table, 
+             clust_samples(clust_fish_clean_PCs_k4_ward_output,
+                           fish_sp_means_clean, 
+                           file_name = "fish_clean_PCs_k4")),
   tar_target(boxplot_clust_fish_clean_PCs_k4_ward, 
              boxplot_compo_clust(clust_fish_clean_PCs_k4_ward_output,
                                  fish_sp_means_clean,
@@ -1945,6 +1953,10 @@ list(
              stats_compo_clust(clust_PCs_scats_tot_k2_ward_output,
                                full_res_compo_scats, 
                                file_name = "scats_tot_PCs_k2")),
+  tar_target(clust_PCs_scats_tot_k2_samples_table, 
+             clust_samples(clust_PCs_scats_tot_k2_ward_output,
+                           full_res_compo_scats, 
+                           file_name = "scats_tot_PCs_k2")),
   tar_target(clust_PCs_scats_tot_k2_dendro_HPI01, 
              clust_compo_PCs_dendro_scats(PCA_scats_tot_coda_rob,
                                           full_res_compo_scats,

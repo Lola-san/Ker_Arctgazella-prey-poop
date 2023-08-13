@@ -298,7 +298,7 @@ clust_compo_PCs_dendro_fish <- function(res_pca,
                          hjust = 1, size = 4) +
       ggplot2::scale_color_manual(values = colour_palette) +
       ggplot2::coord_flip() +
-      ggplot2::ylim(-5.4, 6) +
+      ggplot2::ylim(-6.8, 6) +
       ggplot2::guides(colour = ggplot2::guide_legend(title = "Cluster",
                                                      override.aes = list(shape = 12)))  +
       ggplot2::theme_classic() +
@@ -1371,23 +1371,47 @@ stats_compo_clust <- function(clust_output,
                          values_from = c(mean, median, sd),
                          names_sep = "_")
   )
-  
-  
-  # assign folder for the output 
-  if (stringr::str_detect(file_name, "fish")) {
-    folder <- "fish"
-      } else if (stringr::str_detect(file_name, "scats")) {
-    folder <- "scats"
-      } else if (stringr::str_detect(file_name, "both")) {
-    folder <- "fish and scats"
-      }
-  
-  
-  
+
   # save 
   openxlsx::write.xlsx(stats_tib, 
                        file = paste0("output/clustering/", folder,
                                      "/stats_compo_clust_", file_name, ".xlsx"))
+}
+
+
+#'
+#'
+#'
+#'
+# output matching species/samples with attributed cluster
+clust_samples <- function(clust_output,
+                              compo_tib,
+                              file_name
+) {
+  
+  # assign each sample to its cluster
+  clust_vec <- clust_output$cluster
+  
+  # assign folder for the output 
+  if (stringr::str_detect(file_name, "fish")) {
+    folder <- type <- "fish"
+    # change name of species
+    compo_tib <- compo_tib |>
+      dplyr::mutate(Species = stringr::str_split_fixed(Species, "\n", 2)[,1])
+  } else if (stringr::str_detect(file_name, "scats")) {
+    folder <- type <- "scats"
+  } else if (stringr::str_detect(file_name, "both")) {
+    folder <- "fish and scats"
+  }
+  
+  clust_tib <- compo_tib |> 
+    dplyr::ungroup() |>
+    dplyr::mutate(cluster = as.factor(clust_vec)) 
+  
+    # save 
+  openxlsx::write.xlsx(clust_tib, 
+                       file = paste0("output/clustering/", folder,
+                                     "/clust_attribution_", file_name, ".xlsx"))
 }
 
 

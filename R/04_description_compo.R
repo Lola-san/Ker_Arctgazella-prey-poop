@@ -486,14 +486,14 @@ boxplot_compo_fish_sp_one_nut_grad <- function(res_fish_tib,
 ) {
   
   # calculate median for all species
-  median_allsp <- (res_fish_tib |>
+  mean_med_allsp <- res_fish_tib |>
                      tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K,
                                                   Mg, Mn, Na, Ni, P, Se, Zn), 
                                          names_to = "Nutrient", 
                                          values_to = "concentration_mg_kg_dw") |>
                      dplyr::filter(Nutrient == nutrient) |>
                      dplyr::summarise(mean_allsp = mean(concentration_mg_kg_dw), 
-                                      median_allsp = median(concentration_mg_kg_dw)))$median_allsp
+                                      median_allsp = median(concentration_mg_kg_dw))
   
   
   res_fish_tib |>
@@ -572,9 +572,14 @@ boxplot_compo_fish_sp_one_nut_grad <- function(res_fish_tib,
                                      y = median, 
                                      color = Speciesn), 
                         size = 3) +
-    ggplot2::geom_hline(yintercept = median_allsp, 
-                        linetype = "dotdash", 
-                        size = 1) +
+    ggplot2::geom_hline(data = mean_med_allsp, 
+                        ggplot2::aes(yintercept = median_allsp), 
+                        linetype = "solid", 
+                        color = "darkred") +
+    ggplot2::geom_hline(data = mean_med_allsp, 
+                        ggplot2::aes(yintercept = mean_allsp), 
+                        linetype = "dashed", 
+                        color = "darkred") +
     ggplot2::facet_wrap(~ Nutrient, scale = "free", nrow = 3) +
     #ggplot2::geom_jitter(color="darkgrey", size=0.7, alpha=0.5) +
     ggplot2::coord_flip() +
@@ -2782,6 +2787,50 @@ corr_compo_scats <- function(res_scat_tib,
                   scale = 1,
                   height = 5, width = 6
   )
+  
+}
+
+#'
+#'
+#'
+#'
+#'
+# scatter plot % of water and nutrient content
+scatterplot_compo_water_scats <- function(res_scat_tib, 
+                                 scat_tab) {
+  
+  res_scat_tib |>
+    dplyr::left_join(scat_tab |>
+                       dplyr::select(Code_sample, water_percent), 
+                     by = "Code_sample") |>
+    tidyr::pivot_longer(cols = c(As:Se), 
+                        names_to = "Nutrient", 
+                        values_to = "conc_mg_kg_dw") |>
+    dplyr::mutate(Nutrient = factor(Nutrient, 
+                                    levels = c("Ca", "P", "Na", "K", "Mg", 
+                                               "Fe", "Zn", "Cu", "Mn", "Se",
+                                               "As", "Ni","Co"))) |>
+    ggplot2::ggplot(ggplot2::aes(x = water_percent, y = conc_mg_kg_dw)) +
+    ggplot2::geom_point() +
+    ggplot2::facet_wrap(~ Nutrient, scales = "free_y") +
+    ggplot2::theme_bw() + 
+    ggplot2::ggtitle("A. gazella scats") +
+    ggplot2::ylab("Concentration in mg per kg dry weight") +
+    ggplot2::xlab("Water %") +
+    ggplot2::theme(plot.title = ggplot2::element_text(size = 17, 
+                                                      face = "bold", 
+                                                      hjust = 0.5),
+                   axis.text.x = ggplot2::element_text(size = 15), 
+                   axis.text.y = ggplot2::element_text(size = 15), 
+                   axis.title.x = ggplot2::element_text(size = 16, 
+                                                        face = "bold"), 
+                   axis.title.y = ggplot2::element_text(size = 16, 
+                                                        face = "bold"))
+  ggplot2::ggsave("output/compo scats/scatter_plot_water_nut_conc_scats.jpg",
+                  scale = 1,
+                  height = 6, width = 10
+  )
+
   
 }
 
