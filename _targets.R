@@ -345,6 +345,7 @@ list(
   
   # correlation matrix plot
   tar_target(corrplot_fish, corr_compo_fish(full_res_compo_fish)),
+  tar_target(corrplot_fish_prey, corr_compo_fish_prey_only(full_res_compo_fish)),
   
   
   #-------------- SCATS -------------- 
@@ -381,6 +382,8 @@ list(
   # per site
   tar_target(boxplot_scats_sites, boxplot_compo_scats_site(full_res_compo_scats, 
                                                            "boxplot_compo_sites")),
+  tar_target(linerangeplot_scats_sites, linerangeplot_compo_scats_site(full_res_compo_scats, 
+                                                           "scats_tot")),
   tar_target(boxplot_scats_sites_nopup, boxplot_compo_scats_site(full_res_compo_scats_nopup,
                                                                  "boxplot_compo_sites_nopup")),
   # pup suspicion and no pup suspicion

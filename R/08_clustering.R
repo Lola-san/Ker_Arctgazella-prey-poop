@@ -1014,9 +1014,24 @@ boxplot_compo_clust <- function(clust_output,
                       "#E75B64FF",
                       "#1D2645FF")[1:max(clust_output$cluster)]
   
+  # tab with mean and median values for all samples to show on plots
+  mean_median_tib <- compo_tib |>
+    tidyr::pivot_longer(cols = c("As":"Zn"), 
+                        names_to = "Nutrient", 
+                        values_to = "concentration_mg_kg_dw") |>
+    dplyr::mutate(Nutrient = factor(Nutrient, 
+                                    levels = c("Ca", "P", "Na", "K", "Mg", 
+                                               "Fe", "Zn", "Cu", "Mn", "Se",
+                                               "As", "Ni","Co"))) |>
+    dplyr::group_by(Nutrient) |>
+    dplyr::summarise(mean = mean(concentration_mg_kg_dw), 
+                     median = median(concentration_mg_kg_dw))
+  
+  
   # assign folder for the output 
   if (stringr::str_detect(file_name, "fish")) {
     folder <- "fish"
+    
     
     compo_tib |> 
       dplyr::ungroup() |>
@@ -1031,21 +1046,33 @@ boxplot_compo_clust <- function(clust_output,
       ggplot2::ggplot(ggplot2::aes(x = cluster, 
                                    y = concentration_mg_kg_dw, 
                                    fill = cluster)) +
-      ggplot2::geom_violin(width=1.4) +
+      ggplot2::geom_violin(ggplot2::aes(color = cluster),
+                           width = 1.4, alpha = 0.5) +
       ggplot2::geom_boxplot() +
+      ggplot2::geom_hline(data = mean_median_tib, 
+                          ggplot2::aes(yintercept = median), 
+                          linetype = "solid", 
+                          color = "darkred") +
+      ggplot2::geom_hline(data = mean_median_tib, 
+                          ggplot2::aes(yintercept = mean), 
+                          linetype = "dashed", 
+                          color = "darkred") +
       ggplot2::ylab("Nutrient concentration (in mg/kg dry weight)") +
-      ggplot2::geom_jitter(color="darkgrey", size=0.7, alpha=0.2) +
       ggplot2::scale_fill_manual(values = colour_palette) +
+      ggplot2::scale_color_manual(values = colour_palette) +
       ggplot2::facet_wrap(~ Nutrient, scale = "free") +
-      ggplot2::theme_bw() +
+      ggplot2::theme_linedraw() +
       ggplot2::theme(axis.title.x = ggplot2::element_blank(), 
                      axis.text.x = ggplot2::element_text(size = 15),
                      axis.text.y = ggplot2::element_text(size = 15),
                      axis.title.y = ggplot2::element_text(size = 16, 
                                                           face = "bold"), 
                      strip.text.x = ggplot2::element_text(size = 16, 
-                                                          face = "bold"), 
+                                                          face = "bold", 
+                                                          color = "black"), 
+                     strip.background = ggplot2::element_rect(fill = "lightgrey"),
                      legend.position = "none")
+    
   } else if (stringr::str_detect(file_name, "scats")) {
     folder <- "scats"
     
@@ -1061,21 +1088,33 @@ boxplot_compo_clust <- function(clust_output,
                                                  "As", "Ni","Co"))) |>
       ggplot2::ggplot(ggplot2::aes(x = cluster, y = concentration_mg_kg_dw, 
                                    fill = cluster)) +
-      ggplot2::geom_violin(width=1.4) +
+      ggplot2::geom_violin(ggplot2::aes(color = cluster),
+                           width = 1.4, alpha = 0.5) +
       ggplot2::geom_boxplot() +
+      ggplot2::geom_hline(data = mean_median_tib, 
+                          ggplot2::aes(yintercept = median), 
+                          linetype = "solid", 
+                          color = "darkred") +
+      ggplot2::geom_hline(data = mean_median_tib, 
+                          ggplot2::aes(yintercept = mean), 
+                          linetype = "dashed", 
+                          color = "darkred") +
       ggplot2::ylab("Nutrient concentration (in mg/kg dry weight)") +
-      ggplot2::geom_jitter(color="darkgrey", size=0.7, alpha=0.2) +
       ggplot2::scale_fill_manual(values = colour_palette) +
+      ggplot2::scale_color_manual(values = colour_palette) +
       ggplot2::facet_wrap(~ Nutrient, scale = "free") +
-      ggplot2::theme_bw() +
+      ggplot2::theme_linedraw() +
       ggplot2::theme(axis.title.x = ggplot2::element_blank(), 
                      axis.text.x = ggplot2::element_text(size = 15),
                      axis.text.y = ggplot2::element_text(size = 15),
                      axis.title.y = ggplot2::element_text(size = 16, 
                                                           face = "bold"), 
                      strip.text.x = ggplot2::element_text(size = 16, 
-                                                          face = "bold"), 
+                                                          face = "bold", 
+                                                          color = "black"), 
+                     strip.background = ggplot2::element_rect(fill = "lightgrey"),
                      legend.position = "none")
+    
   } else if (stringr::str_detect(file_name, "both")) {
     folder <- "fish and scats"
     colour_palette <- c("#278B9AFF",

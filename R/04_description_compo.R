@@ -2028,6 +2028,60 @@ corr_compo_fish <- function(res_fish_tib) {
 }
 
 
+
+#'
+#'
+#'
+#'
+#'
+# function to display correlation plot of elemental composition of fish
+corr_compo_fish_prey_only <- function(res_fish_tib) {
+  
+  corr_mat <- robCompositions::corCoDa(
+    as.data.frame(res_fish_tib |>
+                    # make non-prey and prey species of fur seals distinct
+                    dplyr::mutate(type = dplyr::case_when(diet == 1 ~ "prey",
+                                                          diet == 0 ~ "not prey")) |>
+                    dplyr::filter(type == "prey") |>
+                    dplyr::select(c(As, Ca, Co, Cu, Fe, K,
+                                    Mg, Mn, Na, Ni, P, Se, Zn)))) 
+  
+  colnames(corr_mat) <- rownames(corr_mat) <- c("As", "Ca", "Co", "Cu", "Fe", 
+                                                "K", "Mg", "Mn", "Na", "Ni", 
+                                                "P", "Se", "Zn")
+  
+  get_lower_tri<-function(cormat){
+    cormat[lower.tri(cormat)] <- NA
+    return(cormat)
+  }
+  
+  melted_cormat <- tibble::as_tibble(reshape2::melt(get_lower_tri(corr_mat), 
+                                                    na.rm = TRUE)) 
+  
+  ggplot2::ggplot(data = melted_cormat, ggplot2::aes(Var2, Var1, fill = value)) +
+    ggplot2::geom_tile(color = "white") +
+    ggplot2::scale_fill_gradient2(low = "#F0D77BFF", 
+                                  high = "#E75B64FF", 
+                                  mid = "white", 
+                                  midpoint = 0, limit = c(-1,1)) +
+    ggplot2::theme_bw() + 
+    ggplot2::ggtitle("Forage fish identified as prey of A. gazella") +
+    ggplot2::theme(plot.title = ggplot2::element_text(size = 16, 
+                                                      face = "bold", 
+                                                      hjust = 0.5),
+                   axis.text.x = ggplot2::element_text(size = 15), 
+                   axis.text.y = ggplot2::element_text(size = 15), 
+                   axis.title.x = ggplot2::element_blank(), 
+                   axis.title.y = ggplot2::element_blank(), 
+                   legend.position = "none")
+  ggplot2::ggsave("output/compo fish/corrplot_compo_fish_prey_only.jpg",
+                  scale = 1,
+                  height = 5, width = 5
+  )
+  
+}
+
+
 ################################################################################
 ############################################# SCATS ############################
 ################################################################################
@@ -2226,6 +2280,18 @@ densplot_compo_scats_tot <- function(res_scat_tib,
 boxplot_compo_scats_site <- function(res_scat_tib, 
                                      file_name) {
   
+  mean_median_tib <- res_scat_tib |>
+    tidyr::pivot_longer(cols = c("As":"Zn"), 
+                        names_to = "Nutrient", 
+                        values_to = "concentration_mg_kg_dw") |>
+    dplyr::mutate(Nutrient = factor(Nutrient, 
+                                    levels = c("Ca", "P", "Na", "K", "Mg", 
+                                               "Fe", "Zn", "Cu", "Mn", "Se",
+                                               "As", "Ni","Co"))) |>
+    dplyr::group_by( Nutrient) |>
+    dplyr::summarise(mean = mean(concentration_mg_kg_dw), 
+                     median = median(concentration_mg_kg_dw))
+  
   res_scat_tib |>
     tidyr::pivot_longer(cols = c("As":"Zn"), 
                         names_to = "Nutrient", 
@@ -2241,12 +2307,106 @@ boxplot_compo_scats_site <- function(res_scat_tib,
                                            "Pointe\nSuzanne"))) |>
     ggplot2::ggplot(ggplot2::aes(x = site, y = concentration_mg_kg_dw, 
                                  fill = site)) +
-    ggplot2::geom_violin(width=1.4) +
+    ggplot2::geom_violin(ggplot2::aes(color = site),
+                         width = 1.4, alpha = 0.5) +
     ggplot2::geom_boxplot() +
-    #ggplot2::coord_flip() +
+    ggplot2::geom_hline(data = mean_median_tib, 
+                        ggplot2::aes(yintercept = median), 
+                        linetype = "solid", 
+                        color = "darkred") +
+    ggplot2::geom_hline(data = mean_median_tib, 
+                        ggplot2::aes(yintercept = mean), 
+                        linetype = "dashed", 
+                        color = "darkred") +
     ggplot2::ylab("Nutrient concentration (in mg/kg dry weight)") +
-    ggplot2::geom_jitter(color="darkgrey", size=0.7, alpha=0.2) +
     ggplot2::scale_fill_manual(values = c( "#14191FFF", 
+                                           "#AE93BEFF")) +
+    ggplot2::scale_color_manual(values = c( "#14191FFF", 
+                                           "#AE93BEFF")) +
+    ggplot2::facet_wrap(~ Nutrient, scale = "free") +
+    ggplot2::theme_linedraw() +
+    ggplot2::theme(axis.title.x = ggplot2::element_blank(), 
+                   axis.text.x = ggplot2::element_text(size = 16),
+                   axis.text.y = ggplot2::element_text(size = 16),
+                   axis.title.y = ggplot2::element_text(size = 17, 
+                                                        face = "bold"), 
+                   strip.text.x = ggplot2::element_text(size = 16, 
+                                                        face = "bold", 
+                                                        color = "black"), 
+                   strip.background = ggplot2::element_rect(fill = "lightgrey"),
+                   legend.position = "none")
+  ggplot2::ggsave(paste0("output/compo scats/", 
+                         file_name, ".jpg"),
+                  scale = 1,
+                  height = 9, width = 10
+  )
+  
+}
+
+
+#'
+#'
+#'
+#'
+#'
+# function to display boxplot of elemental composition per site
+linerangeplot_compo_scats_site <- function(res_scat_tib, 
+                                     file_name) {
+  
+  
+  mean_median_tib <- res_scat_tib |>
+    tidyr::pivot_longer(cols = c("As":"Zn"), 
+                        names_to = "Nutrient", 
+                        values_to = "concentration_mg_kg_dw") |>
+    dplyr::mutate(Nutrient = factor(Nutrient, 
+                                    levels = c("Ca", "P", "Na", "K", "Mg", 
+                                               "Fe", "Zn", "Cu", "Mn", "Se",
+                                               "As", "Ni","Co"))) |>
+    dplyr::group_by( Nutrient) |>
+    dplyr::summarise(mean = mean(concentration_mg_kg_dw), 
+                     median = median(concentration_mg_kg_dw))
+    
+    
+  res_scat_tib |>
+    tidyr::pivot_longer(cols = c("As":"Zn"), 
+                        names_to = "Nutrient", 
+                        values_to = "concentration_mg_kg_dw") |>
+    dplyr::mutate(site = dplyr::case_when(site == "Cap Noir" ~ "Cap\nNoir", 
+                                          site == "Pointe Suzanne" ~ "Pointe\nSuzanne"), 
+                  Nutrient = factor(Nutrient, 
+                                    levels = c("Ca", "P", "Na", "K", "Mg", 
+                                               "Fe", "Zn", "Cu", "Mn", "Se",
+                                               "As", "Ni","Co"))) |>
+    dplyr::mutate(site = factor(site, 
+                                levels = c("Cap\nNoir", 
+                                           "Pointe\nSuzanne"))) |>
+    dplyr::group_by(site, Nutrient) |>
+    dplyr::summarise(`2.5_quant` = quantile(concentration_mg_kg_dw, 
+                                            probs = c(0.025)), 
+                     mean = mean(concentration_mg_kg_dw), 
+                     median = median(concentration_mg_kg_dw), 
+                     `97.5_quant` = quantile(concentration_mg_kg_dw, 
+                                             probs = c(0.975))) |>
+    ggplot2::ggplot() +
+    ggplot2::geom_linerange(ggplot2::aes(x = site, 
+                                         ymin = `2.5_quant`, 
+                                         ymax = `97.5_quant`, 
+                                         color = site), 
+                            linewidth = 2) +
+    ggplot2::geom_point(ggplot2::aes(x = site, 
+                                     y = median, 
+                                     color = site), 
+                        size = 3) +
+    ggplot2::geom_hline(data = mean_median_tib, 
+                        ggplot2::aes(yintercept = median), 
+                        linetype = "solid", 
+                        color = "darkred") +
+    ggplot2::geom_hline(data = mean_median_tib, 
+                        ggplot2::aes(yintercept = mean), 
+                        linetype = "dashed", 
+                        color = "darkred") +
+    ggplot2::ylab("Nutrient concentration (in mg/kg dry weight)") +
+    ggplot2::scale_color_manual(values = c( "#14191FFF", 
                                            "#AE93BEFF")) +
     ggplot2::facet_wrap(~ Nutrient, scale = "free") +
     ggplot2::theme_bw() +
@@ -2258,8 +2418,8 @@ boxplot_compo_scats_site <- function(res_scat_tib,
                    strip.text.x = ggplot2::element_text(size = 16, 
                                                         face = "bold"), 
                    legend.position = "none")
-  ggplot2::ggsave(paste0("output/compo scats/", 
-                         file_name, ".jpg"),
+  ggplot2::ggsave(paste0("output/compo scats/linerange_plot_", 
+                         file_name, "_sites.jpg"),
                   scale = 1,
                   height = 9, width = 10
   )
@@ -2371,6 +2531,18 @@ boxplot_compo_scats_HPI <- function(res_scat_tib,
 boxplot_compo_scats_HPI01 <- function(res_scat_tib,
                                       file_name) {
   
+  mean_median_tib <- res_scat_tib |>
+    tidyr::pivot_longer(cols = c("As":"Zn"), 
+                        names_to = "Nutrient", 
+                        values_to = "concentration_mg_kg_dw") |>
+    dplyr::mutate(Nutrient = factor(Nutrient, 
+                                    levels = c("Ca", "P", "Na", "K", "Mg", 
+                                               "Fe", "Zn", "Cu", "Mn", "Se",
+                                               "As", "Ni","Co"))) |>
+    dplyr::group_by( Nutrient) |>
+    dplyr::summarise(mean = mean(concentration_mg_kg_dw), 
+                     median = median(concentration_mg_kg_dw))
+  
   res_scat_tib |>
     tidyr::pivot_longer(cols = c("As":"Zn"), 
                         names_to = "Nutrient", 
@@ -2386,11 +2558,21 @@ boxplot_compo_scats_HPI01 <- function(res_scat_tib,
     ggplot2::ggplot(ggplot2::aes(x = HPI01, 
                                  y = concentration_mg_kg_dw, 
                                  fill = HPI01)) +
-    ggplot2::geom_violin(width=1.4) +
+    ggplot2::geom_violin(ggplot2::aes(color = HPI01),
+                         width = 1.4, alpha = 0.5) +
     ggplot2::geom_boxplot() +
+    ggplot2::geom_hline(data = mean_median_tib, 
+                        ggplot2::aes(yintercept = median), 
+                        linetype = "solid", 
+                        color = "darkred") +
+    ggplot2::geom_hline(data = mean_median_tib, 
+                        ggplot2::aes(yintercept = mean), 
+                        linetype = "dashed", 
+                        color = "darkred") +
     ggplot2::ylab("Nutrient concentration (in mg/kg dry weight)") +
-    ggplot2::geom_jitter(color="darkgrey", size=0.7, alpha=0.2) +
     ggplot2::scale_fill_manual(values = c("#278B9AFF", 
+                                          "#E75B64FF")) +
+    ggplot2::scale_color_manual(values = c("#278B9AFF", 
                                           "#E75B64FF")) +
     ggplot2::facet_wrap(~ Nutrient, scale = "free") +
     ggplot2::xlab("Hard-parts index") +
