@@ -2,10 +2,10 @@
 # Ker_Arctgazella-prey-scats project
 # Lola Gilbert lola.gilbert@univ-lr.fr
 #
-# July 2022
+# July 2023
 # _targets.R
 #
-# Script decomposing with all steps of the analysis with target
+# Script decomposing all steps of the analysis with target
 ################################################################################
 
 library("targets")
@@ -323,9 +323,9 @@ list(
   
   # boxplot comparison between composition of prey species and not prey species 
   tar_target(lineplot_prey_vs_not_prey_abs, 
-             boxplot_compare_compo_prey_not_prey_abs(full_res_compo_fish)),
-  tar_target(lineplot_prey_vs_not_prey_rel, 
-             boxplot_compare_compo_prey_not_prey_rel(full_res_compo_fish)),
+             lineplot_compare_compo_prey_not_prey_abs(full_res_compo_fish)),
+  tar_target(lineplot_prey_vs_not_prey_mean_sp_abs, 
+             lineplot_compare_compo_prey_not_prey_mean_sp_abs(full_res_compo_fish)),
   tar_target(boxplot_prey_vs_not_prey_abs, 
              boxplot_compare_compo_prey_not_prey_abs(full_res_compo_fish)),
   tar_target(boxplot_prey_vs_not_prey_rel, 
@@ -338,6 +338,8 @@ list(
   # stat tests of differences
   tar_target(MWtest_conc_prey_vs_not_prey_abs, 
              MWtest_compo_prey_not_prey_abs(full_res_compo_fish)),
+  tar_target(MWtest_conc_prey_vs_not_prey_mean_sp_abs, 
+             MWtest_compo_prey_not_prey_mean_sp_abs(full_res_compo_fish)),
   tar_target(MWtest_conc_prey_vs_not_prey_rel_trace_only, 
              MWtest_compo_prey_not_prey_rel_trace_only(full_res_compo_fish)),
   tar_target(MWtest_conc_prey_vs_not_prey_rel_all_nut, 
@@ -470,6 +472,9 @@ list(
   tar_target(lineplot_fish_and_scats_abs, 
              lineplot_compare_compo_abs(fish_sp_means_and_scats, 
                                         "lineplot_comp_fish_scat_log")),
+  tar_target(lineplot_fish_full_prey_and_scats_abs, 
+             lineplot_compare_compo_prey_abs(fish_full_and_scats, 
+                                              "lineplot_comp_fish_full_prey_scat_abs")),
   tar_target(lineplot_fish_and_scats_nopup_abs, 
              lineplot_compare_compo_abs(fish_sp_means_and_scats_nopup, 
                                         "lineplot_comp_fish_scat_nopup_log")),
@@ -482,6 +487,9 @@ list(
   tar_target(lineplot_fish_full_and_scats_norm, 
              lineplot_compare_compo_norm(fish_full_and_scats, 
                                          "lineplot_comp_fish_full_scat_norm")),
+  tar_target(lineplot_fish_full_prey_and_scats_norm, 
+             lineplot_compare_compo_prey_norm(fish_full_and_scats, 
+                                              "lineplot_comp_fish_full_prey_scat_norm")),
   tar_target(boxplot_fish_full_and_scats_norm, 
              boxplot_compare_compo_norm(fish_full_and_scats, 
                                         "boxplot_comp_fish_full_scat_norm")),

@@ -1646,6 +1646,11 @@ lineplot_compare_compo_prey_not_prey_abs <- function(res_fish_tib) {
                     (max(concentration_mg_kg_dw) - min(concentration_mg_kg_dw))) |>
     dplyr::group_by(Nutrient, type) |>
     dplyr::summarise(mean = round(mean(concentration_mg_kg_dw), 2), 
+                     median = round(mean(concentration_mg_kg_dw), 2),
+                     `2.5_quant` = round(quantile(concentration_mg_kg_dw, 
+                                                       probs = c(0.025)), 2), 
+                     `97.5_quant` = round(quantile(concentration_mg_kg_dw, 
+                                                        probs = c(0.975)), 2),
                      mean_norm = round(mean(conc_norm), 2),
                      median_norm = round(mean(conc_norm), 2),
                      `2.5_quant_norm` = round(quantile(conc_norm, 
@@ -1656,19 +1661,21 @@ lineplot_compare_compo_prey_not_prey_abs <- function(res_fish_tib) {
                      cv = round(sd/mean, 3)) |>
     ggplot2::ggplot() +
     ggplot2::geom_linerange(ggplot2::aes(x = Nutrient, 
-                                         ymin = `2.5_quant_norm`, 
-                                         ymax = `97.5_quant_norm`, 
+                                         ymin = `2.5_quant`, 
+                                         ymax = `97.5_quant`, 
                                          color = type), 
-                            linewidth = 1, 
+                            linewidth = 2, 
                             position = ggplot2::position_dodge(0.5)) +
     ggplot2::geom_point(ggplot2::aes(x = Nutrient, 
-                                     y = median_norm, 
+                                     y = median, 
                                      color = type), 
                         size = 3, 
                         position = ggplot2::position_dodge(0.5)) +
     ggplot2::coord_flip() +
+    ggplot2::scale_y_continuous(trans = "log10") +
     ggplot2::scale_color_manual(values = c("fish species identied as fur seal prey" = "#278B9AFF", 
                                            "fish species never identied as fur seal prey" = "#B4DAE5FF")) +
+    ggplot2::guides(color = ggplot2::guide_legend(nrow = 2)) +
     ggplot2::ylab(paste0("Concentration (in mg/kg dry weight)")) +
     ggplot2::xlab("Nutrient") +
     ggplot2::theme_bw() +
@@ -1680,12 +1687,84 @@ lineplot_compare_compo_prey_not_prey_abs <- function(res_fish_tib) {
                    legend.title = ggplot2::element_blank(),
                    legend.text = ggplot2::element_text(size = 15)
     )
-  ggplot2::ggsave("output/compo fish/line_plot_compo_prey_vs_not_prey_abs.jpg",
+  ggplot2::ggsave("output/compo fish/lineplot_compo_prey_vs_not_prey_abs.jpg",
                   scale = 1,
-                  height = 8, width = 9
+                  height = 6, width = 5
   )
   
 }
+
+
+#'
+#'
+#'
+#'
+#'
+# function to compare composition of fish species identified as prey of
+# A. gazella and fish never identified as prey of A. gazella around Kerguelen
+lineplot_compare_compo_prey_not_prey_mean_sp_abs <- function(res_fish_tib) {
+  options(scipen = 999)
+  
+  res_fish_tib |>
+    tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, Mg, Mn, Na, Ni, P, Se, Zn), 
+                        names_to = "Nutrient", 
+                        values_to = "concentration_mg_kg_dw") |>
+    dplyr::mutate(type = factor(dplyr::case_when(diet == 1 ~ "fish species identied as fur seal prey", 
+                                                 diet == 0 ~ "fish species never identied as fur seal prey"), 
+                                levels = c("fish species never identied as fur seal prey", 
+                                           "fish species identied as fur seal prey")), 
+                  Nutrient = factor(Nutrient, 
+                                    levels = c("Co", "Ni", "As", "Se", "Mn",
+                                               "Cu", "Zn", "Fe", "Mg", "K",
+                                               "Na", "P", "Ca"))) |>
+    dplyr::group_by(Nutrient) |>
+    dplyr::mutate(conc_norm = (concentration_mg_kg_dw - min(concentration_mg_kg_dw))/
+                    (max(concentration_mg_kg_dw) - min(concentration_mg_kg_dw))) |>
+    dplyr::group_by(type, Species, Nutrient) |>
+    dplyr::summarise(mean_sp = mean(concentration_mg_kg_dw)) |>
+    dplyr::group_by(Nutrient, type) |>
+    dplyr::summarise(mean = round(mean(mean_sp), 2), 
+                     median = round(mean(mean_sp), 2),
+                     `2.5_quant` = round(quantile(mean_sp, 
+                                                  probs = c(0.025)), 2), 
+                     `97.5_quant` = round(quantile(mean_sp, 
+                                                   probs = c(0.975)), 2)) |>
+    ggplot2::ggplot() +
+    ggplot2::geom_linerange(ggplot2::aes(x = Nutrient, 
+                                         ymin = `2.5_quant`, 
+                                         ymax = `97.5_quant`, 
+                                         color = type), 
+                            linewidth = 2, 
+                            position = ggplot2::position_dodge(0.5)) +
+    ggplot2::geom_point(ggplot2::aes(x = Nutrient, 
+                                     y = median, 
+                                     color = type), 
+                        size = 3, 
+                        position = ggplot2::position_dodge(0.5)) +
+    ggplot2::coord_flip() +
+    ggplot2::scale_y_continuous(trans = "log10") +
+    ggplot2::scale_color_manual(values = c("fish species identied as fur seal prey" = "#278B9AFF", 
+                                           "fish species never identied as fur seal prey" = "#B4DAE5FF")) +
+    ggplot2::guides(color = ggplot2::guide_legend(nrow = 2)) +
+    ggplot2::ylab(paste0("Concentration (in mg/kg dry weight)")) +
+    ggplot2::xlab("Nutrient") +
+    ggplot2::theme_bw() +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(size = 15), 
+                   axis.text.y = ggplot2::element_text(size = 15), 
+                   axis.title.x = ggplot2::element_text(size = 16, face = "bold"), 
+                   axis.title.y = ggplot2::element_text(size = 16, face = "bold"), 
+                   legend.position = "bottom",
+                   legend.title = ggplot2::element_blank(),
+                   legend.text = ggplot2::element_text(size = 15)
+    )
+  ggplot2::ggsave("output/compo fish/lineplot_compo_prey_vs_not_prey_mean_sp_abs.jpg",
+                  scale = 1,
+                  height = 5, width = 5
+  )
+  
+}
+
+
 
 
 #'
@@ -1851,6 +1930,68 @@ MWtest_compo_prey_not_prey_abs <- function(res_fish_tib) {
 }
 
 
+#'
+#'
+#'
+#'
+#'
+# function to compute Mann-Whitney U Test to assess difference between 
+# absolute concentrations of nutrients in fish species identified as prey of
+# A. gazella and fish never identified as prey of A. gazella around Kerguelen
+MWtest_compo_prey_not_prey_mean_sp_abs <- function(res_fish_tib) {
+  options(scipen = 999)
+  
+  compo_tib <- res_fish_tib |>
+    tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, Mg, Mn, Na, Ni, P, Se, Zn), 
+                        names_to = "Nutrient", 
+                        values_to = "concentration_mg_kg_dw") |>
+    # make non-prey and prey species of fur seals distinct
+    dplyr::mutate(type = dplyr::case_when(diet == 1 ~ "prey",
+                                          diet == 0 ~ "not prey")) |>
+    dplyr::group_by(type, Species, Nutrient) |>
+    dplyr::summarise(mean_sp = mean(concentration_mg_kg_dw))
+  
+  nut_vec <- unique(compo_tib$Nutrient)
+  
+  list_outputs <- list()
+  
+  for (nut in nut_vec) {
+    
+    table <- compo_tib |>
+      dplyr::filter(Nutrient == nut) |>
+      tidyr::pivot_wider(names_from = type, 
+                         values_from = mean_sp)
+    
+    prey <- na.omit(table$`prey`)
+    not_prey <- na.omit(table$`not prey`)
+    
+    nut_test <- data.frame(Nutrient = nut, 
+                           alpha_MW = wilcox.test(prey, not_prey)[[3]])
+    
+    list_outputs <- append(list_outputs, list(nut_test))
+  }
+  
+  
+  df_test <- data.frame(Nutrient = NA, 
+                        alpha_MW = NA)
+  
+  for (i in 1:length(nut_vec)) {
+    df_test <- rbind(df_test, list_outputs[[i]])
+  }
+  
+  # delete first line of NAs
+  df_test <- df_test[-1,]
+  
+  df_test <- df_test |>
+    dplyr::mutate(significant = dplyr::case_when(alpha_MW <= 0.05 ~ "yes", 
+                                                 TRUE ~ "no"))
+  
+  openxlsx::write.xlsx(df_test, 
+                       file = "output/compo fish/Mann_Whitney_test_fish_prey_not_prey_absolute_mean_sp.xlsx")
+  
+}
+
+
 
 #'
 #'
@@ -1989,12 +2130,14 @@ corr_compo_fish <- function(res_fish_tib) {
   
   corr_mat <- robCompositions::corCoDa(
     as.data.frame(res_fish_tib |>
-                    dplyr::select(c(As, Ca, Co, Cu, Fe, K,
-                                    Mg, Mn, Na, Ni, P, Se, Zn)))) 
+                    dplyr::select(c(Ca, P, Na, K, Mg, 
+                                    Fe, Zn, Cu, Mn, 
+                                    Se, As, Ni, Co 
+                                    )))) 
   
-  colnames(corr_mat) <- rownames(corr_mat) <- c("As", "Ca", "Co", "Cu", "Fe", 
-                                                "K", "Mg", "Mn", "Na", "Ni", 
-                                                "P", "Se", "Zn")
+  colnames(corr_mat) <- rownames(corr_mat) <- c("Ca", "P", "Na", "K", "Mg", 
+                                                "Fe", "Zn", "Cu", "Mn", "Se",
+                                                "As", "Ni","Co")
   
   get_lower_tri<-function(cormat){
     cormat[lower.tri(cormat)] <- NA
@@ -2929,12 +3072,14 @@ corr_compo_scats <- function(res_scat_tib,
   
   corr_mat <- robCompositions::corCoDa(
     as.data.frame(res_scat_tib |>
-                    dplyr::select(c(As, Ca, Co, Cu, Fe, K,
-                                    Mg, Mn, Na, Ni, P, Se, Zn)))) 
+                    dplyr::select(c(Ca, P, Na, K, Mg, 
+                                    Fe, Zn, Cu, Mn, 
+                                    Se, As, Ni, Co 
+                    )))) 
   
-  colnames(corr_mat) <- rownames(corr_mat) <- c("As", "Ca", "Co", "Cu", "Fe", 
-                                                "K", "Mg", "Mn", "Na", "Ni", 
-                                                "P", "Se", "Zn")
+  colnames(corr_mat) <- rownames(corr_mat) <- c("Ca", "P", "Na", "K", "Mg", 
+                                                "Fe", "Zn", "Cu", "Mn", "Se",
+                                                "As", "Ni","Co")
   
   get_lower_tri<-function(cormat){
     cormat[lower.tri(cormat)] <- NA
@@ -2952,7 +3097,7 @@ corr_compo_scats <- function(res_scat_tib,
                                   midpoint = 0, limit = c(-1,1),
                                   name = "Correlation\ncoefficient") +
     ggplot2::theme_bw() + 
-    ggplot2::ggtitle("A. gazella scats") +
+    ggplot2::ggtitle("Antarctic fur seal scats") +
     ggplot2::theme(plot.title = ggplot2::element_text(size = 16, 
                                                       face = "bold", 
                                                       hjust = 0.5),

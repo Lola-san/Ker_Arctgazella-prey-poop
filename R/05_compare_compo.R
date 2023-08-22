@@ -269,9 +269,9 @@ lineplot_compare_compo_abs <- function(res_fish_scat_pooled,
                                     levels = c("Co", "Ni", "As", "Se", "Mn",
                                                "Cu", "Zn", "Fe", "Mg", "K",
                                                "Na", "P", "Ca")), 
-                  type = factor(dplyr::case_when(type == "fur seal scat" ~ "A.gazella\nscats", 
+                  type = factor(dplyr::case_when(type == "fur seal scat" ~ "Antarctic fur\n seal scats", 
                                                  type == "forage fish" ~ "forage\nfish"), 
-                                levels = c("forage\nfish", "A.gazella\nscats"))) |>
+                                levels = c("forage\nfish", "Antarctic fur\n seal scats"))) |>
     dplyr:: group_by(type, Nutrient) |>
     dplyr::summarise(`2.5_quant` = quantile(concentration_mg_kg_dw, 
                                             probs = c(0.025)), 
@@ -291,11 +291,85 @@ lineplot_compare_compo_abs <- function(res_fish_scat_pooled,
                                      color = type), 
                         size = 3, 
                         position = ggplot2::position_dodge(0.5)) +
-    ggplot2::scale_color_manual(values = c("A.gazella\nscats" = "#4C413FFF", 
+    ggplot2::scale_color_manual(values = c("Antarctic fur\n seal scats" = "#4C413FFF", 
                                           "forage\nfish" = "#278B9AFF")) +
     ggplot2::coord_flip() +
     ggplot2::scale_y_continuous(trans = "log10") +
     ggplot2::ylab("Concentration (in mg/kg dry weight)") +
+    ggplot2::xlab("Nutrient") +
+    ggplot2::theme_bw() +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(size = 16), 
+                   axis.text.y = ggplot2::element_text(size = 15), 
+                   axis.title.x = ggplot2::element_text(size = 16, face = "bold"), 
+                   axis.title.y = ggplot2::element_text(size = 16, face = "bold"), 
+                   legend.title = ggplot2::element_blank(), 
+                   legend.position = "bottom",
+                   legend.text = ggplot2::element_text(size = 15), 
+                   legend.key.height = ggplot2::unit(1.5, "cm") 
+    )
+  ggplot2::ggsave(paste0("output/", 
+                         file_name, ".jpg"),
+                  scale = 1,
+                  height = 6, width = 5
+  )
+  
+  
+}
+
+
+#'
+#'
+#'
+#'
+#'
+# function to compare composition of fish analised with distinction of ided prey
+# and scat of A. gazella
+lineplot_compare_compo_prey_abs <- function(res_fish_scat_pooled, 
+                                             file_name
+) {
+  options(scipen = 999)
+  
+  res_fish_scat_pooled |>
+    tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, Mg, Mn, Na, Ni, P, Se, Zn), 
+                        names_to = "Nutrient", 
+                        values_to = "concentration_mg_kg_dw") |>
+    dplyr::mutate(Nutrient = factor(Nutrient, 
+                                    levels = c("Co", "Ni", "As", "Se", "Mn",
+                                               "Cu", "Zn", "Fe", "Mg", "K",
+                                               "Na", "P", "Ca")), 
+                  type = factor(dplyr::case_when(type == "forage fish" & diet %in% c(1, 
+                                                                                     NA # NA are for scat data 
+                  ) ~ "fur seal\nfish prey", 
+                  type == "fur seal scat" ~ "fur seal\nscat",
+                  TRUE ~ "other\nfish"), 
+                  levels = c("fur seal\nfish prey", 
+                             "other\nfish",
+                             "fur seal\nscat"))) |>
+    dplyr:: group_by(type, Nutrient) |>
+    dplyr::summarise(`2.5_quant` = quantile(concentration_mg_kg_dw, 
+                                            probs = c(0.025)), 
+                     mean = mean(concentration_mg_kg_dw), 
+                     median = median(concentration_mg_kg_dw), 
+                     `97.5_quant` = quantile(concentration_mg_kg_dw, 
+                                             probs = c(0.975))) |>
+    ggplot2::ggplot() +
+    ggplot2::geom_linerange(ggplot2::aes(x = Nutrient, 
+                                         ymin = `2.5_quant`, 
+                                         ymax = `97.5_quant`, 
+                                         color = type), 
+                            linewidth = 2, 
+                            position = ggplot2::position_dodge(0.8)) +
+    ggplot2::geom_point(ggplot2::aes(x = Nutrient, 
+                                     y = median, 
+                                     color = type), 
+                        size = 3, 
+                        position = ggplot2::position_dodge(0.8)) +
+    ggplot2::scale_color_manual(values = c("fur seal\nscat" = "#4C413FFF", 
+                                           "fur seal\nfish prey" = "#278B9AFF", 
+                                           "other\nfish" = "#B4DAE5FF")) +
+    ggplot2::scale_y_continuous(trans = "log10") +
+    ggplot2::coord_flip() +
+    ggplot2::ylab("Concentration (in mg/kg dry weight),\nnormalised per nutrient") +
     ggplot2::xlab("Nutrient") +
     ggplot2::theme_bw() +
     ggplot2::theme(axis.text.x = ggplot2::element_text(size = 16), 
@@ -386,6 +460,86 @@ lineplot_compare_compo_norm <- function(res_fish_scat_pooled,
   
   
 }
+
+
+
+#'
+#'
+#'
+#'
+#'
+# function to compare composition of fish analised with distinction of ided prey
+# and scat of A. gazella
+lineplot_compare_compo_prey_norm <- function(res_fish_scat_pooled, 
+                                        file_name
+) {
+  options(scipen = 999)
+
+  res_fish_scat_pooled |>
+    tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, Mg, Mn, Na, Ni, P, Se, Zn), 
+                        names_to = "Nutrient", 
+                        values_to = "concentration_mg_kg_dw") |>
+    dplyr::mutate(Nutrient = factor(Nutrient, 
+                                    levels = c("Co", "Ni", "As", "Se", "Mn",
+                                               "Cu", "Zn", "Fe", "Mg", "K",
+                                               "Na", "P", "Ca")), 
+                  type = factor(dplyr::case_when(type == "forage fish" & diet %in% c(1, 
+                                                                                     NA # NA are for scat data 
+                  ) ~ "fur seal\nfish prey", 
+                  type == "fur seal scat" ~ "fur seal\nscat",
+                  TRUE ~ "other\nfish"), 
+                                levels = c("fur seal\nfish prey", 
+                                           "other\nfish",
+                                           "fur seal\nscat"))) |>
+    dplyr::group_by(Nutrient) |>
+    dplyr::mutate(conc_norm = (concentration_mg_kg_dw - min(concentration_mg_kg_dw))/
+                    (max(concentration_mg_kg_dw) - min(concentration_mg_kg_dw))) |>
+    dplyr:: group_by(type, Nutrient) |>
+    dplyr::summarise(`2.5_quant` = quantile(conc_norm, 
+                                            probs = c(0.025)), 
+                     mean = mean(conc_norm), 
+                     median = median(conc_norm), 
+                     `97.5_quant` = quantile(conc_norm, 
+                                             probs = c(0.975))) |>
+    ggplot2::ggplot() +
+    ggplot2::geom_linerange(ggplot2::aes(x = Nutrient, 
+                                         ymin = `2.5_quant`, 
+                                         ymax = `97.5_quant`, 
+                                         color = type), 
+                            linewidth = 2, 
+                            position = ggplot2::position_dodge(0.5)) +
+    ggplot2::geom_point(ggplot2::aes(x = Nutrient, 
+                                     y = median, 
+                                     color = type), 
+                        size = 3, 
+                        position = ggplot2::position_dodge(0.5)) +
+    ggplot2::scale_color_manual(values = c("fur seal\nscat" = "#4C413FFF", 
+                                          "fur seal\nfish prey" = "#278B9AFF", 
+                                          "other\nfish" = "#B4DAE5FF")) +
+    ggplot2::scale_y_continuous(trans = "log10") +
+    ggplot2::coord_flip() +
+    ggplot2::ylab("Concentration (in mg/kg dry weight),\nnormalised per nutrient") +
+    ggplot2::xlab("Nutrient") +
+    ggplot2::theme_bw() +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(size = 16), 
+                   axis.text.y = ggplot2::element_text(size = 15), 
+                   axis.title.x = ggplot2::element_text(size = 16, face = "bold"), 
+                   axis.title.y = ggplot2::element_text(size = 16, face = "bold"), 
+                   legend.title = ggplot2::element_blank(), 
+                   legend.position = "bottom",
+                   legend.text = ggplot2::element_text(size = 15), 
+                   legend.key.height = ggplot2::unit(1.5, "cm") 
+    )
+  ggplot2::ggsave(paste0("output/", 
+                         file_name, ".jpg"),
+                  scale = 1,
+                  height = 6, width = 5
+  )
+  
+  
+}
+
+
 
 
 #'
@@ -678,9 +832,9 @@ lineplot_compare_compo_fish_scat_relative_trace_only <- function(res_fish_scat_p
                                     levels = c("Co", "Ni", "As", "Se", "Mn",
                                                "Cu", "Zn", "Fe", "Mg", "K",
                                                "Na", "P", "Ca")), 
-                  type = factor(dplyr::case_when(type == "fur seal scat" ~ "A.gazella\nscats", 
+                  type = factor(dplyr::case_when(type == "fur seal scat" ~ "Antarctic fur\n seal scats", 
                                                  type == "forage fish" ~ "forage\nfish"), 
-                                levels = c("forage\nfish", "A.gazella\nscats"))) |>
+                                levels = c("forage\nfish", "Antarctic fur\n seal scats"))) |>
     dplyr:: group_by(type, Nutrient) |>
     dplyr::summarise(`2.5_quant` = quantile(relative_concentration, 
                                             probs = c(0.025)), 
@@ -700,7 +854,7 @@ lineplot_compare_compo_fish_scat_relative_trace_only <- function(res_fish_scat_p
                                      color = type), 
                         size = 3, 
                         position = ggplot2::position_dodge(0.5)) +
-    ggplot2::scale_color_manual(values = c("A.gazella\nscats" = "#4C413FFF", 
+    ggplot2::scale_color_manual(values = c("Antarctic fur\n seal scats" = "#4C413FFF", 
                                           "forage\nfish" = "#278B9AFF")) +
     ggplot2::coord_flip() +
     ggplot2::scale_y_continuous(trans = "log10") +
@@ -843,9 +997,9 @@ boxplot_compare_compo_fish_scat_relative_major_vs_trace <- function(res_fish_sca
                   sum_tot = As + Ca + Co + Cu + Fe + K +
                     Mg + Mn + Na + Ni + P + Se + Zn, 
                   ratio_trace_vs_major = sum_trace/sum_major, 
-                  type = factor(dplyr::case_when(type == "fur seal scat" ~ "A.gazella scats", 
+                  type = factor(dplyr::case_when(type == "fur seal scat" ~ "Antarctic fur\n seal scats", 
                                                  type == "forage fish" ~ "forage fish"), 
-                                levels = c("forage fish", "A.gazella scats"))) |>
+                                levels = c("forage fish", "Antarctic fur\n seal scats"))) |>
     dplyr::group_by(type) |>
     dplyr::summarise(`2.5_quant` = quantile(ratio_trace_vs_major, 
                                             probs = c(0.025)), 
@@ -865,13 +1019,13 @@ boxplot_compare_compo_fish_scat_relative_major_vs_trace <- function(res_fish_sca
                   sum_tot = As + Ca + Co + Cu + Fe + K +
                     Mg + Mn + Na + Ni + P + Se + Zn, 
                   ratio_trace_vs_major = sum_trace/sum_major, 
-                  type = factor(dplyr::case_when(type == "fur seal scat" ~ "A.gazella\nscats", 
+                  type = factor(dplyr::case_when(type == "fur seal scat" ~ "Antarctic fur\n seal scats", 
                                                  type == "forage fish" ~ "forage\nfish"), 
-                                levels = c("A.gazella\nscats", "forage\nfish"))) |>
+                                levels = c("Antarctic fur\n seal scats", "forage\nfish"))) |>
     ggplot2::ggplot(ggplot2::aes(x = type, 
                                  y = ratio_trace_vs_major, fill = type)) +
     ggplot2::geom_boxplot() +
-    ggplot2::scale_fill_manual(values = c("A.gazella\nscats" = "#4C413FFF", 
+    ggplot2::scale_fill_manual(values = c("Antarctic fur\n seal scats" = "#4C413FFF", 
                                           "forage\nfish" = "#278B9AFF")) +
     ggplot2::scale_y_continuous(trans = "log10") +
     ggplot2::coord_flip() +
