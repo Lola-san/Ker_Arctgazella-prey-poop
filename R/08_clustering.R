@@ -1125,37 +1125,37 @@ boxplot_compo_clust <- function(clust_output,
                         "#B4DAE5FF",
                         "#E75B64FF",
                         "#1D2645FF")[1:max(clust_output$cluster)]
-
-compo_tib |> 
-  dplyr::ungroup() |>
-  dplyr::mutate(sum = As + Ca + Co + Cu + Fe + K +
-                  Mg + Mn + Na + Ni + P + Se + Zn, 
-                cluster = as.factor(clust_vec)) |>
-  tidyr::pivot_longer(cols = c("As":"Zn"), 
-                      names_to = "Nutrient", 
-                      values_to = "concentration_mg_kg_dw") |>
-  dplyr::mutate(Nutrient = factor(Nutrient, 
-                                  levels = c("Ca", "P", "Na", "K", "Mg", 
-                                             "Fe", "Zn", "Cu", "Mn", "Se",
-                                             "As", "Ni","Co")), 
-                relative_conc = concentration_mg_kg_dw/sum) |>
-  ggplot2::ggplot(ggplot2::aes(x = cluster, y = relative_conc, 
-                               fill = cluster)) +
-  ggplot2::geom_violin(width=1.4) +
-  ggplot2::geom_boxplot() +
-  ggplot2::ylab("Nutrient relative concentration (in mg/kg dry weight)") +
-  ggplot2::geom_jitter(color="darkgrey", size=0.7, alpha=0.2) +
-  ggplot2::scale_fill_manual(values = colour_palette) +
-  ggplot2::facet_wrap(~ Nutrient, scale = "free") +
-  ggplot2::theme_bw() +
-  ggplot2::theme(axis.title.x = ggplot2::element_blank(), 
-                 axis.text.x = ggplot2::element_text(size = 15),
-                 axis.text.y = ggplot2::element_text(size = 15),
-                 axis.title.y = ggplot2::element_text(size = 16, 
-                                                      face = "bold"), 
-                 strip.text.x = ggplot2::element_text(size = 16, 
-                                                      face = "bold"), 
-                 legend.position = "none")
+    
+    compo_tib |> 
+      dplyr::ungroup() |>
+      dplyr::mutate(sum = As + Ca + Co + Cu + Fe + K +
+                      Mg + Mn + Na + Ni + P + Se + Zn, 
+                    cluster = as.factor(clust_vec)) |>
+      tidyr::pivot_longer(cols = c("As":"Zn"), 
+                          names_to = "Nutrient", 
+                          values_to = "concentration_mg_kg_dw") |>
+      dplyr::mutate(Nutrient = factor(Nutrient, 
+                                      levels = c("Ca", "P", "Na", "K", "Mg", 
+                                                 "Fe", "Zn", "Cu", "Mn", "Se",
+                                                 "As", "Ni","Co")), 
+                    relative_conc = concentration_mg_kg_dw/sum) |>
+      ggplot2::ggplot(ggplot2::aes(x = cluster, y = relative_conc, 
+                                   fill = cluster)) +
+      ggplot2::geom_violin(width=1.4) +
+      ggplot2::geom_boxplot() +
+      ggplot2::ylab("Nutrient relative concentration (in mg/kg dry weight)") +
+      ggplot2::geom_jitter(color="darkgrey", size=0.7, alpha=0.2) +
+      ggplot2::scale_fill_manual(values = colour_palette) +
+      ggplot2::facet_wrap(~ Nutrient, scale = "free") +
+      ggplot2::theme_bw() +
+      ggplot2::theme(axis.title.x = ggplot2::element_blank(), 
+                     axis.text.x = ggplot2::element_text(size = 15),
+                     axis.text.y = ggplot2::element_text(size = 15),
+                     axis.title.y = ggplot2::element_text(size = 16, 
+                                                          face = "bold"), 
+                     strip.text.x = ggplot2::element_text(size = 16, 
+                                                          face = "bold"), 
+                     legend.position = "none")
   }
   
   
@@ -1360,8 +1360,8 @@ barplot_clust <- function(clust_output,
 #'
 # function to show elemental composition of samples from the different clusters
 stats_compo_clust <- function(clust_output,
-                                compo_tib,
-                                file_name
+                              compo_tib,
+                              file_name
 ) {
   
   # assign each sample to its cluster
@@ -1377,40 +1377,44 @@ stats_compo_clust <- function(clust_output,
   }
   
   stats_tib <- rbind(compo_tib |> 
-    dplyr::ungroup() |>
-    dplyr::mutate(cluster = as.factor(clust_vec)) |>
-    tidyr::pivot_longer(cols = c("As":"Zn"), 
-                        names_to = "Nutrient", 
-                        values_to = "concentration_mg_kg_dw") |>
-    dplyr::mutate(Nutrient = factor(Nutrient, 
-                                    levels = c("Ca", "P", "Na", "K", "Mg", 
-                                               "Fe", "Zn", "Cu", "Mn", "Se",
-                                               "As", "Ni","Co"))) |>
-    dplyr::group_by(cluster, Nutrient) |>
-    dplyr::summarise(mean = round(mean(concentration_mg_kg_dw), 3),
-                     median = round(median(concentration_mg_kg_dw), 3),
-                     sd = round(sd(concentration_mg_kg_dw), 3)) |>
-    tidyr::pivot_wider(names_from = Nutrient, 
-                       values_from = c(mean, median, sd),
-                       names_sep = "_"),
-    compo_tib |> 
-      dplyr::mutate(sample_type = type) |>
-      tidyr::pivot_longer(cols = c("As":"Zn"), 
-                          names_to = "Nutrient", 
-                          values_to = "concentration_mg_kg_dw") |>
-      dplyr::mutate(Nutrient = factor(Nutrient, 
-                                      levels = c("Ca", "P", "Na", "K", "Mg", 
-                                                 "Fe", "Zn", "Cu", "Mn", "Se",
-                                                 "As", "Ni","Co"))) |>
-      dplyr::group_by(sample_type, Nutrient) |>
-      dplyr::summarise(mean = round(mean(concentration_mg_kg_dw), 3),
-                       median = round(median(concentration_mg_kg_dw), 3),
-                       sd = round(sd(concentration_mg_kg_dw), 3)) |>
-      tidyr::pivot_wider(names_from = Nutrient, 
-                         values_from = c(mean, median, sd),
-                         names_sep = "_")
+                       dplyr::ungroup() |>
+                       dplyr::mutate(cluster = as.factor(clust_vec)) |>
+                       tidyr::pivot_longer(cols = c("As":"Zn"), 
+                                           names_to = "Nutrient", 
+                                           values_to = "concentration_mg_kg_dw") |>
+                       dplyr::mutate(Nutrient = factor(Nutrient, 
+                                                       levels = c("Ca", "P", "Na", "K", "Mg", 
+                                                                  "Fe", "Zn", "Cu", "Mn", "Se",
+                                                                  "As", "Ni","Co"))) |>
+                       dplyr::group_by(cluster, Nutrient) |>
+                       dplyr::summarise(mean = round(mean(concentration_mg_kg_dw), 3),
+                                        median = round(median(concentration_mg_kg_dw), 3),
+                                        sd = round(sd(concentration_mg_kg_dw), 3)) |>
+                       tidyr::pivot_longer(cols = c(mean, median, sd), 
+                                           names_to = "statistic", 
+                                           values_to = "value") |>
+                       tidyr::pivot_wider(names_from = Nutrient, 
+                                          values_from = value),
+                     compo_tib |> 
+                       dplyr::mutate(cluster = "all samples") |>
+                       tidyr::pivot_longer(cols = c("As":"Zn"), 
+                                           names_to = "Nutrient", 
+                                           values_to = "concentration_mg_kg_dw") |>
+                       dplyr::mutate(Nutrient = factor(Nutrient, 
+                                                       levels = c("Ca", "P", "Na", "K", "Mg", 
+                                                                  "Fe", "Zn", "Cu", "Mn", "Se",
+                                                                  "As", "Ni","Co"))) |>
+                       dplyr::group_by(cluster, Nutrient) |>
+                       dplyr::summarise(mean = round(mean(concentration_mg_kg_dw), 3),
+                                        median = round(median(concentration_mg_kg_dw), 3),
+                                        sd = round(sd(concentration_mg_kg_dw), 3)) |>
+                       tidyr::pivot_longer(cols = c(mean, median, sd), 
+                                           names_to = "statistic", 
+                                           values_to = "value") |>
+                       tidyr::pivot_wider(names_from = Nutrient, 
+                                          values_from = value)
   )
-
+  
   # save 
   openxlsx::write.xlsx(stats_tib, 
                        file = paste0("output/clustering/", folder,
@@ -1424,8 +1428,8 @@ stats_compo_clust <- function(clust_output,
 #'
 # output matching species/samples with attributed cluster
 clust_samples <- function(clust_output,
-                              compo_tib,
-                              file_name
+                          compo_tib,
+                          file_name
 ) {
   
   # assign each sample to its cluster
@@ -1447,7 +1451,7 @@ clust_samples <- function(clust_output,
     dplyr::ungroup() |>
     dplyr::mutate(cluster = as.factor(clust_vec)) 
   
-    # save 
+  # save 
   openxlsx::write.xlsx(clust_tib, 
                        file = paste0("output/clustering/", folder,
                                      "/clust_attribution_", file_name, ".xlsx"))

@@ -2727,6 +2727,7 @@ boxplot_compo_scats_HPI01 <- function(res_scat_tib,
                                                         face = "bold"), 
                    strip.text.x = ggplot2::element_text(size = 16, 
                                                         face = "bold"), 
+                   panel.spacing.y = ggplot2::unit(0.4, "cm"),
                    legend.position = "none")
   ggplot2::ggsave(paste0("output/compo scats/", 
                          file_name, ".jpg"), 
