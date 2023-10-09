@@ -176,13 +176,15 @@ clust_compo_PCs_dendro_fish <- function(res_pca,
                        dplyr::select(Species_clean, Family, diet), 
                      by = c("Species_clean", "Family"), keep = FALSE) |>
     # change species name 
-    dplyr::mutate(Species_short = paste0(
-      stringr::str_sub(stringr::str_split_fixed(Species, 
-                                                " ", 
-                                                n = 2)[,1], 
-                       start = 1, 
-                       end = 1), ". ", 
-      stringr::str_split_fixed(Species, " ", n = 2)[,2])) 
+    dplyr::mutate(Species_short = dplyr::case_when(Species_clean == "Stomias sp" ~ "Stomias sp (n = 10)", 
+                                                   Species_clean == "Muraenolepis sp" ~ "Muraenolepis sp (n = 10)", 
+                                                   TRUE ~ paste0(
+                                                     stringr::str_sub(stringr::str_split_fixed(Species, 
+                                                                                               " ", 
+                                                                                               n = 2)[,1], 
+                                                                      start = 1, 
+                                                                      end = 1), ". ", 
+                                                     stringr::str_split_fixed(Species, " ", n = 2)[,2]))) 
   
   
   # change labels to species name and add colour grouping
@@ -295,6 +297,7 @@ clust_compo_PCs_dendro_fish <- function(res_pca,
                          ggplot2::aes(x, y, 
                                       label = label, 
                                       colour = Cluster),
+                         fontface = "italic",
                          hjust = 1, size = 4) +
       ggplot2::scale_color_manual(values = colour_palette) +
       ggplot2::coord_flip() +

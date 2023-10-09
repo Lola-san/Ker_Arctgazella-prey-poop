@@ -741,6 +741,9 @@ boxplot_compo_fish_sp_one_nut_legend <- function(res_fish_tib,
                     levels = c("Ca", "P", "Na", "K", "Mg", 
                                "Fe", "Zn", "Cu", "Mn", "Se",
                                "As", "Ni","Co"))) |>
+    dplyr::mutate(Species_short = dplyr::case_when(Species_short == "S. sp" ~ "Stomias sp", 
+                                                   Species_short == "M. sp" ~ "Muraenolepis sp", 
+                                                   TRUE ~ Species_short)) |>
   dplyr::group_by(Species_short) |>
   dplyr::mutate(n = dplyr::n_distinct(Code_sample),
                 Speciesn = factor(paste0(Species_short, " (n = ", n, ")"), 
@@ -748,7 +751,7 @@ boxplot_compo_fish_sp_one_nut_legend <- function(res_fish_tib,
                                     # for Fe concentrations
                                     "A. risso (n = 2)", 
                                     "N. coatsi (n = 10)",
-                                    "S. sp (n = 10)",
+                                    "Stomias sp (n = 10)",
                                     "P. bolini (n = 10)",
                                     "P. tenisoni (n = 10)",
                                     "K. anderssoni (n = 4)",
@@ -756,7 +759,7 @@ boxplot_compo_fish_sp_one_nut_legend <- function(res_fish_tib,
                                     "M. carinatus (n = 10)",
                                     "B. antarcticus (n = 5)",
                                     "P. choriodon (n = 8)",
-                                    "M. sp (n = 10)",
+                                    "Muraenolepis sp (n = 10)",
                                     "L. mizops (n = 7)",
                                     "M. mancopsetta (n = 2)",
                                     "G. acuta (n = 8)",
@@ -816,13 +819,14 @@ boxplot_compo_fish_sp_one_nut_legend <- function(res_fish_tib,
                  axis.title.y = ggplot2::element_blank(),
                  strip.text.x = ggplot2::element_text(size = 16),
                  legend.position = "right", 
-                 legend.text = ggplot2::element_text(size = 16), 
+                 legend.text = ggplot2::element_text(size = 16, 
+                                                     face = "italic"), 
                  legend.title = ggplot2::element_text(size = 17, 
                                                       face = "bold"))
-ggplot2::ggsave("output/compo fish/per-sp/boxplot_sp_nut_grad_legend.jpg",
+ggplot2::ggsave("output/compo fish/per-sp/boxplot_sp_nut_grad_legend_italic.jpg",
                 scale = 1,
                 height = 10, width = 9)
-# ggplot2::ggsave("output/compo fish/per-sp/boxplot_sp_nut_grad_legend.jpg",
+# ggplot2::ggsave("output/compo fish/per-sp/boxplot_sp_nut_grad_legend_plain.jpg",
 #                 width = 9,
 #                 height = 4,
 #                 dpi = 300)
@@ -3098,7 +3102,7 @@ corr_compo_scats <- function(res_scat_tib,
                                   midpoint = 0, limit = c(-1,1),
                                   name = "Correlation\ncoefficient") +
     ggplot2::theme_bw() + 
-    ggplot2::ggtitle("Antarctic fur seal scats") +
+    ggplot2::ggtitle("Antarctic fur seal feces") +
     ggplot2::theme(plot.title = ggplot2::element_text(size = 16, 
                                                       face = "bold", 
                                                       hjust = 0.5),
