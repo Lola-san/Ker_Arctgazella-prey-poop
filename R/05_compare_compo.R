@@ -295,7 +295,7 @@ lineplot_compare_compo_abs <- function(res_fish_scat_pooled,
                                           "forage\nfish" = "#278B9AFF")) +
     ggplot2::coord_flip() +
     ggplot2::scale_y_continuous(trans = "log10") +
-    ggplot2::ylab("Concentration (in mg/kg dry weight)") +
+  ggplot2::ylab("Absolute concentration\n(in mg/kg dry weight)") +
     ggplot2::xlab("Nutrient") +
     ggplot2::theme_bw() +
     ggplot2::theme(axis.text.x = ggplot2::element_text(size = 16), 
@@ -315,6 +315,76 @@ lineplot_compare_compo_abs <- function(res_fish_scat_pooled,
   
   
 }
+
+
+
+#'
+#'
+#'
+#'
+#'
+# function to compare composition of all fish analized
+# and scat of A. gazella
+boxplot_compare_compo_abs <- function(res_fish_scat_pooled, 
+                                       file_name
+) {
+  options(scipen = 999)
+  
+  res_fish_scat_pooled |>
+    tidyr::pivot_longer(cols = c(As, Ca, Co, Cu, Fe, K, Mg, Mn, Na, Ni, P, Se, Zn), 
+                        names_to = "Nutrient", 
+                        values_to = "concentration_mg_kg_dw") |>
+    dplyr::mutate(Nutrient = factor(Nutrient, 
+                                    levels = c("Co", "Ni", "As", "Se", "Mn",
+                                               "Cu", "Zn", "Fe", "Mg", "K",
+                                               "Na", "P", "Ca")), 
+                  type = factor(dplyr::case_when(type == "fur seal scat" ~ "Antarctic fur\n seal scats", 
+                                                 type == "forage fish" ~ "forage\nfish"), 
+                                levels = c("forage\nfish", "Antarctic fur\n seal scats"))) |>
+    # dplyr:: group_by(type, Nutrient) |>
+    # dplyr::summarise(`2.5_quant` = quantile(concentration_mg_kg_dw, 
+    #                                         probs = c(0.025)), 
+    #                  mean = mean(concentration_mg_kg_dw), 
+    #                  median = median(concentration_mg_kg_dw), 
+    #                  `97.5_quant` = quantile(concentration_mg_kg_dw, 
+    #                                          probs = c(0.975))) |>
+    ggplot2::ggplot(ggplot2::aes(x = Nutrient, 
+                             y = concentration_mg_kg_dw, 
+                             fill = type)) +
+    ggplot2::geom_violin(ggplot2::aes(color = type, 
+                                    fill = type), 
+                       position = ggplot2::position_dodge(width = 1),
+                       width = 1.4, 
+                       alpha = 0.5) +
+    ggplot2::geom_boxplot(position = ggplot2::position_dodge(width = 1)) +
+    ggplot2::scale_color_manual(values = c("Antarctic fur\n seal scats" = "#4C413FFF", 
+                                           "forage\nfish" = "#278B9AFF")) +
+    ggplot2::scale_fill_manual(values = c("Antarctic fur\n seal scats" = "#4C413FFF", 
+                                           "forage\nfish" = "#278B9AFF")) +
+    ggplot2::coord_flip() +
+    ggplot2::scale_y_continuous(trans = "log10") +
+    ggplot2::ylab("Absolute concentration\n(in mg/kg dry weight)") +
+    ggplot2::xlab("Nutrient") +
+    ggplot2::theme_bw() +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(size = 16), 
+                   axis.text.y = ggplot2::element_text(size = 15), 
+                   axis.title.x = ggplot2::element_text(size = 16, face = "bold"), 
+                   axis.title.y = ggplot2::element_text(size = 16, face = "bold"), 
+                   legend.title = ggplot2::element_blank(), 
+                   legend.position = "bottom",
+                   legend.text = ggplot2::element_text(size = 15), 
+                   legend.key.height = ggplot2::unit(1.5, "cm") 
+    )
+  ggplot2::ggsave(paste0("output/", 
+                         file_name, ".jpg"),
+                  scale = 1,
+                  height = 6, width = 5
+  )
+  
+  
+}
+
+
 
 
 #'
@@ -865,7 +935,7 @@ lineplot_compare_compo_fish_scat_relative_trace_only <- function(res_fish_scat_p
                    axis.text.y = ggplot2::element_text(size = 15), 
                    axis.title.x = ggplot2::element_text(size = 16, face = "bold"), 
                    axis.title.y = ggplot2::element_text(size = 16, face = "bold"), 
-                   legend.position = "left",
+                   legend.position = "bottom",
                    legend.spacing.y = ggplot2::unit(5, "cm"),
                    legend.title = ggplot2::element_blank(),
                    legend.text = ggplot2::element_text(size = 14),
@@ -874,10 +944,86 @@ lineplot_compare_compo_fish_scat_relative_trace_only <- function(res_fish_scat_p
   ggplot2::ggsave(paste0("output/",
                          file_name, ".jpg"),
                   scale = 1,
-                  height = 5, width = 6.5
+                  height = 6, width = 5
   )
   
 }
+
+
+
+#'
+#'
+#'
+#'
+#'
+# function to compare composition of fish species identified as prey of
+# A. gazella and scat of A. gazella, in relative composition
+# but just taking the trace elements (as major are weighing too much +
+# associated to different metabolisms)
+boxplot_compare_compo_fish_scat_relative_trace_only <- function(
+    res_fish_scat_pooled, 
+    file_name
+) {
+  options(scipen = 999)
+  
+  res_fish_scat_pooled |>
+    dplyr::mutate(sum = As + Co + Cu + Fe +
+                    Mn + Ni + Se + Zn) |>
+    tidyr::pivot_longer(cols = c(As, Co, Cu, Fe, Mn, Ni, Se, Zn), 
+                        names_to = "Nutrient", 
+                        values_to = "concentration_mg_kg_dw") |>
+    dplyr::mutate(relative_concentration = 100*(concentration_mg_kg_dw/sum)) |>
+    dplyr::mutate(Nutrient = factor(Nutrient, 
+                                    levels = c("Co", "Ni", "As", "Se", "Mn",
+                                               "Cu", "Zn", "Fe", "Mg", "K",
+                                               "Na", "P", "Ca")), 
+                  type = factor(dplyr::case_when(type == "fur seal scat" ~ "Antarctic fur\n seal scats", 
+                                                 type == "forage fish" ~ "forage\nfish"), 
+                                levels = c("forage\nfish", "Antarctic fur\n seal scats"))) |>
+    # dplyr::group_by(type, Nutrient) |>
+    # dplyr::summarise(`2.5_quant` = quantile(relative_concentration, 
+    #                                         probs = c(0.025)), 
+    #                  mean = mean(relative_concentration), 
+    #                  median = median(relative_concentration), 
+    #                  `97.5_quant` = quantile(relative_concentration, 
+    #                                          probs = c(0.975))) |>
+    ggplot2::ggplot(ggplot2::aes(x = Nutrient, 
+                                 y = relative_concentration, 
+                                 fill = type)) +
+    ggplot2::geom_violin(ggplot2::aes(color = type, 
+                                      fill = type), 
+                         position = ggplot2::position_dodge(width = 1),
+                         width = 1.4, 
+                         alpha = 0.5) +
+    ggplot2::geom_boxplot(position = ggplot2::position_dodge(width = 1)) +
+    ggplot2::scale_color_manual(values = c("Antarctic fur\n seal scats" = "#4C413FFF", 
+                                           "forage\nfish" = "#278B9AFF")) +
+    ggplot2::scale_fill_manual(values = c("Antarctic fur\n seal scats" = "#4C413FFF", 
+                                           "forage\nfish" = "#278B9AFF")) +
+    ggplot2::coord_flip() +
+    ggplot2::scale_y_continuous(trans = "log10") +
+    ggplot2::ylab("Relative concentration (in %)") +
+    ggplot2::xlab("Nutrient") +
+    ggplot2::theme_bw() +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(size = 16), 
+                   axis.text.y = ggplot2::element_text(size = 15), 
+                   axis.title.x = ggplot2::element_text(size = 16, face = "bold"), 
+                   axis.title.y = ggplot2::element_text(size = 16, face = "bold"), 
+                   legend.position = "bottom",
+                   legend.spacing.y = ggplot2::unit(5, "cm"),
+                   legend.title = ggplot2::element_blank(),
+                   legend.text = ggplot2::element_text(size = 14),
+                   legend.key.height = ggplot2::unit(1.5, "cm")
+    )
+  ggplot2::ggsave(paste0("output/",
+                         file_name, ".jpg"),
+                  scale = 1,
+                  height = 6, width = 5
+  )
+  
+}
+
+
 
 
 
@@ -1233,6 +1379,356 @@ MWtest_conc_rel_fish_scats_trace_only <- function(res_fish_scat_pooled,
   
   
 }
+
+## covariation between nutrients 
+
+#'
+#'
+#'
+#'
+#'
+# function to display correlation plot of elemental composition of fish
+corr_compo_fish <- function(res_fish_tib) {
+  
+  corr_mat <- robCompositions::corCoDa(
+    as.data.frame(res_fish_tib |>
+                    dplyr::select(c(Ca, P, Na, K, Mg, 
+                                    Fe, Zn, Cu, Mn, 
+                                    Se, As, Ni, Co 
+                    )))) 
+  
+  colnames(corr_mat) <- rownames(corr_mat) <- c("Ca", "P", "Na", "K", "Mg", 
+                                                "Fe", "Zn", "Cu", "Mn", "Se",
+                                                "As", "Ni","Co")
+  
+  get_lower_tri<-function(cormat){
+    cormat[lower.tri(cormat)] <- NA
+    return(cormat)
+  }
+  
+  melted_cormat <- tibble::as_tibble(reshape2::melt(get_lower_tri(corr_mat), 
+                                                    na.rm = TRUE)) 
+  
+  ggplot2::ggplot(data = melted_cormat, ggplot2::aes(Var2, Var1, fill = value)) +
+    ggplot2::geom_tile(color = "white") +
+    ggplot2::scale_fill_gradient2(low = "#F0D77BFF", 
+                                  high = "#E75B64FF", 
+                                  mid = "white", 
+                                  midpoint = 0, limit = c(-1,1)) +
+    ggplot2::theme_bw() + 
+    ggplot2::ggtitle("Forage fish") +
+    ggplot2::theme(plot.title = ggplot2::element_text(size = 16, 
+                                                      face = "bold", 
+                                                      hjust = 0.5),
+                   axis.text.x = ggplot2::element_text(size = 15), 
+                   axis.text.y = ggplot2::element_text(size = 15), 
+                   axis.title.x = ggplot2::element_blank(), 
+                   axis.title.y = ggplot2::element_blank(), 
+                   legend.position = "none")
+  ggplot2::ggsave("output/corrplot_compo_fish.jpg",
+                  scale = 1,
+                  height = 5, width = 5
+  )
+  
+}
+
+
+
+#'
+#'
+#'
+#'
+#'
+# function to display correlation plot of elemental composition of fish
+corr_compo_fish_prey_only <- function(res_fish_tib) {
+  
+  corr_mat <- robCompositions::corCoDa(
+    as.data.frame(res_fish_tib |>
+                    # make non-prey and prey species of fur seals distinct
+                    dplyr::mutate(type = dplyr::case_when(diet == 1 ~ "prey",
+                                                          diet == 0 ~ "not prey")) |>
+                    dplyr::filter(type == "prey") |>
+                    dplyr::select(c(As, Ca, Co, Cu, Fe, K,
+                                    Mg, Mn, Na, Ni, P, Se, Zn)))) 
+  
+  colnames(corr_mat) <- rownames(corr_mat) <- c("As", "Ca", "Co", "Cu", "Fe", 
+                                                "K", "Mg", "Mn", "Na", "Ni", 
+                                                "P", "Se", "Zn")
+  
+  get_lower_tri<-function(cormat){
+    cormat[lower.tri(cormat)] <- NA
+    return(cormat)
+  }
+  
+  melted_cormat <- tibble::as_tibble(reshape2::melt(get_lower_tri(corr_mat), 
+                                                    na.rm = TRUE)) 
+  
+  ggplot2::ggplot(data = melted_cormat, ggplot2::aes(Var2, Var1, fill = value)) +
+    ggplot2::geom_tile(color = "white") +
+    ggplot2::scale_fill_gradient2(low = "#F0D77BFF", 
+                                  high = "#E75B64FF", 
+                                  mid = "white", 
+                                  midpoint = 0, limit = c(-1,1)) +
+    ggplot2::theme_bw() + 
+    ggplot2::ggtitle("Forage fish identified as prey of A. gazella") +
+    ggplot2::theme(plot.title = ggplot2::element_text(size = 16, 
+                                                      face = "bold", 
+                                                      hjust = 0.5),
+                   axis.text.x = ggplot2::element_text(size = 15), 
+                   axis.text.y = ggplot2::element_text(size = 15), 
+                   axis.title.x = ggplot2::element_blank(), 
+                   axis.title.y = ggplot2::element_blank(), 
+                   legend.position = "none")
+  ggplot2::ggsave("output/compo fish/corrplot_compo_fish_prey_only.jpg",
+                  scale = 1,
+                  height = 5, width = 5
+  )
+  
+}
+
+
+#'
+#'
+#'
+#'
+#'
+# function to display correlation plot of elemental composition of scats
+corr_compo_scats <- function(res_scat_tib,
+                             file_name) {
+  
+  corr_mat <- robCompositions::corCoDa(
+    as.data.frame(res_scat_tib |>
+                    dplyr::select(c(Ca, P, Na, K, Mg, 
+                                    Fe, Zn, Cu, Mn, 
+                                    Se, As, Ni, Co 
+                    )))) 
+  
+  colnames(corr_mat) <- rownames(corr_mat) <- c("Ca", "P", "Na", "K", "Mg", 
+                                                "Fe", "Zn", "Cu", "Mn", "Se",
+                                                "As", "Ni","Co")
+  
+  get_lower_tri<-function(cormat){
+    cormat[lower.tri(cormat)] <- NA
+    return(cormat)
+  }
+  
+  melted_cormat <- tibble::as_tibble(reshape2::melt(get_lower_tri(corr_mat), 
+                                                    na.rm = TRUE)) 
+  
+  ggplot2::ggplot(data = melted_cormat, ggplot2::aes(Var2, Var1, fill = value)) +
+    ggplot2::geom_tile(color = "white") +
+    ggplot2::scale_fill_gradient2(low = "#F0D77BFF", 
+                                  high = "#E75B64FF", 
+                                  mid = "white", 
+                                  midpoint = 0, limit = c(-1,1),
+                                  name = "Correlation\ncoefficient") +
+    ggplot2::theme_bw() + 
+    ggplot2::ggtitle("Antarctic fur seal scats") +
+    ggplot2::theme(plot.title = ggplot2::element_text(size = 16, 
+                                                      face = "bold", 
+                                                      hjust = 0.5),
+                   axis.text.x = ggplot2::element_text(size = 15), 
+                   axis.text.y = ggplot2::element_text(size = 15), 
+                   axis.title.x = ggplot2::element_blank(), 
+                   axis.title.y = ggplot2::element_blank(), 
+                   legend.position = "right", 
+                   legend.title = ggplot2::element_text(size = 13), 
+                   legend.text = ggplot2::element_text(size = 11), 
+                   legend.title.align = 0)
+  ggplot2::ggsave(paste0("output/", 
+                         file_name, ".jpg"),
+                  scale = 1,
+                  height = 5, width = 6
+  )
+  
+}
+
+
+#'
+#'
+#'
+#'
+#'
+# change in nutrient covariation between fish and scats 
+covar_changes_fish_scats <- function(res_fish_tib, 
+                                     res_scat_tib,
+                                     file_name) {
+  
+  corr_mat_fish <- robCompositions::corCoDa(
+    as.data.frame(res_fish_tib |>
+                    dplyr::select(c(Ca, P, Na, K, Mg, 
+                                    Fe, Zn, Cu, Mn, 
+                                    Se, As, Ni, Co 
+                    )))) 
+  
+  colnames(corr_mat_fish) <- rownames(corr_mat_fish) <- c("Ca", "P", "Na", "K", "Mg", 
+                                                            "Fe", "Zn", "Cu", "Mn", "Se",
+                                                            "As", "Ni","Co")
+  
+  corr_mat_fish_012 <- tibble::as_tibble(corr_mat_fish) |>
+    dplyr::mutate(Ca = dplyr::case_when(Ca > 0.25 ~ 2, 
+                                        Ca <= 0.25 & Ca >= -0.25 ~ 1, 
+                                        Ca < -0.25 ~ 0), 
+                  P = dplyr::case_when(P > 0.25 ~ 2, 
+                                       P <= 0.25 & P >= -0.25 ~ 1, 
+                                       P < -0.25 ~ 0), 
+                  Na = dplyr::case_when(Na > 0.25 ~ 2, 
+                                        Na <= 0.25 & Na >= -0.25 ~ 1, 
+                                        Na < -0.25 ~ 0), 
+                  K = dplyr::case_when(K > 0.25 ~ 2, 
+                                       K <= 0.25 & K >= -0.25 ~ 1, 
+                                       K < -0.25 ~ 0), 
+                  Mg = dplyr::case_when(Mg > 0.25 ~ 2, 
+                                        Mg <= 0.25 & Mg >= -0.25 ~ 1, 
+                                        Mg < -0.25 ~ 0), 
+                  Fe = dplyr::case_when(Fe > 0.25 ~ 2, 
+                                        Fe <= 0.25 & Fe >= -0.25 ~ 1, 
+                                        Fe < -0.25 ~ 0), 
+                  Zn = dplyr::case_when(Zn > 0.25 ~ 2, 
+                                        Zn <= 0.25 & Zn >= -0.25 ~ 1, 
+                                        Zn < -0.25 ~ 0), 
+                  Cu = dplyr::case_when(Cu > 0.25 ~ 2, 
+                                        Cu <= 0.25 & Cu >= -0.25 ~ 1, 
+                                        Cu < -0.25 ~ 0), 
+                  Mn = dplyr::case_when(Mn > 0.25 ~ 2, 
+                                        Mn <= 0.25 & Mn >= -0.25 ~ 1, 
+                                        Mn < -0.25 ~ 0), 
+                  Se = dplyr::case_when(Se > 0.25 ~ 2, 
+                                        Se <= 0.25 & Se >= -0.25 ~ 1, 
+                                        Se < -0.25 ~ 0), 
+                  As = dplyr::case_when(As > 0.25 ~ 2, 
+                                        As <= 0.25 & As >= -0.25 ~ 1, 
+                                        As < -0.25 ~ 0), 
+                  Ni = dplyr::case_when(Ni > 0.25 ~ 2, 
+                                        Ni <= 0.25 & Ni >= -0.25 ~ 1, 
+                                        Ni < -0.25 ~ 0), 
+                  Co = dplyr::case_when(Co > 0.25 ~ 2, 
+                                        Co <= 0.25 & Co >= -0.25 ~ 1, 
+                                        Co < -0.25 ~ 0), 
+                  Nutrient2 = c("Ca", "P", "Na", "K", "Mg", 
+                                "Fe", "Zn", "Cu", "Mn", "Se", "As", "Ni", "Co"))
+  
+  corr_mat_scats <- robCompositions::corCoDa(
+    as.data.frame(res_scat_tib |>
+                    dplyr::select(c(Ca, P, Na, K, Mg, 
+                                    Fe, Zn, Cu, Mn, 
+                                    Se, As, Ni, Co 
+                    )))) 
+  
+  colnames(corr_mat_scats) <- rownames(corr_mat_scats) <- c("Ca", "P", "Na", "K", "Mg", 
+                                                "Fe", "Zn", "Cu", "Mn", "Se",
+                                                "As", "Ni","Co")
+  
+  corr_mat_scats_012 <- tibble::as_tibble(corr_mat_scats) |>
+    dplyr::mutate(Ca = dplyr::case_when(Ca > 0.25 ~ 2, 
+                                        Ca <= 0.25 & Ca >= -0.25 ~ 1, 
+                                        Ca < -0.25 ~ 0), 
+                  P = dplyr::case_when(P > 0.25 ~ 2, 
+                                       P <= 0.25 & P >= -0.25 ~ 1, 
+                                       P < -0.25 ~ 0), 
+                  Na = dplyr::case_when(Na > 0.25 ~ 2, 
+                                        Na <= 0.25 & Na >= -0.25 ~ 1, 
+                                        Na < -0.25 ~ 0), 
+                  K = dplyr::case_when(K > 0.25 ~ 2, 
+                                       K <= 0.25 & K >= -0.25 ~ 1, 
+                                       K < -0.25 ~ 0), 
+                  Mg = dplyr::case_when(Mg > 0.25 ~ 2, 
+                                        Mg <= 0.25 & Mg >= -0.25 ~ 1, 
+                                        Mg < -0.25 ~ 0), 
+                  Fe = dplyr::case_when(Fe > 0.25 ~ 2, 
+                                        Fe <= 0.25 & Fe >= -0.25 ~ 1, 
+                                        Fe < -0.25 ~ 0), 
+                  Zn = dplyr::case_when(Zn > 0.25 ~ 2, 
+                                        Zn <= 0.25 & Zn >= -0.25 ~ 1, 
+                                        Zn < -0.25 ~ 0), 
+                  Cu = dplyr::case_when(Cu > 0.25 ~ 2, 
+                                        Cu <= 0.25 & Cu >= -0.25 ~ 1, 
+                                        Cu < -0.25 ~ 0), 
+                  Mn = dplyr::case_when(Mn > 0.25 ~ 2, 
+                                        Mn <= 0.25 & Mn >= -0.25 ~ 1, 
+                                        Mn < -0.25 ~ 0), 
+                  Se = dplyr::case_when(Se > 0.25 ~ 2, 
+                                        Se <= 0.25 & Se >= -0.25 ~ 1, 
+                                        Se < -0.25 ~ 0), 
+                  As = dplyr::case_when(As > 0.25 ~ 2, 
+                                        As <= 0.25 & As >= -0.25 ~ 1, 
+                                        As < -0.25 ~ 0), 
+                  Ni = dplyr::case_when(Ni > 0.25 ~ 2, 
+                                        Ni <= 0.25 & Ni >= -0.25 ~ 1, 
+                                        Ni < -0.25 ~ 0), 
+                  Co = dplyr::case_when(Co > 0.25 ~ 2, 
+                                        Co <= 0.25 & Co >= -0.25 ~ 1, 
+                                        Co < -0.25 ~ 0), 
+                  Nutrient2 = c("Ca", "P", "Na", "K", "Mg", 
+                                "Fe", "Zn", "Cu", "Mn", "Se", "As", "Ni", "Co"))
+
+  
+  # compare the two correlation matrix
+  corr_mat_fish_012_long <- corr_mat_fish_012 |>
+    tidyr::pivot_longer(cols = c(Ca:Co), 
+                        names_to = "Nutrient1", 
+                        values_to = "corr_factor") |>
+    dplyr::mutate(sample = "fish")
+  
+  corr_mat_scats_012_long <- corr_mat_scats_012 |>
+    tidyr::pivot_longer(cols = c(Ca:Co), 
+                        names_to = "Nutrient1", 
+                        values_to = "corr_factor") |>
+    dplyr::mutate(sample = "scats") 
+  
+  corr_mat_012_pooled <- corr_mat_scats_012_long |>
+    dplyr::bind_rows(corr_mat_fish_012_long) |>
+    tidyr::pivot_wider(names_from = sample, 
+                       values_from = corr_factor) |>
+    dplyr::mutate(change = dplyr::case_when(fish == scats ~ 0, 
+                                            TRUE ~ 1))
+  
+  corr_mat_change <- corr_mat_012_pooled |>
+    dplyr::select(-c(fish, scats)) |>
+    tidyr::pivot_wider(names_from = Nutrient1, 
+                       values_from = change) |>
+    as.data.frame() 
+  
+  rownames(corr_mat_change) <- colnames(corr_mat_change)[2:14]
+  
+  corr_mat_change <- corr_mat_change |>
+    dplyr::select(-Nutrient2)
+  
+  get_lower_tri<-function(cormat){
+    cormat[lower.tri(cormat)] <- NA
+    return(cormat)
+  }
+  
+  melted_cormat <- tibble::as_tibble(reshape2::melt(as.matrix(get_lower_tri(corr_mat_change)), 
+                                                    na.rm = TRUE)) |>
+    dplyr::mutate(value = factor(value))
+  
+  ggplot2::ggplot(data = melted_cormat, ggplot2::aes(Var2, Var1, fill = value)) +
+    ggplot2::geom_tile(color = "white") +
+    ggplot2::scale_fill_manual(values = c("lightgrey",
+                                          "lightblue"), 
+                               name = "Binary\nindicator") +
+    ggplot2::theme_bw() + 
+    ggplot2::ggtitle("Change in correlation coefficient between\nforage fish and Antarctic fur seal scats") +
+    ggplot2::theme(plot.title = ggplot2::element_text(size = 16.5, 
+                                                      face = "bold", 
+                                                      hjust = 0.5),
+                   axis.text.x = ggplot2::element_text(size = 15.5), 
+                   axis.text.y = ggplot2::element_text(size = 15.5), 
+                   axis.title.x = ggplot2::element_blank(), 
+                   axis.title.y = ggplot2::element_blank(), 
+                   legend.position = "right", 
+                   legend.title = ggplot2::element_text(size = 13.5), 
+                   legend.text = ggplot2::element_text(size = 11.5), 
+                   legend.title.align = 0)
+  ggplot2::ggsave(paste0("output/", 
+                         file_name, ".jpg"),
+                  scale = 1,
+                  height = 6, width = 6.5
+  )
+  
+}
+
 
 
 

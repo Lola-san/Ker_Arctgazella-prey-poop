@@ -345,10 +345,6 @@ list(
   tar_target(MWtest_conc_prey_vs_not_prey_rel_all_nut, 
              MWtest_compo_prey_not_prey_rel_all_nut(full_res_compo_fish)),
   
-  # correlation matrix plot
-  tar_target(corrplot_fish, corr_compo_fish(full_res_compo_fish)),
-  tar_target(corrplot_fish_prey, corr_compo_fish_prey_only(full_res_compo_fish)),
-  
   
   #-------------- SCATS -------------- 
   tar_target(table_summary_compo_scats_tot_output, 
@@ -421,11 +417,6 @@ list(
   tar_target(MWtest_scats_HPI_pup_table, 
              MWtest_scats_HPI01_pup(full_res_compo_scats)),
   
-  # correlation matrix plot
-  tar_target(corrplot_scats, corr_compo_scats(full_res_compo_scats, 
-                                              "corrplot_compo_scats")),
-  tar_target(corrplot_scats_nopup, corr_compo_scats(full_res_compo_scats_nopup,
-                                                    "corrplot_compo_scats_nopup")),
   
   # scatterplot or nut concentrations and % water
   tar_target(scatterplot_water_nut_scats, 
@@ -472,6 +463,9 @@ list(
   tar_target(lineplot_fish_and_scats_abs, 
              lineplot_compare_compo_abs(fish_sp_means_and_scats, 
                                         "lineplot_comp_fish_scat_log")),
+  tar_target(boxplot_fish_and_scats_abs, 
+             boxplot_compare_compo_abs(fish_sp_means_and_scats, 
+                                        "boxplot_comp_fish_scat_log")),
   tar_target(lineplot_fish_full_prey_and_scats_abs, 
              lineplot_compare_compo_prey_abs(fish_full_and_scats, 
                                               "lineplot_comp_fish_full_prey_scat_abs")),
@@ -507,6 +501,9 @@ list(
   tar_target(lineplot_fish_and_scats_relative_trace, 
              lineplot_compare_compo_fish_scat_relative_trace_only(fish_sp_means_and_scats, 
                                                                   "lineplot_comp_fish_scat_relative_trace")),
+  tar_target(boxplot_fish_and_scats_relative_trace, 
+             boxplot_compare_compo_fish_scat_relative_trace_only(fish_sp_means_and_scats, 
+                                                                  "boxplot_comp_fish_scat_relative_trace")),
   tar_target(lineplot_fish_and_scats_relative_trace_nopup, 
              lineplot_compare_compo_fish_scat_relative_trace_only(fish_sp_means_and_scats_nopup, 
                                                                   "lineplot_comp_fish_scat_nopup_relative_trace")),
@@ -586,6 +583,22 @@ list(
   tar_target(MWtest_conc_rel_trace_only_fish_scats_tot_table, 
              MWtest_conc_rel_fish_scats_trace_only(fish_sp_means_and_scats,  
                                                    "tot")),
+  
+  # correlation matrix plot
+  tar_target(corrplot_fish, corr_compo_fish(full_res_compo_fish)),
+  tar_target(corrplot_fish_prey, corr_compo_fish_prey_only(full_res_compo_fish)),
+  
+  tar_target(corrplot_scats, corr_compo_scats(full_res_compo_scats, 
+                                              "corrplot_compo_scats")),
+  tar_target(corrplot_scats_nopup, corr_compo_scats(full_res_compo_scats_nopup,
+                                                    "corrplot_compo_scats_nopup")),
+  
+  # change in nutrient correlation coefficient between forage fish and fur seal scat
+  tar_target(corrplot_change_fish_scats, covar_changes_fish_scats(
+                                                      full_res_compo_fish, 
+                                                      full_res_compo_scats, 
+                                                      "corrplot_change_fish_scats")),
+  
   
   ##################### REPLACE STATISTICAL OUTLIERS VALUES BEFORE #############
   ############################## STATISTICAL ANALYSIS ##########################

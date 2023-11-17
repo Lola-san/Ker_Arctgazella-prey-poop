@@ -1088,7 +1088,21 @@ boxplot_compo_clust <- function(clust_output,
       dplyr::mutate(Nutrient = factor(Nutrient, 
                                       levels = c("Ca", "P", "Na", "K", "Mg", 
                                                  "Fe", "Zn", "Cu", "Mn", "Se",
-                                                 "As", "Ni","Co"))) |>
+                                                 "As", "Ni","Co")), 
+                    # set y lim to have space to indicate significance, 
+                    y_lim = dplyr::case_when(Nutrient == "Ca" ~ 300000,
+                                             Nutrient == "P" ~ 180000,
+                                             Nutrient == "Na" ~ 20000,
+                                             Nutrient == "K" ~ 10000,
+                                             Nutrient == "Mg" ~ 27500,
+                                             Nutrient == "Fe" ~ 20000, 
+                                             Nutrient == "Zn" ~ 1350, 
+                                             Nutrient == "Cu" ~ 1000, 
+                                             Nutrient == "Mn" ~ 650, 
+                                             Nutrient == "Se" ~ 175, 
+                                             Nutrient == "As" ~ 15, 
+                                             Nutrient == "Ni" ~ 90,
+                                             Nutrient == "Co" ~ 18)) |>
       ggplot2::ggplot(ggplot2::aes(x = cluster, y = concentration_mg_kg_dw, 
                                    fill = cluster)) +
       ggplot2::geom_violin(ggplot2::aes(color = cluster),
@@ -1102,6 +1116,7 @@ boxplot_compo_clust <- function(clust_output,
                           ggplot2::aes(yintercept = mean), 
                           linetype = "dashed", 
                           color = "darkred") +
+      ggplot2::geom_blank(ggplot2::aes(y = y_lim)) +
       ggplot2::ylab("Nutrient concentration (in mg/kg dry weight)") +
       ggplot2::scale_fill_manual(values = colour_palette) +
       ggplot2::scale_color_manual(values = colour_palette) +
